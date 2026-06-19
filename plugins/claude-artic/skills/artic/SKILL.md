@@ -89,6 +89,52 @@ Required behavior:
 
 After implementation, compare the current homepage against Artic docs. Check token consistency, typography hierarchy, spacing rhythm, CTA hierarchy, mobile behavior, accessibility basics, and no-copy reference safety.
 
+### `@artic version`
+
+Purpose: report the installed Artic package versions and compare them with the latest GitHub release.
+
+Required behavior:
+1. Run `python3 <artic-skill>/scripts/artic_version.py --root <artic-root>` when the script is available.
+2. Show installed versions from `pyproject.toml`, skill frontmatter, Claude marketplace manifest, Codex marketplace manifest, and plugin manifests.
+3. Warn if any packaged copies have mismatched versions.
+4. If network access is unavailable, report installed versions and say latest release was not checked.
+
+### `@artic update`
+
+Purpose: check for the latest Artic release and print safe host-specific update instructions.
+
+Required behavior:
+1. Run `python3 <artic-skill>/scripts/artic_update.py --root <artic-root>` when the script is available.
+2. Default to dry-run guidance; do not overwrite installed plugin files directly.
+3. Prefer marketplace-owned update flows for Claude Code and Codex.
+4. If the latest release cannot be checked, still print the stable marketplace commands and mark the release as unchecked.
+5. If installed versions are mismatched, stop and ask the user to fix the package before updating.
+
+## Shared Catalog Curation Instruction
+
+Use this as the common instruction for Hermes/Claude/Codex agents that collect or edit Artic catalog sources.
+
+Artic catalog entries are user-facing design intelligence, not an internal audit log. When adding or revising a source, write the final guidance as polished application guidance for designers and AI agents:
+- Explain what design quality the source contributes.
+- Explain what the agent should extract conceptually: tokens, hierarchy, interaction behavior, accessibility patterns, motion principles, information architecture, or component discipline.
+- Explain how to transform those patterns into original, project-specific homepage/design docs.
+- Preserve reference-safety boundaries as constructive creative direction, not fear-based caveats.
+- Avoid legalistic or unresolved language, fear-based caveats, or generic “do not copy” endings when a positive application sentence can say the same thing.
+- Prefer wording such as “Use this for…”, “Apply its…”, “Translate… into project-specific…”, “Pair with…”, and “Keep identity, copy, and layout decisions original by…”.
+- Keep each entry source-specific; do not flatten the catalog into repeated boilerplate.
+
+Use `application_guidance` for this product-facing catalog copy. Do not add `risk_notes` or other defensive/internal field names for new catalog work.
+
+Good pattern:
+```text
+Use this for developer-product clarity, dense navigation, and component discipline; translate workflow patterns into project-specific information architecture, tokens, and original interface composition.
+```
+
+Bad pattern:
+```text
+Internal caveat: possible brand copy issue. Do not copy exact layouts.
+```
+
 ## Reference Search and Synthesis
 
 Default source types:
