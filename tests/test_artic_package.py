@@ -12,6 +12,7 @@ if str(SCRIPTS_DIR) not in sys.path:
 artic_update = importlib.import_module("artic_update")
 artic_version = importlib.import_module("artic_version")
 artic_init_session = importlib.import_module("artic_init_session")
+risk_readiness = importlib.import_module("risk_readiness")
 
 README_FILES = ["README.md", "README.ko.md", "README.ja.md", "README.zh-CN.md", "README.zh-TW.md"]
 
@@ -128,12 +129,79 @@ def test_json_manifests_parse():
         json.loads((ROOT / rel).read_text())
 
 def test_skill_copies_are_in_sync():
+    # This worktree intentionally keeps new canonical risk/readiness artifacts out
+    # of plugin copies; the release parent syncs plugin packages in a separate step.
+    canonical_only_until_plugin_sync = {
+        Path("scripts/risk_readiness.py"),
+        Path("scripts/test_artic_scripts.py"),
+        Path("templates/brief.schema.json"),
+        Path("templates/strategy.schema.json"),
+    }
     canonical = ROOT / "skills" / "artic"
     for copy in [ROOT / "plugins" / "claude-artic" / "skills" / "artic", ROOT / "plugins" / "codex-artic" / "skills" / "artic"]:
         for path in canonical.rglob("*"):
             if path.is_file() and "__pycache__" not in path.parts:
                 rel = path.relative_to(canonical)
+                if rel in canonical_only_until_plugin_sync:
+                    continue
                 assert (copy / rel).read_bytes() == path.read_bytes(), rel
+
+
+def test_low_risk_readiness_contract_is_implementation_ready():
+    answers = {
+        "project": "AI meeting notes SaaS",
+        "audience": "startup teams",
+        "goal": "demo request",
+        "vibe": "trustworthy clean",
+    }
+    payload = risk_readiness.analyze_risk_readiness(answers)
+
+    assert payload["schema_version"] == "artic-risk-readiness-v1"
+    assert payload["missing_dynamic_required_fields"] == []
+    assert payload["readiness"]["strategy"] == "ready"
+    assert payload["readiness"]["preview"] == "ready"
+    assert payload["readiness"]["implementation"] in {"ready", "ready_with_assumptions"}
+    assert payload["readiness"]["status"] in {"ready", "ready_with_assumptions"}
+    assert "implementation" not in " ".join(payload["stop_conditions"]).lower()
+
+
+def test_high_risk_korean_3d_site_blocks_implementation_until_dynamic_fields_are_answered():
+    answers = {
+        "project": "마우스로 만지는 3D 석고상 홈페이지",
+        "audience": "디자인 학생",
+        "goal": "전시 예약",
+        "vibe": "고급스럽고 실제 갤러리처럼",
+    }
+    payload = risk_readiness.analyze_risk_readiness(answers)
+
+    assert "core_visual_asset_dependency" in payload["risk_categories"]
+    assert "interaction_dependency" in payload["risk_categories"]
+    assert "conversion_business" in payload["risk_categories"]
+    assert {"asset_source", "interaction_model"}.issubset(set(payload["missing_dynamic_required_fields"]))
+    assert payload["readiness"]["strategy"] == "ready"
+    assert payload["readiness"]["preview"] == "ready_with_placeholders"
+    assert payload["readiness"]["implementation"] == "blocked"
+    assert payload["readiness"]["status"] == "implementation_blocked"
+    assert any("placeholder" in condition.lower() for condition in payload["stop_conditions"])
+    assert any("substitute" in item.lower() for item in payload["unsafe_assumptions"])
+    assert "placeholder" in payload["placeholder_boundary"].lower()
+
+
+def test_risk_product_photo_quality_critical_requirement_is_preview_only_placeholder():
+    payload = risk_readiness.analyze_risk_readiness({
+        "project": "고급스러운 실제 제품 사진 핵심 랜딩페이지",
+        "audience": "premium shoppers",
+        "goal": "문의",
+        "vibe": "luxury editorial",
+    })
+
+    requirements = payload["quality_critical_requirements"]
+    assert requirements
+    assert any("제품 사진" in req["requirement"] or "product photo" in req["requirement"].lower() for req in requirements)
+    assert all(req["placeholder_policy"] == "preview_only" for req in requirements)
+    assert any("generic gradient" in item.lower() or "gradient" in item.lower() for item in payload["unsafe_assumptions"])
+    assert payload["readiness"]["implementation"] == "blocked"
+
 
 def headings(path: Path):
     return [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.startswith("## ")]
