@@ -124,6 +124,66 @@ def has_3d_runtime_reference(brief: dict[str, Any], references: dict[str, Any]) 
     return isinstance(facets, list) and any("3d" in str(item).lower() or "webgl" in str(item).lower() for item in facets)
 
 
+def _string_items(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        text = value.strip()
+        return [text] if text else []
+    if isinstance(value, list):
+        items: list[str] = []
+        for item in value:
+            items.extend(_string_items(item))
+        return items
+    if isinstance(value, dict):
+        for key in ("summary", "description", "requirement", "condition", "reason", "message", "title", "name"):
+            if value.get(key):
+                return _string_items(value.get(key))
+        return [json.dumps(value, ensure_ascii=False, sort_keys=True)]
+    return [str(value)]
+
+
+def _has_missing_quality(value: Any) -> bool:
+    missing_markers = ("missing", "blocked", "incomplete", "not_met", "failed", "fail", "placeholder")
+    if isinstance(value, dict):
+        status = str(value.get("status") or value.get("state") or value.get("readiness") or "").lower()
+        if any(marker in status for marker in missing_markers):
+            return True
+        return any(_has_missing_quality(item) for item in value.values())
+    if isinstance(value, list):
+        return any(_has_missing_quality(item) for item in value)
+    if isinstance(value, str):
+        return any(marker in value.lower() for marker in missing_markers)
+    return False
+
+
+def risk_readiness_summary(brief: dict[str, Any]) -> dict[str, Any]:
+    risk = brief.get("risk_readiness")
+    if not isinstance(risk, dict):
+        return {
+            "preview_status": "static_preview",
+            "production_ready": True,
+            "placeholder_boundaries": [],
+            "implementation_blockers": [],
+        }
+
+    placeholder_boundaries = _string_items(risk.get("placeholder_boundary")) + _string_items(risk.get("placeholder_fallback_boundary"))
+    implementation_blockers = _string_items(risk.get("stop_conditions")) + _string_items(risk.get("implementation_stop_conditions"))
+
+    readiness = str(risk.get("readiness") or "").lower()
+    implementation_blocked = bool(risk.get("implementation_blocked"))
+    readiness_blocked = any(marker in readiness for marker in ("blocked", "placeholder", "not_ready", "not-ready"))
+    quality_missing = _has_missing_quality(risk.get("quality_critical_requirements")) or _has_missing_quality(risk.get("core_quality_requirements"))
+    production_ready = not (implementation_blocked or readiness_blocked or bool(placeholder_boundaries) or bool(implementation_blockers) or quality_missing)
+
+    return {
+        "preview_status": "static_preview" if production_ready else "placeholder_preview",
+        "production_ready": production_ready,
+        "placeholder_boundaries": list(dict.fromkeys(placeholder_boundaries)),
+        "implementation_blockers": list(dict.fromkeys(implementation_blockers)),
+    }
+
+
 def localized_copy(locale: str) -> dict[str, str]:
     if locale.startswith("ko"):
         return {
@@ -187,7 +247,8 @@ def project_name(brief: dict[str, Any], design_frontmatter: str) -> str:
     return yaml_value(design_frontmatter, "name", "Artic Preview")
 
 
-def render_html(root: Path, brief: dict[str, Any], references: dict[str, Any], design_text: str) -> str:
+def render_html(root: Path, brief: dict[str, Any], references: dict[str, Any], design_text: str, readiness: dict[str, Any] | None = None) -> str:
+    readiness = readiness or risk_readiness_summary(brief)
     fm = frontmatter(design_text)
     name = project_name(brief, fm)
     description = yaml_value(fm, "description", "Artic-generated homepage preview")
@@ -213,6 +274,30 @@ def render_html(root: Path, brief: dict[str, Any], references: dict[str, Any], d
     copy = localized_copy(locale)
     policy_text = POLICY_BY_LOCALE.get(locale, POLICY_FALLBACK)
     source_items = "\n".join(f"<li>{html.escape(source)}</li>" for source in sources[:5]) or "<li>Artic selected references</li>"
+    boundary_items = "\n".join(f"<li>{html.escape(item)}</li>" for item in readiness.get("placeholder_boundaries", []))
+    blocker_items = "\n".join(f"<li>{html.escape(item)}</li>" for item in readiness.get("implementation_blockers", []))
+    if not readiness.get("production_ready", True):
+        if locale.startswith("ko"):
+            note_title = "프로덕션 준비 완료가 아닙니다"
+            note_body = "이 화면은 확인된 에셋과 구현 조건이 충족되기 전까지 플레이스홀더 미리보기로만 사용해야 합니다."
+            boundary_label = "플레이스홀더 경계"
+            blocker_label = "구현 차단 조건"
+        else:
+            note_title = "Not production-ready"
+            note_body = "Use this screen only as a placeholder preview until required assets and implementation conditions are satisfied."
+            boundary_label = "Placeholder boundaries"
+            blocker_label = "Implementation blockers"
+        boundary_section = f"<div><b>{html.escape(boundary_label)}</b><ul>{boundary_items}</ul></div>" if boundary_items else ""
+        blocker_section = f"<div><b>{html.escape(blocker_label)}</b><ul>{blocker_items}</ul></div>" if blocker_items else ""
+        readiness_note = f"""
+    <section class=\"readiness-note\" aria-label=\"{html.escape(note_title)}\">
+      <strong>{html.escape(note_title)}</strong>
+      <p>{html.escape(note_body)}</p>
+      {boundary_section}
+      {blocker_section}
+    </section>"""
+    else:
+        readiness_note = ""
     if has_3d_runtime_reference(brief, references):
         runtime_block = f"""
     <section class=\"panel runtime-3d\" aria-label=\"model-viewer 3D runtime placeholder\">
@@ -261,6 +346,9 @@ def render_html(root: Path, brief: dict[str, Any], references: dict[str, Any], d
     .model-viewer-stub {{ display: grid; place-items: center; min-height: 300px; margin: 18px 0; border-radius: 28px; border: 1px dashed var(--border); color: var(--muted); background: radial-gradient(circle at 50% 36%, rgba(124,58,237,.18), transparent 34%), linear-gradient(145deg, var(--neutral), var(--surface)); font-weight: 800; letter-spacing: .08em; }}
     .interaction-zone {{ border: 1px solid var(--border); border-radius: 20px; padding: 16px; background: var(--neutral); }}
     .runtime-3d {{ margin-top: 24px; }}
+    .readiness-note {{ margin: -44px 0 40px; border: 1px solid color-mix(in srgb, var(--accent), var(--border) 45%); border-left: 4px solid var(--accent); border-radius: 20px; padding: 18px 20px; background: rgba(124,58,237,.08); }}
+    .readiness-note strong {{ display: block; margin-bottom: 8px; }}
+    .readiness-note ul {{ margin: 8px 0 0; padding-left: 20px; color: var(--muted); line-height: 1.7; }}
     .policy {{ margin-top: 56px; padding: 18px; border-left: 4px solid var(--accent); background: white; border-radius: 16px; color: var(--muted); }}
     @media (max-width: 820px) {{ .hero, .sections {{ grid-template-columns: 1fr; }} .nav {{ align-items: flex-start; flex-direction: column; }} }}
   </style>
@@ -271,6 +359,7 @@ def render_html(root: Path, brief: dict[str, Any], references: dict[str, Any], d
       <div class="brand">{html.escape(name)}</div>
       <div class="pill">{html.escape(copy['preview_badge'])}</div>
     </nav>
+{readiness_note}
     <section class="hero">
       <div>
         <span class="pill">{html.escape(copy['for_label'])}: {html.escape(audience)}</span>
@@ -320,13 +409,15 @@ def create_show_preview(root: Path) -> dict[str, Any]:
     design_text = (root / "DESIGN.md").read_text(encoding="utf-8")
     brief = read_json(root / ".artic" / "brief.json")
     references = read_json(root / ".artic" / "references.json")
+    readiness = risk_readiness_summary(brief)
     preview = root / ".artic" / "show" / "index.html"
     preview.parent.mkdir(parents=True, exist_ok=True)
-    preview.write_text(render_html(root, brief, references, design_text), encoding="utf-8")
+    preview.write_text(render_html(root, brief, references, design_text, readiness), encoding="utf-8")
     return {
         "root": str(root.resolve()),
         "preview_file": str(preview),
         "modified_app_files": [],
+        **readiness,
     }
 
 
