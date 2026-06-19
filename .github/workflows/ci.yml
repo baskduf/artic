@@ -37,7 +37,7 @@ jobs:
         run: python -m pip install --upgrade pip pytest build pyyaml
 
       - name: Compile Python files
-        run: python -m py_compile skills/artic/scripts/*.py tests/*.py
+        run: python -m py_compile skills/artic/scripts/*.py tests/*.py scripts/*.py
 
       - name: Run package tests
         run: python -m pytest -q
@@ -62,6 +62,11 @@ jobs:
 
       - name: Build Python package metadata
         run: python -m build --sdist --wheel
+
+      - name: Verify package archives are clean
+        run: |
+          python scripts/check_release_artifacts.py --require-payload dist/artic-*.tar.gz
+          python scripts/check_release_artifacts.py dist/artic-*.whl
 
       - name: Verify built package metadata
         run: |
@@ -180,9 +185,7 @@ jobs:
           )
           RELEASE_TAG="v${VERSION}"
           python -m build --sdist --wheel
-          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
-            -czf "dist/artic-skill-${RELEASE_TAG}.tar.gz" \
-            skills plugins .claude-plugin .agents README.md README.ko.md README.ja.md README.zh-CN.md README.zh-TW.md LICENSE
+          python scripts/build_skill_archive.py --output "dist/artic-skill-${RELEASE_TAG}.tar.gz"
           expected=(
             "artic-${VERSION}.tar.gz"
             "artic-${VERSION}-py3-none-any.whl"
@@ -192,6 +195,10 @@ jobs:
             test -s "dist/$file"
           done
           (cd dist && shasum -a 256 "${expected[@]}" > SHA256SUMS.txt)
+          python scripts/check_release_artifacts.py --require-payload \
+            "dist/artic-${VERSION}.tar.gz" \
+            "dist/artic-skill-${RELEASE_TAG}.tar.gz"
+          python scripts/check_release_artifacts.py "dist/artic-${VERSION}-py3-none-any.whl"
 
       - name: Upload dry-run artifacts
         uses: actions/upload-artifact@v4

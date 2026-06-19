@@ -1,5 +1,5 @@
 from __future__ import annotations
-import functools, json, re, subprocess, sys, tempfile, threading
+import functools, json, re, subprocess, sys, tarfile, tempfile, threading, zipfile
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -547,6 +547,57 @@ def test_ci_and_release_workflows_are_hardened():
     assert "Verify version matches tag" in release
     assert "publish GitHub release" in release
     assert "actions/download-artifact@v4" in release
+    for workflow in [ci, release]:
+        assert "check_release_artifacts.py" in workflow
+        assert "build_skill_archive.py" in workflow
+
+
+def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
+    checker = ROOT / "scripts" / "check_release_artifacts.py"
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        bad_tar = root / "bad.tar.gz"
+        payload = root / "payload"
+        (payload / "skills/artic/scripts/__pycache__").mkdir(parents=True)
+        (payload / "skills/artic/SKILL.md").write_text("skill", encoding="utf-8")
+        (payload / "skills/artic/references").mkdir(parents=True)
+        (payload / "skills/artic/references/source-catalog.json").write_text("[]", encoding="utf-8")
+        (payload / "skills/artic/scripts/artic_init.py").write_text("", encoding="utf-8")
+        (payload / "skills/artic/scripts/search_reference_catalog.py").write_text("", encoding="utf-8")
+        (payload / "skills/artic/scripts/synthesize_reference_notes.py").write_text("", encoding="utf-8")
+        (payload / "skills/artic/scripts/validate_artic_outputs.py").write_text("", encoding="utf-8")
+        (payload / "plugins/claude-artic/.claude-plugin").mkdir(parents=True)
+        (payload / "plugins/claude-artic/.claude-plugin/plugin.json").write_text("{}", encoding="utf-8")
+        (payload / "plugins/codex-artic/.codex-plugin").mkdir(parents=True)
+        (payload / "plugins/codex-artic/.codex-plugin/plugin.json").write_text("{}", encoding="utf-8")
+        (payload / "skills/artic/scripts/__pycache__/artic_init.cpython-39.pyc").write_bytes(b"bad")
+        with tarfile.open(bad_tar, "w:gz") as tf:
+            tf.add(payload, arcname="artic-0.1.0")
+        result = subprocess.run([sys.executable, str(checker), "--require-payload", str(bad_tar)], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "forbidden bytecode/cache entry" in result.stdout
+
+        good_zip = root / "metadata.whl"
+        with zipfile.ZipFile(good_zip, "w") as zf:
+            zf.writestr("artic-0.1.0.dist-info/METADATA", "Name: artic\nVersion: 0.1.0\n")
+        result = subprocess.run([sys.executable, str(checker), str(good_zip)], capture_output=True, text=True)
+        assert result.returncode == 0, result.stdout
+
+
+def test_skill_archive_builder_excludes_bytecode_from_marketplace_archive():
+    builder = ROOT / "scripts" / "build_skill_archive.py"
+    checker = ROOT / "scripts" / "check_release_artifacts.py"
+    with tempfile.TemporaryDirectory() as tmp:
+        output = Path(tmp) / "artic-skill-v0.1.0.tar.gz"
+        subprocess.run([sys.executable, str(builder), "--root", str(ROOT), "--output", str(output)], check=True)
+        result = subprocess.run([sys.executable, str(checker), "--require-payload", str(output)], capture_output=True, text=True)
+        assert result.returncode == 0, result.stdout
+
+
+def test_manifest_excludes_bytecode_from_source_distribution():
+    manifest = (ROOT / "MANIFEST.in").read_text(encoding="utf-8")
+    assert "global-exclude *.py[cod]" in manifest
+    assert "global-exclude __pycache__/*" in manifest
 
 
 def test_readmes_document_release_and_ci_expectations():
