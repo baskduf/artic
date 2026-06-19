@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artic.local/schemas/strategy.schema.json",
+  "title": "Artic Agent Strategy",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project_summary",
+    "design_north_star",
+    "target_user_interpretation",
+    "conversion_strategy",
+    "reference_roles",
+    "conflict_resolution",
+    "visual_system",
+    "component_rules",
+    "accessibility",
+    "implementation_guidance",
+    "reference_policy",
+    "forbidden_copy_elements"
+  ],
+  "anyOf": [
+    {"required": ["created_by"]},
+    {"required": ["authorship"]}
+  ],
+  "properties": {
+    "schema_version": {"type": ["integer", "string"]},
+    "created_by": {"enum": ["agent", "agent-assisted"]},
+    "authorship": {"type": ["string", "object"]},
+    "project_summary": {"type": ["string", "object"]},
+    "design_north_star": {"type": "string"},
+    "target_user_interpretation": {"type": ["string", "object", "array"]},
+    "conversion_strategy": {"type": ["string", "object", "array"]},
+    "reference_roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["source_id", "role", "why_selected", "extract", "avoid"],
+        "properties": {
+          "source_id": {"type": "string"},
+          "role": {"type": "string"},
+          "why_selected": {"type": "string"},
+          "extract": {"type": ["string", "array", "object"]},
+          "avoid": {"type": ["string", "array", "object"]}
+        }
+      }
+    },
+    "conflict_resolution": {"type": ["string", "object", "array"]},
+    "visual_system": {"type": ["string", "object", "array"]},
+    "component_rules": {"type": ["string", "object", "array"]},
+    "accessibility": {"type": ["string", "object", "array"]},
+    "implementation_guidance": {"type": ["string", "object", "array"]},
+    "reference_policy": {"const": "artic-policy: reference-safety-v1"},
+    "forbidden_copy_elements": {
+      "type": "array",
+      "contains": {"const": "logos"}
+    }
+  },
+  "additionalProperties": true
+}

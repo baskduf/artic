@@ -14,20 +14,20 @@
 </div>
 
 ---
-Artic 是一个兼容 Claude/Codex 的 skill，用于在实现前创建参考驱动的 AI-native 首页设计文档。
+Artic 是一个兼容 Claude/Codex 的 agent design-direction protocol，也是在实现前把首页设计方向固定为契约的 contract-bound LLM design director。
 
 它把公开用户流程保持得很小：
 
 ```text
 @artic init      # 收集意图和参考
-@artic start     # 生成 DESIGN.md 和辅助文档
+@artic start     # 编写 strategy artifacts，再编译 DESIGN.md 文档
 @artic show      # 渲染安全的静态 preview
 @artic review    # 按文档检查实现
 ```
 
-Agent 会在内部处理用户访谈、把 brief 归一化为搜索 facets、检索专业/开源设计参考、合成可复用模式、生成 `DESIGN.md` 并验证输出。
+Agent 会在内部处理用户访谈、把 brief 归一化为搜索 facets、检索专业/开源设计参考、编写 `.artic/strategy.json`、把它编译成 `DESIGN.md` 和辅助文档，并验证输出。脚本只是 validator/compiler/renderer helper，不是设计判断或 strategy authorship 的来源。
 
-> Artic **不会** 克隆参考网站。它从专业/OSS 设计系统中提取可复用原则，并编译成项目专属的 AI-native 文档。
+> Artic **不会** 克隆参考网站。它从专业/OSS 设计系统中提取可复用原则，并把实现绑定到项目专属 strategy 和 AI-native 文档。
 
 ## Quick Start
 
@@ -109,6 +109,8 @@ python3 skills/artic/scripts/artic_version.py --root .
 python3 skills/artic/scripts/artic_update.py --root .
 ```
 
+Helper scripts 是 deterministic helper：`validate_artic_outputs.py` 验证 contract，`artic_start.py` 把 agent-authored strategy 编译成文档，`artic_show.py` 渲染 preview。设计判断的来源不是脚本，而是 public `@artic start` agent workflow 写入的 `.artic/strategy.json`。
+
 ## What Changes In The Agent
 
 Artic 被调用后，Agent 会：
@@ -118,9 +120,9 @@ Artic 被调用后，Agent 会：
 3. Search multiple professional/OSS design resources instead of relying on one style.
 4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
 5. Resolve conflicts between references based on the user's project goal.
-6. 运行 `@artic start` 生成 `DESIGN.md` 和辅助文档。
-7. 运行 `@artic show` 渲染 `.artic/show/index.html`，作为不会修改应用源码的安全静态 preview。
-8. 在实现前验证生成的设计文档。
+6. 运行 `@artic start`，让 public agent workflow 编写 `.artic/strategy.json`、保存 `docs/artic-strategy.md`，再运行 compiler 生成 `DESIGN.md` 和辅助文档。
+7. 运行 `@artic show`，基于 strategy artifacts 渲染 `.artic/show/index.html`，作为不会修改应用源码的安全静态 preview。
+8. 运行 `@artic review`，把实现与 `.artic/strategy.json`、`docs/artic-strategy.md`、`DESIGN.md` 对比，并验证生成的设计文档。
 
 ## When To Use It
 
@@ -143,13 +145,15 @@ Artic 被调用后，Agent 会：
 | --- | --- |
 | 开始设计访谈 | `@artic init` |
 | 运行快速访谈 | `@artic init quick` |
-| 编译文档 | `@artic start` |
-| 渲染安全静态 preview | `@artic show` |
-| 审查实现 | `@artic review the homepage against DESIGN.md` |
+| 编写 strategy 并编译文档 | `@artic start` |
+| 基于 strategy artifacts 渲染安全静态 preview | `@artic show` |
+| 按 strategy + `DESIGN.md` 审查实现 | `@artic review the homepage against DESIGN.md` |
 | 检查已安装/最新版本 | `@artic version` |
 | 输出安全更新命令 | `@artic update` |
 
 `@artic init` 只把会话式 draft 状态保存到 `.artic/init-session.json`。即使必填信息已经完整，也不会自动生成文档；只有用户明确运行 `@artic start` 后才会开始生成。
+
+`@artic start` 有两层。public agent workflow 是 design-director 层：它使用完成的 intake 和 references 编写 `.artic/strategy.json` 与 `docs/artic-strategy.md`，然后调用 deterministic compiler。raw `artic_start.py` fallback 只是 compiler-only：如果缺少 strategy，它会写出 `.artic/strategy-prompt.md`，提示 agent 必须回答的问题，并以 non-zero 退出，而不是臆造设计方向。
 
 ## Output Policy
 
@@ -159,13 +163,16 @@ Artic writes durable files instead of dumping long design prose into chat:
 .artic/init-session.json   # draft interview state from @artic init
 .artic/brief.json          # finalized by @artic start
 .artic/references.json     # finalized by @artic start
+.artic/strategy.json       # agent-authored design-direction contract for @artic start
+.artic/strategy-prompt.md  # 缺少 strategy 时的 raw compiler fallback prompt
 .artic/state.json
 docs/artic-brief.md
+docs/artic-strategy.md     # human-readable strategy contract
 DESIGN.md
 docs/design-rules.md
 docs/design-qa-checklist.md
 docs/homepage-design-prompt.md
-.artic/show/index.html     # 由 @artic show 生成的 preview 文件；默认不修改应用文件
+.artic/show/index.html     # 由 @artic show 基于 strategy artifacts 生成的 preview 文件；默认不修改应用文件
 ```
 
 ## Repository Layout

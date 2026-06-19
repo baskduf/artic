@@ -9,8 +9,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from validate_artic_strategy import read_json as read_strategy_json
+from validate_artic_strategy import validate_strategy_payload
+
 POLICY = "Reference policy: extract reusable principles only; do not copy logos, trademarks, proprietary illustrations, or exact layouts."
 POLICY_MARKER = "<!-- artic-policy: reference-safety-v1 -->"
+POLICY_ID = "artic-policy: reference-safety-v1"
 POLICY_COPY_BY_LOCALE = {
     "en-US": POLICY,
     "ko-KR": "참고 정책: 재사용 가능한 원칙만 추출하고, 로고, 상표, 독점 일러스트, 정확한 레이아웃은 복사하지 않습니다.",
@@ -19,11 +23,13 @@ POLICY_COPY_BY_LOCALE = {
     "zh-TW": "參考政策：僅萃取可重用原則，不複製標誌、商標、專有插圖或精確版面。",
 }
 GENERATED_FILES = [
+    "docs/artic-strategy.md",
     "DESIGN.md",
     "docs/design-rules.md",
     "docs/design-qa-checklist.md",
     "docs/homepage-design-prompt.md",
 ]
+FORBIDDEN_COPY_ELEMENTS = ["logos", "trademarks", "proprietary illustrations", "exact layouts", "source copywriting"]
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -63,7 +69,10 @@ def project_name(brief: dict[str, Any]) -> str:
     return "Artic Project"
 
 
-def project_description(brief: dict[str, Any]) -> str:
+def project_description(brief: dict[str, Any], strategy: dict[str, Any] | None = None) -> str:
+    summary = (strategy or {}).get("project_summary")
+    if isinstance(summary, str) and summary.strip():
+        return summary.strip()
     project = brief.get("project")
     if isinstance(project, dict):
         return str(project.get("description") or project.get("primary_goal") or "Project-specific Artic homepage design system.").strip()
@@ -97,123 +106,109 @@ def language_block(brief: dict[str, Any]) -> str:
     ])
 
 
-def query_from_inputs(brief: dict[str, Any], references: dict[str, Any]) -> str:
-    if references.get("query"):
-        return str(references["query"])
-    project_obj = brief.get("project")
-    style_obj = brief.get("style")
-    implementation_obj = brief.get("implementation")
-    project = project_obj if isinstance(project_obj, dict) else {}
-    style = style_obj if isinstance(style_obj, dict) else {}
-    implementation = implementation_obj if isinstance(implementation_obj, dict) else {}
-    parts: list[str] = [
-        str(project.get("name", "")),
-        " ".join(str(item) for item in project.get("target_users", []) if item),
-        str(project.get("primary_goal", "")),
-        " ".join(str(item) for item in style.get("desired_impression", []) if item),
-        " ".join(str(item) for item in style.get("search_facets", []) if item),
-        " ".join(str(item) for item in brief.get("references", []) if item),
-        str(implementation.get("stack", "")),
-    ]
-    return " ".join(part for part in parts if part).strip() or project_name(brief)
-
-
-def selected_reference_lines(references: dict[str, Any]) -> list[str]:
-    selected = references.get("selected_sources", [])
-    if not isinstance(selected, list):
-        return []
-    lines = []
-    for row in selected:
-        if not isinstance(row, dict):
-            continue
-        name = row.get("name") or row.get("id") or "reference source"
-        source_id = row.get("id") or "unknown"
-        reason = row.get("reason") or row.get("application_guidance") or "selected for reusable design patterns"
-        targets = row.get("extraction_targets", [])
-        target_text = ", ".join(str(item) for item in targets) if isinstance(targets, list) else str(targets or "")
-        suffix = f" Extract: {target_text}." if target_text else ""
-        lines.append(f"- {name} (`{source_id}`): {reason}.{suffix}")
-    return lines
-
-
-def source_plan_lines(references: dict[str, Any]) -> list[str]:
-    plan = references.get("source_plan", [])
-    if not isinstance(plan, list):
-        return []
-    lines: list[str] = []
-    for row in plan:
-        if not isinstance(row, dict):
-            continue
-        source_id = row.get("source_id") or "unknown-source"
-        role = row.get("role") or "supporting_reference"
-        extract = row.get("extract", [])
-        avoid = row.get("avoid", [])
-        extract_text = ", ".join(str(item) for item in extract) if isinstance(extract, list) else str(extract or "")
-        avoid_text = ", ".join(str(item) for item in avoid) if isinstance(avoid, list) else str(avoid or "")
-        transform = row.get("transform") or "Transform this source into original, project-specific design rules."
-        lines.append(f"- `{source_id}` as **{role}**. Extract: {extract_text}. Transform: {transform} Avoid: {avoid_text}.")
-    return lines
-
-
-def synthesize_reference_summary(brief: dict[str, Any], references: dict[str, Any]) -> str:
-    query = query_from_inputs(brief, references)
-    reference_lines = selected_reference_lines(references)
-    if reference_lines:
-        init_synthesis = str(references.get("synthesis") or "").strip()
-        lines = ["# Reference Synthesis", "", "## Selected Sources", "", *reference_lines]
-        lines += ["", "## Extracted Compatible Patterns", ""]
-        if init_synthesis:
-            lines.append(init_synthesis)
-        lines.extend(
-            [
-                "- Convert the initialized sources into original token roles, component rules, layout rhythm, accessibility guardrails, and conversion hierarchy.",
-                "- Preserve the selected reference set from `@artic init`; do not swap in unrelated sources during `@artic start`.",
-                "",
-                "## Source Application Plan",
-                "",
-                *(source_plan_lines(references) or ["- Treat each selected source as a role-bound reference, not a visual clone target."]),
-                "",
-                "## Conflicts Resolved",
-                "",
-                "- Prefer project-specific token roles over any single reference brand identity.",
-                "- Keep the primary conversion path visually dominant while secondary actions remain quieter.",
-                "- Use component/accessibility discipline from the selected systems without copying exact page compositions.",
-                "",
-                "## Final Direction",
-                "",
-                f"Use the initialized Artic reference selection as compatible source patterns for `{query}`. Generate project-specific tokens, components, page composition, QA scoring, and implementation guidance from these reusable principles only.",
-                "",
-                "## Forbidden Copy Elements",
-                "",
-                "- Do not copy logos, trademarks, proprietary illustrations, exact page compositions, exact palettes as identity, or source copywriting.",
-                "- Treat brand-inspired examples as pattern references, not clone targets.",
-            ]
-        )
+def as_markdown(value: Any, *, indent: int = 0) -> str:
+    prefix = "  " * indent
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, list):
+        lines: list[str] = []
+        for item in value:
+            rendered = as_markdown(item, indent=indent + 1)
+            if "\n" in rendered:
+                lines.append(f"{prefix}- {rendered.replace(chr(10), chr(10) + prefix + '  ')}")
+            else:
+                lines.append(f"{prefix}- {rendered}")
         return "\n".join(lines)
+    if isinstance(value, dict):
+        lines = []
+        for key, item in value.items():
+            rendered = as_markdown(item, indent=indent + 1)
+            if "\n" in rendered:
+                lines.append(f"{prefix}- **{key}**:\n{rendered}")
+            else:
+                lines.append(f"{prefix}- **{key}**: {rendered}")
+        return "\n".join(lines)
+    return str(value)
 
-    try:
-        from synthesize_reference_notes import make_synthesis
 
-        markdown, _payload = make_synthesis(
-            query,
-            Path(__file__).resolve().parents[1] / "references" / "source-catalog.json",
-            Path(__file__).resolve().parents[1] / "references" / "fixtures",
-            3,
+def role_lines(strategy: dict[str, Any]) -> list[str]:
+    roles = strategy.get("reference_roles", [])
+    lines: list[str] = []
+    if not isinstance(roles, list):
+        return lines
+    for role in roles:
+        if not isinstance(role, dict):
+            continue
+        lines.append(
+            "- Reference (`{}`) as **{}** — {} Extract: {} Transform: translate into project-specific rules. Avoid: {}".format(
+                role.get("source_id", "unknown"),
+                role.get("role", "reference"),
+                role.get("why_selected", "selected for reusable principles"),
+                as_markdown(role.get("extract", "reusable patterns")),
+                as_markdown(role.get("avoid", "protected expression")),
+            )
         )
-        return markdown
-    except Exception:
-        pass
+    return lines
 
-    lines = [
-        "Use the initialized Artic references as compatible reusable patterns for this project.",
-        "Resolve conflicts in favor of the project goal, target users, accessibility target, and original brand expression.",
-    ]
-    init_synthesis = str(references.get("synthesis") or "").strip()
-    if init_synthesis:
-        lines.append(init_synthesis)
-    if reference_lines:
-        lines.extend(["", "Selected references:", *reference_lines])
-    return "\n".join(lines)
+
+def strategy_doc(brief: dict[str, Any], strategy: dict[str, Any]) -> str:
+    policy = policy_block(brief)
+    return "\n".join([
+        f"# Artic Strategy: {project_name(brief)}",
+        "",
+        language_block(brief),
+        "",
+        policy,
+        "",
+        "## Project Summary",
+        "",
+        as_markdown(strategy.get("project_summary", "")),
+        "",
+        "## Design North Star",
+        "",
+        as_markdown(strategy.get("design_north_star", "")),
+        "",
+        "## Target User Interpretation",
+        "",
+        as_markdown(strategy.get("target_user_interpretation", "")),
+        "",
+        "## Conversion Strategy",
+        "",
+        as_markdown(strategy.get("conversion_strategy", "")),
+        "",
+        "## Reference Roles",
+        "",
+        *(role_lines(strategy) or ["- No reference roles supplied."]),
+        "",
+        "## Source Application Plan",
+        "",
+        *(role_lines(strategy) or ["- No reference roles supplied."]),
+        "",
+        "## Conflict Resolution",
+        "",
+        as_markdown(strategy.get("conflict_resolution", "")),
+        "",
+        "## Visual System",
+        "",
+        as_markdown(strategy.get("visual_system", "")),
+        "",
+        "## Component Rules",
+        "",
+        as_markdown(strategy.get("component_rules", "")),
+        "",
+        "## Accessibility",
+        "",
+        as_markdown(strategy.get("accessibility", "")),
+        "",
+        "## Implementation Guidance",
+        "",
+        as_markdown(strategy.get("implementation_guidance", "")),
+        "",
+        "## Forbidden Copy Elements",
+        "",
+        as_markdown(strategy.get("forbidden_copy_elements", FORBIDDEN_COPY_ELEMENTS)),
+        "",
+    ])
 
 
 def overview(brief: dict[str, Any], references: dict[str, Any]) -> str:
@@ -248,25 +243,66 @@ def replace_policy_text(text: str, block: str) -> str:
     return text.replace(POLICY, block)
 
 
-def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any], intent: dict[str, Any] | None = None) -> list[str]:
+def validate_runtime_inputs(intent: dict[str, Any], references: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    for key in ("mapper", "design_north_star", "reference_roles", "design_rules", "catalog_query"):
+        if key not in intent:
+            errors.append(f"ERROR: intent missing key: {key}")
+    roles = intent.get("reference_roles", [])
+    if not isinstance(roles, list) or len(roles) < 1:
+        errors.append("ERROR: intent reference_roles must include at least 1 role assignment")
+    for role in roles if isinstance(roles, list) else []:
+        if not isinstance(role, dict):
+            errors.append("ERROR: intent reference role must be an object")
+            continue
+        for key in ("role", "source_ids", "selection_reason"):
+            if key not in role:
+                errors.append(f"ERROR: intent reference role missing key: {key}")
+
+    selected = references.get("selected_sources", [])
+    if not isinstance(selected, list) or len(selected) < 1:
+        errors.append("ERROR: references selected_sources must include at least 1 candidate")
+    source_plan = references.get("source_plan", [])
+    if not isinstance(source_plan, list) or len(source_plan) < 1:
+        errors.append("ERROR: references source_plan must include at least 1 source plan")
+    return errors
+
+
+def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any], strategy: dict[str, Any], intent: dict[str, Any] | None = None) -> list[str]:
     name = project_name(brief)
-    description = f"{project_description(brief)} Artic-generated homepage design system."
-    ref_summary = synthesize_reference_summary(brief, references)
+    description = f"{project_description(brief, strategy)} Artic-generated homepage design system."
     policy = policy_block(brief)
     language = language_block(brief)
+    strategy_markdown = strategy_doc(brief, strategy)
 
     design = load_template("DESIGN.template.md")
     design = design.replace("{{PROJECT_NAME}}", yaml_double_quoted(name))
     design = design.replace("{{DESIGN_DESCRIPTION}}", yaml_double_quoted(description))
-    design = design.replace("{{OVERVIEW}}", f"{overview(brief, references)}\n\n{language}")
-    north_star = str((intent or {}).get("design_north_star") or brief.get("style", {}).get("design_north_star") or "Every visual choice should support the project's primary conversion goal with original, reference-grounded design judgment.")
-    design = design.replace("{{DESIGN_NORTH_STAR}}", north_star)
+    overview_text = "\n\n".join([
+        overview(brief, references),
+        as_markdown(strategy.get("project_summary", "")),
+        language,
+        "### Target User Interpretation",
+        as_markdown(strategy.get("target_user_interpretation", "")),
+        "### Conversion Strategy",
+        as_markdown(strategy.get("conversion_strategy", "")),
+        "### Reference Roles",
+        "\n".join(role_lines(strategy)),
+    ])
+    design = design.replace("{{OVERVIEW}}", overview_text)
+    design = design.replace("{{DESIGN_NORTH_STAR}}", as_markdown(strategy.get("design_north_star", "")))
+    design = design.replace("Use role-based color tokens. Primary is reserved for the highest-value conversion action. Secondary supports navigation or lower-emphasis actions. Accent is for sparse emphasis only, not a second brand palette.", as_markdown(strategy.get("visual_system", "")) or "Use role-based color tokens and preserve contrast.")
+    design = design.replace("Buttons, cards, forms, navigation, proof sections, feature cards, and final CTA blocks must use the tokens above.", as_markdown(strategy.get("component_rules", "")) or "Buttons, cards, forms, navigation, proof sections, feature cards, and final CTA blocks must use the tokens above.")
+    design = design.replace("Target WCAG AA contrast, visible keyboard focus, semantic buttons/links, labeled form controls, and plain-language validation copy.", as_markdown(strategy.get("accessibility", "")) or "Target WCAG AA contrast, visible keyboard focus, semantic buttons/links, labeled form controls, and plain-language validation copy.")
+    design = design.replace("Recommended homepage sequence: hero with one primary promise, proof immediately near the hero, feature/job sections, trust or comparison section, conversion area, FAQ, and final CTA.", as_markdown(strategy.get("implementation_guidance", "")) or "Recommended homepage sequence: hero, proof, feature sections, trust, conversion area, FAQ, and final CTA.")
+    design = design.replace("Do not use generic gradient blobs, random glassmorphism, off-token colors, multiple primary CTAs in one viewport, low-contrast muted copy, centered long paragraphs, or exact reference layouts.", "Do not copy " + ", ".join(str(item) for item in strategy.get("forbidden_copy_elements", FORBIDDEN_COPY_ELEMENTS)) + ". " + as_markdown(strategy.get("conflict_resolution", "")))
     design = replace_policy_text(design, policy)
     write(root / "DESIGN.md", design)
+    write(root / "docs" / "artic-strategy.md", strategy_markdown)
 
     rules = load_template("design-rules.template.md")
     rules = rules.replace("{{PROJECT_NAME}}", name)
-    rules = rules.replace("{{REFERENCE_SYNTHESIS}}", f"{language}\n\n{ref_summary}")
+    rules = rules.replace("{{REFERENCE_SYNTHESIS}}", strategy_markdown)
     rules = replace_policy_text(rules, policy)
     write(root / "docs" / "design-rules.md", rules)
 
@@ -275,11 +311,13 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
     checklist = replace_policy_text(checklist, policy)
     if "Accessibility" not in checklist:
         checklist = checklist.replace("- [ ] Text contrast targets WCAG AA.", "- [ ] Accessibility: text contrast targets WCAG AA, focus states are visible, controls are semantic, and forms are labeled.")
+    checklist += "\n## Strategy Gates\n\n- [ ] Visual hierarchy follows the strategy north star.\n- [ ] Brand coherence follows the visual_system field.\n- [ ] Conversion clarity follows the conversion_strategy field.\n- [ ] Mobile quality follows implementation_guidance.\n- [ ] Accessibility follows the accessibility field.\n- [ ] Reference safety forbids logos, trademarks, proprietary illustrations, exact layouts, and source copywriting.\n"
     write(root / "docs" / "design-qa-checklist.md", checklist)
 
     prompt = load_template("homepage-design-prompt.template.md")
     prompt = prompt.replace("{{PROJECT_NAME}}", name)
     prompt = prompt.replace("# Homepage Implementation Prompt\n", f"# Homepage Implementation Prompt\n\n{language}\n")
+    prompt = prompt.replace("Rules:\n", f"Strategy source: `docs/artic-strategy.md`.\n\nRules:\n")
     prompt = replace_policy_text(prompt, policy)
     write(root / "docs" / "homepage-design-prompt.md", prompt)
 
@@ -298,7 +336,7 @@ def migrate_legacy_intent(root: Path, brief: dict[str, Any], references: dict[st
     north_star = str(style.get("design_north_star") or f"{project_name(brief)} should use reference-grounded design judgment while keeping layout, copy, and visual identity original.")
     intent = {
         "schema_version": 1,
-        "mapper": "artic-llm-first-contract-legacy-migration",
+        "mapper": "artic-internal-normalized-input-legacy-migration",
         "selected_preset": style.get("selected_preset") or "clean-saas",
         "project_archetype": "legacy-homepage",
         "audience_context": ", ".join(str(item) for item in project.get("target_users", []) if item),
@@ -311,20 +349,11 @@ def migrate_legacy_intent(root: Path, brief: dict[str, Any], references: dict[st
         "design_rules": style.get("design_rules") if isinstance(style.get("design_rules"), dict) else {},
         "design_north_star": north_star,
         "reference_roles": [
-            {
-                "role": f"legacy_reference_{index + 1}",
-                "source_ids": [source_id],
-                "selection_reason": "Migrated from pre-LLM-first selected_sources.",
-            }
+            {"role": f"legacy_reference_{index + 1}", "source_ids": [source_id], "selection_reason": "Migrated from pre-strategy selected_sources."}
             for index, source_id in enumerate(role_sources)
         ],
         "reference_hints": [],
         "catalog_query": str(references.get("query") or " ".join(search_facets)),
-        "llm_contract": {
-            "role": "Migrated legacy intent; future runs should regenerate this with the LLM-first mapper.",
-            "must_preserve": ["design_north_star", "reference_roles", "catalog_query"],
-            "must_not": ["copy protected brand assets", "choose exact layouts as clone targets"],
-        },
     }
     write(root / ".artic" / "intent.json", json.dumps(intent, indent=2, ensure_ascii=False) + "\n")
     return intent
@@ -340,25 +369,25 @@ def update_state(root: Path, brief: dict[str, Any]) -> None:
                 state = loaded
         except json.JSONDecodeError:
             state = {}
-    state.update(
-        {
-            "artic_version": str(brief.get("artic_version") or state.get("artic_version") or "0.3.0"),
-            "last_generated_at": datetime.now(timezone.utc).isoformat(),
-            "status": "generated",
-            "language": brief_language(brief),
-        }
-    )
+    state.update({"artic_version": str(brief.get("artic_version") or state.get("artic_version") or "0.3.0"), "last_generated_at": datetime.now(timezone.utc).isoformat(), "status": "generated", "language": brief_language(brief), "strategy_path": ".artic/strategy.json"})
     write(state_path, json.dumps(state, indent=2, ensure_ascii=False) + "\n")
 
 
 def validate_outputs(root: Path) -> subprocess.CompletedProcess[str]:
     validator = Path(__file__).resolve().with_name("validate_artic_outputs.py")
-    return subprocess.run(
-        [sys.executable, str(validator), "--root", str(root)],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    return subprocess.run([sys.executable, str(validator), "--root", str(root)], check=False, capture_output=True, text=True)
+
+
+def write_strategy_prompt(root: Path, brief: dict[str, Any], references: dict[str, Any], intent: dict[str, Any] | None) -> Path:
+    prompt = load_template("strategy-prompt.template.md")
+    prompt += "\n\n## Current Brief Summary\n\n```json\n" + json.dumps(brief, indent=2, ensure_ascii=False) + "\n```\n"
+    prompt += "\n## Current References Summary\n\n```json\n" + json.dumps(references, indent=2, ensure_ascii=False) + "\n```\n"
+    if intent is not None:
+        prompt += "\n## Internal Normalized Input (intent.json)\n\n```json\n" + json.dumps(intent, indent=2, ensure_ascii=False) + "\n```\n"
+    prompt += "\nWrite the completed JSON to `.artic/strategy.json`, then rerun `@artic start`.\n"
+    path = root / ".artic" / "strategy-prompt.md"
+    write(path, prompt)
+    return path
 
 
 def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, Any]:
@@ -367,27 +396,45 @@ def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, 
     references_path = root / ".artic" / "references.json"
     if session_path.exists():
         from artic_init_session import finalize_session, is_ready, read_session, render_questions
-
         session = read_session(root)
         status = str(session.get("status") or "")
         if status == "collecting" or not is_ready(session):
             missing = ", ".join(str(item) for item in session.get("missing", []))
             questions = " | ".join(render_questions(session))
-            raise ValueError(
-                "cannot run @artic start before init is ready"
-                + (f": missing {missing}" if missing else "")
-                + (f". Next questions: {questions}" if questions else "")
-            )
+            raise ValueError("cannot run @artic start before init is ready" + (f": missing {missing}" if missing else "") + (f". Next questions: {questions}" if questions else ""))
         if status == "ready" or not brief_path.exists() or not references_path.exists():
             finalize_session(root)
-    brief = read_json(root / ".artic" / "brief.json")
-    references = read_json(root / ".artic" / "references.json")
+
+    brief = read_json(brief_path)
+    references = read_json(references_path)
     intent = read_json(root / ".artic" / "intent.json") if (root / ".artic" / "intent.json").exists() else migrate_legacy_intent(root, brief, references)
-    generated = render_outputs(root, brief, references, intent)
+
+    strategy_path = root / ".artic" / "strategy.json"
+    if not strategy_path.exists():
+        prompt_path = write_strategy_prompt(root, brief, references, intent)
+        raise ValueError(json.dumps({
+            "error": "missing_strategy",
+            "message": "Public Artic agent must create .artic/strategy.json before runtime generation.",
+            "strategy_prompt": str(prompt_path.relative_to(root)),
+            "generated_files": [str(prompt_path.relative_to(root))],
+        }, ensure_ascii=False))
+
+    strategy = read_strategy_json(strategy_path)
+    strategy_errors = validate_strategy_payload(strategy)
+    if strategy_errors:
+        raise ValueError(json.dumps({"error": "invalid_strategy", "errors": strategy_errors}, ensure_ascii=False))
+    input_errors = validate_runtime_inputs(intent, references)
+    if input_errors:
+        raise ValueError(json.dumps({"error": "invalid_runtime_inputs", "errors": input_errors}, ensure_ascii=False))
+
+    generated = render_outputs(root, brief, references, strategy, intent)
     payload: dict[str, Any] = {
         "root": str(root.resolve()),
         "generated_files": generated,
         "validated": False,
+        "strategy_path": str(strategy_path.relative_to(root)),
+        "strategy_validated": True,
+        "strategy": {"design_north_star": str(strategy.get("design_north_star") or "")},
     }
     if not no_validate:
         validation = validate_outputs(root)
@@ -400,14 +447,18 @@ def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, 
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate Artic DESIGN.md and design docs from .artic init outputs.")
-    parser.add_argument("--root", required=True, help="Project root containing .artic/brief.json and .artic/references.json")
-    parser.add_argument("--no-validate", action="store_true", help="Generate files without running validate_artic_outputs.py")
+    parser = argparse.ArgumentParser(description="Compile Artic strategy.json into DESIGN.md and design docs.")
+    parser.add_argument("--root", required=True, help="Project root containing .artic/brief.json, .artic/references.json, and .artic/strategy.json")
+    parser.add_argument("--no-validate", action="store_true", help="Skip final output validation only; strategy validation always runs")
     args = parser.parse_args()
     try:
         payload = create_start_outputs(Path(args.root), no_validate=args.no_validate)
     except ValueError as exc:
-        print(json.dumps({"error": str(exc)}, ensure_ascii=False))
+        message = str(exc)
+        try:
+            print(json.dumps(json.loads(message), ensure_ascii=False))
+        except json.JSONDecodeError:
+            print(json.dumps({"error": message}, ensure_ascii=False))
         return 1
     except RuntimeError as exc:
         print(str(exc))

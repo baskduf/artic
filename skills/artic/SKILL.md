@@ -1,6 +1,6 @@
 ---
 name: artic
-description: "Use when creating or improving a homepage/website and design rules are missing or weak. Artic runs @artic init to interview the user, searches professional/OSS design references, then @artic start synthesizes AI-native DESIGN.md docs without copying protected brand assets."
+description: "Use when creating or improving a homepage/website and design rules are missing or weak. Artic is an agent design-direction protocol: @artic init interviews the user, @artic start authors strategy artifacts, then the compiler produces AI-native DESIGN.md docs without copying protected brand assets."
 version: 0.3.0
 author: Hermes Agent
 license: MIT
@@ -12,7 +12,7 @@ metadata:
 
 # Artic
 
-Artic is a reference-driven design onboarding skill for AI-built websites.
+Artic is an agent design-direction protocol for AI-built websites: a contract-bound LLM design director that turns reference-informed judgment into implementation-ready design artifacts.
 
 Core flow:
 
@@ -24,16 +24,21 @@ Core flow:
 → select and combine the best patterns
 
 @artic start
-→ compile the brief + selected references into AI-native design docs
+→ author `.artic/strategy.json` and `docs/artic-strategy.md` as the design-direction contract
+→ run the compiler against that strategy
 → generate DESIGN.md and implementation guidance
 → validate outputs
 
 @artic show
-→ render the generated design docs into a safe static homepage preview
+→ render the strategy artifacts and generated design docs into a safe static homepage preview
 → write `.artic/show/index.html` without modifying app source files by default
+
+@artic review
+→ compare implementation against `.artic/strategy.json`, `docs/artic-strategy.md`, and `DESIGN.md`
+→ report token, hierarchy, spacing, accessibility, CTA, mobile, and reference-safety drift
 ```
 
-Artic is not a generic design prompt. Its core value is searching multiple professional/OSS design resources, extracting compatible patterns, and synthesizing one project-specific AI-native design direction.
+Artic is not a generic design prompt or passive generator. Its core value is searching multiple professional/OSS design resources, extracting compatible patterns, and binding one project-specific AI-native design direction into a strategy contract. Scripts are validator/compiler/renderer helpers; they do not make the design judgment for the agent.
 
 ## When to Use
 
@@ -102,14 +107,22 @@ For implementation details and regression-test shape for the init/start boundary
 
 ### `@artic start`
 
-Purpose: compile the Artic brief into AI-native design docs.
+Purpose: author an Artic strategy contract, then compile it into AI-native design docs.
 
-Executable path for agents/hosts that expose shell-backed commands:
+Public agent workflow:
+1. Read the completed intake, existing docs, and selected references.
+2. Make the LLM design-director judgment: audience promise, page thesis, reference synthesis, visual system, component priorities, accessibility stance, and implementation constraints.
+3. Write `.artic/strategy.json` and `docs/artic-strategy.md`.
+4. Run the deterministic compiler/validator scripts.
+
+Executable path for agents/hosts that expose shell-backed commands after strategy exists:
 
 ```bash
 python3 <artic-skill>/scripts/artic_start.py --root <project-root>
 # use --no-validate only when you intentionally want generation without the Artic validator
 ```
+
+Raw fallback behavior: `artic_start.py` is compiler-only. If `.artic/strategy.json` is missing, it writes `.artic/strategy-prompt.md` describing the strategy contract the agent must author and exits non-zero instead of inventing design direction.
 
 Required behavior:
 1. If `.artic/init-session.json` exists, read it first; its status is authoritative even when older `.artic/brief.json`/`.artic/references.json` files already exist.
@@ -121,9 +134,10 @@ Required behavior:
 7. Resolve conflicts explicitly based on user goal.
 8. Preserve arbitrary custom answer fields from init in `.artic/brief.json` under `requirements` or `constraints`; examples: `must_have_feature`, `brand_constraints`.
 9. Normalize long `project` answers into `project.name` and `project.description` instead of using the full requirement sentence as the title.
-10. Generate `DESIGN.md`, `docs/design-rules.md`, `docs/design-qa-checklist.md`, and `docs/homepage-design-prompt.md`.
-11. Validate with `scripts/validate_artic_outputs.py` when available.
-12. If Node is available, optionally run `npx -y @google/design.md lint DESIGN.md`.
+10. Author `.artic/strategy.json` and `docs/artic-strategy.md` as the design-direction contract.
+11. Generate `DESIGN.md`, `docs/design-rules.md`, `docs/design-qa-checklist.md`, and `docs/homepage-design-prompt.md` from the strategy.
+12. Validate with `scripts/validate_artic_outputs.py` when available.
+13. If Node is available, optionally run `npx -y @google/design.md lint DESIGN.md`.
 
 Lifecycle transition rule: `@artic start` is the only transition that may finalize a ready init session. If `.artic/init-session.json` is `collecting`, stop and ask the remaining questions; if it is `ready`, finalize it and then generate docs.
 
@@ -138,7 +152,7 @@ python3 <artic-skill>/scripts/artic_show.py --root <project-root>
 ```
 
 Required behavior:
-1. Require `DESIGN.md`, `docs/homepage-design-prompt.md`, `.artic/brief.json`, and `.artic/references.json` from a completed `@artic start` flow.
+1. Require `DESIGN.md`, `docs/homepage-design-prompt.md`, `.artic/brief.json`, `.artic/references.json`, and `.artic/strategy.json` from a completed `@artic start` flow.
 2. Generate `.artic/show/index.html` as a static preview of the homepage direction.
 3. Do not modify app/source files by default; downstream files such as `app/page.tsx`, `src/App.tsx`, or `pages/index.tsx` require an explicit future `--apply` or separate apply command.
 4. Include the reference-safety policy in the preview so the preview remains reference-informed, not reference-copied.
@@ -147,7 +161,7 @@ Required behavior:
 
 ### `@artic review` MVP-light
 
-After implementation, compare the current homepage against Artic docs. Check token consistency, typography hierarchy, spacing rhythm, CTA hierarchy, mobile behavior, accessibility basics, and no-copy reference safety.
+After implementation, compare the current homepage against `.artic/strategy.json`, `docs/artic-strategy.md`, and `DESIGN.md`. Check token consistency, typography hierarchy, spacing rhythm, CTA hierarchy, mobile behavior, accessibility basics, and no-copy reference safety. The MVP review output contract may be chat-first; future hosts may persist `.artic/review.json` and `docs/artic-review.md`, but do not claim those files exist unless the review workflow writes them.
 
 ### `@artic version`
 
@@ -240,7 +254,20 @@ Reference policy: extract reusable principles only; do not copy logos, trademark
 docs/artic-brief.md
 ```
 
-`@artic start` then creates:
+`@artic start` then authors the strategy contract:
+
+```text
+.artic/strategy.json
+docs/artic-strategy.md
+```
+
+Raw compiler fallback when strategy is missing:
+
+```text
+.artic/strategy-prompt.md
+```
+
+After strategy exists, the compiler creates:
 
 ```text
 DESIGN.md
@@ -262,6 +289,8 @@ Use presets only as search/synthesis starting points:
 python3 ~/.hermes/skills/creative/artic/scripts/validate_artic_outputs.py --root <project-root>
 python3 ~/.hermes/skills/creative/artic/scripts/search_reference_catalog.py --query "ai product developer saas premium" --limit 3
 ```
+
+Validation, compilation, and rendering scripts enforce and materialize the contract. They are not a design judgment source; `@artic start` must provide that judgment through `.artic/strategy.json`.
 
 ## Common Pitfalls
 

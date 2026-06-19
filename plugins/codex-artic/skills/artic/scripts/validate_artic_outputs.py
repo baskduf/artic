@@ -3,9 +3,11 @@ from __future__ import annotations
 import argparse, json, re
 from pathlib import Path
 
+from validate_artic_strategy import validate_root as validate_strategy_root
+
 REQUIRED_FILES = [
-    ".artic/brief.json", ".artic/intent.json", ".artic/references.json", ".artic/state.json",
-    "docs/artic-brief.md", "DESIGN.md", "docs/design-rules.md",
+    ".artic/brief.json", ".artic/intent.json", ".artic/references.json", ".artic/strategy.json", ".artic/state.json",
+    "docs/artic-brief.md", "DESIGN.md", "docs/artic-strategy.md", "docs/design-rules.md",
     "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md",
 ]
 REQUIRED_DESIGN_SECTIONS = [
@@ -70,6 +72,17 @@ def validate(root: Path) -> list[str]:
         if not (root / rel).exists():
             errors.append(f"ERROR: missing required file: {rel}")
 
+    errors.extend(validate_strategy_root(root))
+
+    strategy_doc_path = root / "docs" / "artic-strategy.md"
+    if strategy_doc_path.exists():
+        strategy_doc = strategy_doc_path.read_text(encoding="utf-8")
+        for required in ("## Design North Star", "## Reference Roles", "## Conflict Resolution", "## Implementation Guidance"):
+            if required not in strategy_doc:
+                errors.append(f"ERROR: docs/artic-strategy.md missing section: {required}")
+        if not has_reference_safety(strategy_doc):
+            errors.append("ERROR: docs/artic-strategy.md missing reference safety phrase")
+
     brief_path = root / ".artic" / "brief.json"
     if brief_path.exists():
         try:
@@ -118,8 +131,8 @@ def validate(root: Path) -> list[str]:
                 if key not in intent:
                     errors.append(f"ERROR: intent missing key: {key}")
             roles = intent.get("reference_roles", [])
-            if not isinstance(roles, list) or len(roles) < 3:
-                errors.append("ERROR: intent reference_roles must include at least 3 role assignments")
+            if not isinstance(roles, list) or len(roles) < 1:
+                errors.append("ERROR: intent reference_roles must include at least 1 role assignment")
             for role in roles if isinstance(roles, list) else []:
                 for key in ("role", "source_ids", "selection_reason"):
                     if key not in role:
@@ -133,16 +146,16 @@ def validate(root: Path) -> list[str]:
             errors.append(f"ERROR: invalid .artic/references.json: {exc}")
         else:
             selected = references.get("selected_sources", [])
-            if not isinstance(selected, list) or len(selected) < 3:
-                errors.append("ERROR: references selected_sources must include at least 3 candidates")
+            if not isinstance(selected, list) or len(selected) < 1:
+                errors.append("ERROR: references selected_sources must include at least 1 candidate")
             selected_ids = {str(row.get("id")) for row in selected if isinstance(row, dict) and row.get("id")}
             for row in selected:
                 for key in ("id", "reason"):
                     if key not in row:
                         errors.append(f"ERROR: reference candidate missing key: {key}")
             source_plan = references.get("source_plan", [])
-            if not isinstance(source_plan, list) or len(source_plan) < 3:
-                errors.append("ERROR: references source_plan must include at least 3 source plans")
+            if not isinstance(source_plan, list) or len(source_plan) < 1:
+                errors.append("ERROR: references source_plan must include at least 1 source plan")
             planned_ids = {str(row.get("source_id")) for row in source_plan if isinstance(row, dict) and row.get("source_id")}
             for row in source_plan if isinstance(source_plan, list) else []:
                 for key in ("source_id", "role", "extract", "transform", "avoid"):
@@ -211,7 +224,7 @@ def validate(root: Path) -> list[str]:
             errors.append(f"ERROR: localized outputs missing language marker: {brief_locale} in DESIGN.md")
 
     combined_docs = ""
-    for rel in ("docs/design-rules.md", "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md"):
+    for rel in ("docs/artic-strategy.md", "docs/design-rules.md", "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md"):
         path = root / rel
         if path.exists():
             text = path.read_text(encoding="utf-8")

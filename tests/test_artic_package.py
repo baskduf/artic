@@ -1,5 +1,5 @@
 from __future__ import annotations
-import functools, importlib, json, re, subprocess, sys, tarfile, tempfile, threading, urllib.error, zipfile
+import functools, importlib, importlib.util, json, re, subprocess, sys, tarfile, tempfile, threading, urllib.error, zipfile
 from email.message import Message
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -31,7 +31,9 @@ def assert_no_finalized_artic_outputs(root: Path):
         ".artic/brief.json",
         ".artic/references.json",
         ".artic/state.json",
+        ".artic/strategy.json",
         "docs/artic-brief.md",
+        "docs/artic-strategy.md",
         "DESIGN.md",
         "docs/design-rules.md",
         "docs/design-qa-checklist.md",
@@ -40,8 +42,82 @@ def assert_no_finalized_artic_outputs(root: Path):
     for rel in forbidden:
         assert not (root / rel).exists(), rel
 
+def write_fixture_strategy(root: Path, source_ids: list[str] | None = None, north_star: str | None = None) -> dict:
+    """Write a minimal valid strategy-first contract fixture for @artic start."""
+    source_ids = ["voltagent-awesome-design-md", "shadcn-ui", "material-design"] if source_ids is None else source_ids
+    north_star = north_star or "Make the product feel like a calm command center for proof-rich decisions."
+    reference_roles = [
+        {
+            "source_id": source_id,
+            "role": f"strategy_fixture_reference_{index + 1}",
+            "why_selected": "Fixture source used to verify strategy-driven compilation.",
+            "extract": ["tokens", "hierarchy", "component discipline"],
+            "avoid": ["exact layouts", "brand identity", "source copywriting"],
+        }
+        for index, source_id in enumerate(source_ids)
+    ]
+    strategy = {
+        "schema_version": 1,
+        "created_by": "agent",
+        "project_summary": {
+            "name": "Strategy Fixture Product",
+            "audience": "startup operators comparing AI workflow tools",
+            "primary_goal": "qualified demo requests",
+            "stack": "React Tailwind",
+        },
+        "design_north_star": north_star,
+        "target_user_interpretation": ["Users need clarity and trust before conversion."],
+        "conversion_strategy": {
+            "primary_cta": "Request demo",
+            "secondary_cta": "View example",
+            "proof_sequence": ["understand value", "inspect proof", "request demo"],
+        },
+        "reference_roles": reference_roles,
+        "conflict_resolution": [
+            {
+                "conflict": "clarity versus visual richness",
+                "decision": "prioritize clarity in the hero and move richness into supporting sections",
+                "rationale": "conversion depends on fast comprehension",
+            }
+        ],
+        "visual_system": {
+            "tone": ["clear", "trustworthy", "proof-rich"],
+            "color_roles": {"primary": "CTA", "surface": "content", "accent": "proof"},
+            "typography": "clear hierarchy",
+            "spacing": "mobile-first rhythm",
+        },
+        "component_rules": ["Use one dominant primary CTA."],
+        "motion_interaction": ["Respect reduced motion."],
+        "accessibility": ["WCAG AA contrast", "keyboard reachable controls"],
+        "implementation_guidance": ["Use semantic HTML and tokenized styles."],
+        "language": {
+            "locale": "en-US",
+            "output_language": "English",
+            "tone": "clear, professional, product-focused",
+            "preserve_terms": ["DESIGN.md", "AI-native", "Artic"],
+            "bilingual_terms": False,
+        },
+        "reference_policy": "artic-policy: reference-safety-v1",
+        "forbidden_copy_elements": ["logos", "trademarks", "proprietary illustrations", "exact layouts", "source copywriting"],
+    }
+    path = root / ".artic" / "strategy.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(strategy, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return strategy
+
+
+def load_strategy_validator_module():
+    path = ROOT / "skills" / "artic" / "scripts" / "validate_artic_strategy.py"
+    if not path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("validate_artic_strategy", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
 def test_json_manifests_parse():
-    for rel in [".claude-plugin/marketplace.json", ".agents/plugins/marketplace.json", "plugins/claude-artic/.claude-plugin/plugin.json", "plugins/codex-artic/.codex-plugin/plugin.json", "skills/artic/references/source-catalog.json", "skills/artic/templates/brief.schema.json"]:
+    for rel in [".claude-plugin/marketplace.json", ".agents/plugins/marketplace.json", "plugins/claude-artic/.claude-plugin/plugin.json", "plugins/codex-artic/.codex-plugin/plugin.json", "skills/artic/references/source-catalog.json", "skills/artic/templates/brief.schema.json", "skills/artic/templates/strategy.schema.json"]:
         json.loads((ROOT / rel).read_text())
 
 def test_skill_copies_are_in_sync():
@@ -114,9 +190,12 @@ def test_readmes_document_init_start_show_lifecycle_boundary():
     required_phrases = [
         ".artic/init-session.json",
         ".artic/show/index.html",
+        ".artic/strategy.json",
+        "docs/artic-strategy.md",
         "@artic init",
         "@artic start",
         "@artic show",
+        "@artic review",
         "python3 skills/artic/scripts/artic_show.py --root .",
     ]
     for rel in README_FILES:
@@ -176,6 +255,40 @@ def test_scaffold_and_validate_smoke():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], check=True)
+
+def test_strategy_validator_accepts_valid_strategy_when_available():
+    validator = load_strategy_validator_module()
+    if validator is None:
+        return
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_fixture_strategy(root)
+        if hasattr(validator, "validate"):
+            assert validator.validate(root) == []
+        else:
+            result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_strategy.py"), "--root", tmp], capture_output=True, text=True)
+            assert result.returncode == 0, result.stdout
+
+
+def test_strategy_validator_rejects_invalid_strategy_when_available():
+    validator = load_strategy_validator_module()
+    if validator is None:
+        return
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_fixture_strategy(root, source_ids=[])
+        path = root / ".artic" / "strategy.json"
+        strategy = json.loads(path.read_text(encoding="utf-8"))
+        strategy.pop("design_north_star")
+        path.write_text(json.dumps(strategy, indent=2) + "\n", encoding="utf-8")
+        if hasattr(validator, "validate"):
+            errors = validator.validate(root)
+            assert errors
+            assert any("north_star" in error or "source_ids" in error for error in errors)
+        else:
+            result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_strategy.py"), "--root", tmp], capture_output=True, text=True)
+            assert result.returncode != 0
+            assert "strategy" in result.stdout.lower()
 
 def test_catalog_search_smoke():
     result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/search_reference_catalog.py"), "--query", "ai product developer saas", "--limit", "3"], check=True, capture_output=True, text=True)
@@ -425,6 +538,93 @@ def test_artic_init_session_ready_payload_instructs_start_without_generating():
         assert_no_finalized_artic_outputs(root)
 
 
+def test_artic_start_ready_init_without_strategy_writes_prompt_and_refuses_generation():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        artic_init_session.create_or_update_session(
+            root,
+            "AI 회의록 서비스",
+            answers={
+                "project": "AI 회의록 서비스",
+                "audience": "스타트업 운영팀과 세일즈팀",
+                "goal": "데모 요청",
+                "vibe": "clean trustworthy mobile-first saas",
+                "stack": "React Tailwind",
+            },
+        )
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "strategy" in result.stdout.lower()
+        assert (root / ".artic" / "strategy-prompt.md").exists()
+        assert not (root / "DESIGN.md").exists()
+
+
+def test_artic_start_existing_brief_without_strategy_writes_prompt_and_refuses_generation():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Korean AI Meeting Assistant",
+            "--audience",
+            "startup operators and sales teams",
+            "--goal",
+            "demo requests",
+            "--vibe",
+            "clean trustworthy mobile-first saas",
+            "--stack",
+            "React Tailwind",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "strategy" in result.stdout.lower()
+        assert (root / ".artic" / "strategy-prompt.md").exists()
+        assert not (root / "DESIGN.md").exists()
+
+
+def test_artic_start_invalid_strategy_reports_validation_errors():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        write_fixture_strategy(root, source_ids=[])
+        path = root / ".artic" / "strategy.json"
+        strategy = json.loads(path.read_text(encoding="utf-8"))
+        strategy.pop("design_north_star")
+        path.write_text(json.dumps(strategy, indent=2) + "\n", encoding="utf-8")
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "strategy" in result.stdout.lower()
+        assert "design_north_star" in result.stdout or "reference_roles" in result.stdout
+
+
+def test_artic_start_valid_strategy_generates_strategy_doc_and_design_north_star():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        north_star = "Signal Lantern north-star phrase for strategy-first Artic generation."
+        strategy = write_fixture_strategy(root, north_star=north_star)
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+
+        payload = json.loads(result.stdout)
+        assert payload["validated"] is True
+        assert "docs/artic-strategy.md" in payload["generated_files"]
+        assert payload.get("strategy", {}).get("design_north_star") == strategy["design_north_star"]
+        assert (root / "docs" / "artic-strategy.md").exists()
+        design = (root / "DESIGN.md").read_text(encoding="utf-8")
+        assert north_star in design
+
 def test_artic_start_generates_and_validates_docs_from_init_outputs():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run([
@@ -447,6 +647,7 @@ def test_artic_start_generates_and_validates_docs_from_init_outputs():
             "--limit",
             "4",
         ], check=True)
+        write_fixture_strategy(Path(tmp))
         result = subprocess.run([
             sys.executable,
             str(ROOT / "skills/artic/scripts/artic_start.py"),
@@ -456,6 +657,7 @@ def test_artic_start_generates_and_validates_docs_from_init_outputs():
         payload = json.loads(result.stdout)
         assert payload["validated"] is True
         assert payload["generated_files"] == [
+            "docs/artic-strategy.md",
             "DESIGN.md",
             "docs/design-rules.md",
             "docs/design-qa-checklist.md",
@@ -493,6 +695,7 @@ def test_artic_start_finalizes_ready_init_session_before_generating_docs():
         )
         assert_no_finalized_artic_outputs(root)
 
+        write_fixture_strategy(root)
         result = subprocess.run([
             sys.executable,
             str(ROOT / "skills/artic/scripts/artic_start.py"),
@@ -603,6 +806,7 @@ def test_artic_start_finalizes_ready_session_over_stale_finalized_outputs():
             },
         )
 
+        write_fixture_strategy(root)
         subprocess.run([
             sys.executable,
             str(ROOT / "skills/artic/scripts/artic_start.py"),
@@ -641,6 +845,10 @@ def test_artic_start_synthesis_preserves_initialized_reference_selection():
             "--limit",
             "4",
         ], check=True)
+        root = Path(tmp)
+        initialized = json.loads((root / ".artic" / "references.json").read_text(encoding="utf-8"))["selected_sources"]
+        initialized_ids = {row["id"] for row in initialized}
+        write_fixture_strategy(root, source_ids=list(initialized_ids))
         subprocess.run([
             sys.executable,
             str(ROOT / "skills/artic/scripts/artic_start.py"),
@@ -648,14 +856,78 @@ def test_artic_start_synthesis_preserves_initialized_reference_selection():
             tmp,
         ], check=True, capture_output=True, text=True)
 
-        root = Path(tmp)
-        initialized = json.loads((root / ".artic" / "references.json").read_text(encoding="utf-8"))["selected_sources"]
-        initialized_ids = {row["id"] for row in initialized}
         rules = (root / "docs" / "design-rules.md").read_text(encoding="utf-8")
         synthesized_ids = set(re.findall(r"`([^`]+)`\)", rules))
         assert initialized_ids <= synthesized_ids
         assert "voltagent-awesome-design-md" not in synthesized_ids - initialized_ids
 
+
+def test_artic_start_rejects_invalid_runtime_inputs_before_writing_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Invalid Intent Fixture",
+            "--audience",
+            "operators",
+            "--goal",
+            "signup",
+            "--vibe",
+            "clean trustworthy saas",
+            "--stack",
+            "React",
+            "--limit",
+            "3",
+        ], check=True)
+        write_fixture_strategy(root)
+        (root / ".artic" / "intent.json").write_text(json.dumps({"schema_version": 1}) + "\n", encoding="utf-8")
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "invalid_runtime_inputs" in result.stdout
+        assert not (root / "DESIGN.md").exists()
+        state = json.loads((root / ".artic" / "state.json").read_text(encoding="utf-8"))
+        assert state.get("status") != "generated"
+
+
+def test_validator_rejects_missing_strategy_contract():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        (root / ".artic" / "strategy.json").unlink()
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert ".artic/strategy.json" in result.stdout
+
+
+def test_validator_rejects_invalid_strategy_contract():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        write_fixture_strategy(root, source_ids=[])
+        strategy_path = root / ".artic" / "strategy.json"
+        strategy = json.loads(strategy_path.read_text(encoding="utf-8"))
+        strategy.pop("design_north_star")
+        strategy_path.write_text(json.dumps(strategy, indent=2) + "\n", encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "strategy" in result.stdout.lower()
+        assert "design_north_star" in result.stdout or "reference_roles" in result.stdout
+
+
+def test_validator_accepts_scaffold_generated_strategy_artifacts():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        assert (root / ".artic" / "strategy.json").exists()
+        assert (root / "docs" / "artic-strategy.md").exists()
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode == 0, result.stdout
 
 def test_artic_init_role_assignments_only_reference_selected_sources():
     with tempfile.TemporaryDirectory() as tmp:
@@ -687,6 +959,7 @@ def test_artic_init_role_assignments_only_reference_selected_sources():
         }
         assert assigned_ids <= selected_ids
         assert assigned_ids <= planned_ids
+        write_fixture_strategy(Path(tmp))
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
         result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
         assert result.returncode == 0, result.stdout
@@ -712,6 +985,7 @@ def test_validator_rejects_role_assignments_for_unselected_sources():
 def test_artic_start_no_validate_skips_validator_but_writes_outputs():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        write_fixture_strategy(Path(tmp))
         result = subprocess.run([
             sys.executable,
             str(ROOT / "skills/artic/scripts/artic_start.py"),
@@ -797,6 +1071,7 @@ def test_artic_start_migrates_legacy_init_outputs_without_intent_file():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
         (Path(tmp) / ".artic" / "intent.json").unlink()
+        write_fixture_strategy(Path(tmp))
         result = subprocess.run([
             sys.executable,
             str(ROOT / "skills/artic/scripts/artic_start.py"),
@@ -806,7 +1081,7 @@ def test_artic_start_migrates_legacy_init_outputs_without_intent_file():
         payload = json.loads(result.stdout)
         assert payload["validated"] is True
         intent = json.loads((Path(tmp) / ".artic" / "intent.json").read_text(encoding="utf-8"))
-        assert intent["mapper"] == "artic-llm-first-contract-legacy-migration"
+        assert intent["mapper"] == "artic-internal-normalized-input-legacy-migration"
         assert intent["design_north_star"]
 
 
@@ -961,6 +1236,7 @@ def test_artic_start_finalizes_ready_init_session():
             "missing": [],
             "last_question_ids": [],
         })
+        write_fixture_strategy(root)
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
         assert (root / ".artic" / "brief.json").exists()
         assert (root / ".artic" / "references.json").exists()
@@ -1042,6 +1318,7 @@ def test_artic_start_preserves_korean_language_contract():
             "--limit",
             "4",
         ], check=True)
+        write_fixture_strategy(Path(tmp))
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
         root = Path(tmp)
         for rel in ["DESIGN.md", "docs/design-rules.md", "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md"]:
@@ -1130,6 +1407,8 @@ def test_artic_start_and_show_localize_korean_3d_runtime_preview():
             "--limit",
             "4",
         ], check=True)
+        refs = json.loads((root / ".artic" / "references.json").read_text(encoding="utf-8"))
+        write_fixture_strategy(root, source_ids=[row["id"] for row in refs["selected_sources"]])
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_show.py"), "--root", tmp], check=True, capture_output=True, text=True)
 
@@ -1602,6 +1881,9 @@ def test_marketplace_plugin_layout_smoke():
         "scripts/synthesize_reference_notes.py",
         "scripts/scaffold_artic_files.py",
         "scripts/validate_artic_outputs.py",
+        "scripts/validate_artic_strategy.py",
+        "templates/strategy.schema.json",
+        "templates/strategy-prompt.template.md",
         "templates/DESIGN.template.md",
         "templates/reference-synthesis.template.md",
     ]
@@ -1800,6 +2082,10 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (payload / "skills/artic/scripts/search_reference_catalog.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/synthesize_reference_notes.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/validate_artic_outputs.py").write_text("", encoding="utf-8")
+        (payload  / "skills/artic/scripts/validate_artic_strategy.py").write_text("", encoding="utf-8")
+        (payload  / "skills/artic/templates").mkdir(parents=True, exist_ok=True)
+        (payload  / "skills/artic/templates/strategy.schema.json").write_text("{}", encoding="utf-8")
+        (payload  / "skills/artic/templates/strategy-prompt.template.md").write_text("prompt", encoding="utf-8")
         (payload / "plugins/claude-artic/.claude-plugin").mkdir(parents=True)
         (payload / "plugins/claude-artic/.claude-plugin/plugin.json").write_text("{}", encoding="utf-8")
         (payload / "plugins/codex-artic/.codex-plugin").mkdir(parents=True)
@@ -1819,9 +2105,14 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (clean_payload / "skills/artic/references/source-catalog.json").write_text("[]", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/artic_init.py").write_text("", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/artic_start.py").write_text("", encoding="utf-8")
+        (clean_payload / "skills/artic/scripts/artic_version.py").write_text("", encoding="utf-8")
+        (clean_payload / "skills/artic/scripts/artic_update.py").write_text("", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/search_reference_catalog.py").write_text("", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/synthesize_reference_notes.py").write_text("", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/validate_artic_outputs.py").write_text("", encoding="utf-8")
+        (clean_payload  / "skills/artic/templates").mkdir(parents=True, exist_ok=True)
+        (clean_payload  / "skills/artic/templates/strategy.schema.json").write_text("{}", encoding="utf-8")
+        (clean_payload  / "skills/artic/templates/strategy-prompt.template.md").write_text("prompt", encoding="utf-8")
         (clean_payload / "plugins/claude-artic/.claude-plugin").mkdir(parents=True)
         (clean_payload / "plugins/claude-artic/.claude-plugin/plugin.json").write_text("{}", encoding="utf-8")
         (clean_payload / "plugins/codex-artic/.codex-plugin").mkdir(parents=True)
@@ -1830,7 +2121,7 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
             tf.add(clean_payload, arcname=f"artic-{project_version()}")
         result = subprocess.run([sys.executable, str(checker), "--require-payload", str(missing_command_tar)], capture_output=True, text=True)
         assert result.returncode != 0
-        assert "missing required payload skills/artic/scripts/artic_version.py" in result.stdout
+        assert "missing required payload skills/artic/scripts/validate_artic_strategy.py" in result.stdout
 
         good_zip = root / "metadata.whl"
         with zipfile.ZipFile(good_zip, "w") as zf:

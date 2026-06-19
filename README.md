@@ -14,20 +14,20 @@
 </div>
 
 ---
-Artic is a Claude/Codex-compatible skill for creating reference-driven, AI-native homepage design docs before implementation.
+Artic is a Claude/Codex-compatible agent design-direction protocol: a contract-bound LLM design director for homepage work before implementation.
 
 It keeps the public workflow small:
 
 ```text
 @artic init      # collect intent and references
-@artic start     # generate DESIGN.md and supporting docs
+@artic start     # author strategy artifacts, then compile DESIGN.md docs
 @artic show      # render a safe static preview
 @artic review    # check implementation against the docs
 ```
 
-The agent handles the internal work: interview the user, normalize the brief into search facets, search professional/open-source design references, synthesize reusable patterns, generate `DESIGN.md`, and validate the output.
+The agent handles the design-direction work: interview the user, normalize the brief into search facets, search professional/open-source design references, author `.artic/strategy.json`, compile it into `DESIGN.md` and supporting docs, then validate the output. Scripts are validator/compiler/renderer helpers; they do not replace the agent's design judgment or strategy authorship.
 
-> Artic does **not** clone reference sites. It extracts reusable principles from professional and OSS design systems, then compiles project-specific AI-native docs.
+> Artic does **not** clone reference sites. It extracts reusable principles from professional and OSS design systems, then binds implementation to project-specific strategy and AI-native docs.
 
 ## Quick Start
 
@@ -109,6 +109,8 @@ python3 skills/artic/scripts/artic_version.py --root .
 python3 skills/artic/scripts/artic_update.py --root .
 ```
 
+Helper scripts are deterministic helpers: `validate_artic_outputs.py` validates contracts, `artic_start.py` compiles agent-authored strategy into docs, and `artic_show.py` renders previews. They are not the source of design judgment; the public `@artic start` agent workflow supplies that judgment in `.artic/strategy.json`.
+
 ## What Changes In The Agent
 
 When invoked, Artic asks the agent to:
@@ -118,9 +120,9 @@ When invoked, Artic asks the agent to:
 3. Search multiple professional/OSS design resources instead of relying on one style.
 4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
 5. Resolve conflicts between references based on the user's project goal.
-6. Run `@artic start` to generate `DESIGN.md` and supporting docs.
-7. Run `@artic show` to render `.artic/show/index.html` as a safe static preview without changing app source files.
-8. Validate the generated design docs before implementation.
+6. Run `@artic start` so the public agent workflow authors `.artic/strategy.json`, writes `docs/artic-strategy.md`, then runs the compiler for `DESIGN.md` and supporting docs.
+7. Run `@artic show` to render `.artic/show/index.html` from strategy artifacts as a safe static preview without changing app source files.
+8. Run `@artic review` to compare implementation against `.artic/strategy.json`, `docs/artic-strategy.md`, and `DESIGN.md`, then validate the generated design docs before implementation.
 
 ## When To Use It
 
@@ -143,15 +145,17 @@ Skip it for:
 | --- | --- |
 | Start the design interview | `@artic init` |
 | Run the fast interview | `@artic init quick` |
-| Compile docs | `@artic start` |
-| Render a safe static preview | `@artic show` |
-| Review implementation | `@artic review the homepage against DESIGN.md` |
+| Author strategy and compile docs | `@artic start` |
+| Render a safe static preview from strategy artifacts | `@artic show` |
+| Review implementation against strategy + `DESIGN.md` | `@artic review the homepage against DESIGN.md` |
 | Check installed/latest version | `@artic version` |
 | Print safe update commands | `@artic update` |
 
 `@artic init` follows the user's language. For example, `한국어로 Artic init 진행해줘. AI 회의록 서비스 랜딩을 만들고 싶어.` starts a Korean interview, stores `ko-KR` in `.artic/init-session.json.language`, asks for missing fields, and does not generate design artifacts until `@artic start`.
 
 `@artic init` only saves draft interview state. Even when the required fields are complete, document generation starts only after the user explicitly runs `@artic start`.
+
+`@artic start` has two layers. The public agent workflow is the design-director layer: it uses the completed intake and references to author `.artic/strategy.json` and `docs/artic-strategy.md`, then invokes the deterministic compiler. The raw `artic_start.py` fallback is compiler-only: if strategy is missing, it writes `.artic/strategy-prompt.md` with the questions the agent must answer and exits non-zero instead of inventing design direction.
 
 ## Output Policy
 
@@ -161,13 +165,16 @@ Artic writes durable files instead of dumping long design prose into chat:
 .artic/init-session.json   # draft interview state from @artic init
 .artic/brief.json          # finalized by @artic start
 .artic/references.json     # finalized by @artic start
+.artic/strategy.json       # agent-authored design-direction contract for @artic start
+.artic/strategy-prompt.md  # raw compiler fallback prompt when strategy is missing
 .artic/state.json
 docs/artic-brief.md
+docs/artic-strategy.md     # human-readable strategy contract
 DESIGN.md
 docs/design-rules.md
 docs/design-qa-checklist.md
 docs/homepage-design-prompt.md
-.artic/show/index.html     # generated by @artic show; preview only, app files unchanged by default
+.artic/show/index.html     # generated by @artic show from strategy artifacts; preview only, app files unchanged by default
 ```
 
 ## Repository Layout

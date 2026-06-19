@@ -14,20 +14,20 @@
 </div>
 
 ---
-Artic は、実装前に参照駆動の AI-native ホームページデザイン文書を作る Claude/Codex 互換 skill です。
+Artic は、実装前にホームページのデザイン方向を契約として固定する Claude/Codex 互換の agent design-direction protocol であり、contract-bound LLM design director です。
 
 公開されるユーザーフローは小さくシンプルです:
 
 ```text
 @artic init      # 意図と参照を収集
-@artic start     # DESIGN.md と補助文書を生成
+@artic start     # strategy artifacts を作成し DESIGN.md 文書をコンパイル
 @artic show      # 安全な静的 preview をレンダリング
 @artic review    # 実装を文書に照らして確認
 ```
 
-エージェントは内部で、ユーザーへのヒアリング、brief の検索 facet 化、専門/OSS デザイン参照の検索、再利用可能なパターン合成、`DESIGN.md` 生成、出力検証を処理します。
+エージェントは内部で、ユーザーへのヒアリング、brief の検索 facet 化、専門/OSS デザイン参照の検索、`.artic/strategy.json` 作成、`DESIGN.md` と補助文書のコンパイル、出力検証を処理します。スクリプトは validator/compiler/renderer helper であり、design judgment や strategy authorship を置き換えません。
 
-> Artic は参照サイトを **クローンしません**。専門/OSS デザインシステムから再利用可能な原則を抽出し、プロジェクト固有の AI-native 文書へコンパイルします。
+> Artic は参照サイトを **クローンしません**。専門/OSS デザインシステムから再利用可能な原則を抽出し、project-specific な strategy と AI-native docs に実装を結び付けます。
 
 ## Quick Start
 
@@ -109,6 +109,8 @@ python3 skills/artic/scripts/artic_version.py --root .
 python3 skills/artic/scripts/artic_update.py --root .
 ```
 
+Helper scripts は deterministic helper です。`validate_artic_outputs.py` は contract を検証し、`artic_start.py` は agent-authored strategy を文書へコンパイルし、`artic_show.py` は preview をレンダリングします。design judgment の出所はスクリプトではなく、public `@artic start` agent workflow が作成する `.artic/strategy.json` です。
+
 ## What Changes In The Agent
 
 Artic が呼び出されると、エージェントは次を行います:
@@ -118,9 +120,9 @@ Artic が呼び出されると、エージェントは次を行います:
 3. Search multiple professional/OSS design resources instead of relying on one style.
 4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
 5. Resolve conflicts between references based on the user's project goal.
-6. `@artic start` で `DESIGN.md` と補助文書を生成します。
-7. `@artic show` で、アプリのソースファイルを変更しない安全な静的 preview `.artic/show/index.html` をレンダリングします。
-8. 実装前に生成されたデザイン文書を検証します。
+6. `@artic start` で public agent workflow が `.artic/strategy.json` を作成し、`docs/artic-strategy.md` を保存してから compiler を実行し、`DESIGN.md` と補助文書を生成します。
+7. `@artic show` で strategy artifacts に基づく安全な静的 preview `.artic/show/index.html` をレンダリングし、アプリのソースファイルは変更しません。
+8. `@artic review` で実装を `.artic/strategy.json`、`docs/artic-strategy.md`、`DESIGN.md` と比較し、生成されたデザイン文書を検証します。
 
 ## When To Use It
 
@@ -143,13 +145,15 @@ Artic が呼び出されると、エージェントは次を行います:
 | --- | --- |
 | デザインヒアリング開始 | `@artic init` |
 | 高速ヒアリング実行 | `@artic init quick` |
-| 文書をコンパイル | `@artic start` |
-| 安全な静的 preview をレンダリング | `@artic show` |
-| 実装をレビュー | `@artic review the homepage against DESIGN.md` |
+| strategy 作成と文書コンパイル | `@artic start` |
+| strategy artifacts から安全な静的 preview をレンダリング | `@artic show` |
+| strategy + `DESIGN.md` に対して実装をレビュー | `@artic review the homepage against DESIGN.md` |
 | インストール済み/最新バージョン確認 | `@artic version` |
 | 安全な更新コマンド表示 | `@artic update` |
 
 `@artic init` は会話型の draft 状態だけを `.artic/init-session.json` に保存します。必須情報がそろっても自動では文書を生成せず、ユーザーが明示的に `@artic start` を実行したときだけ生成を開始します。
+
+`@artic start` には 2 つの層があります。public agent workflow は design-director 層で、完了した intake と references を使って `.artic/strategy.json` と `docs/artic-strategy.md` を作成し、その後 deterministic compiler を実行します。raw `artic_start.py` fallback は compiler-only です。strategy が無い場合は design direction を作り上げず、`.artic/strategy-prompt.md` を書いて non-zero で終了します。
 
 ## Output Policy
 
@@ -159,13 +163,16 @@ Artic writes durable files instead of dumping long design prose into chat:
 .artic/init-session.json   # draft interview state from @artic init
 .artic/brief.json          # finalized by @artic start
 .artic/references.json     # finalized by @artic start
+.artic/strategy.json       # agent-authored design-direction contract for @artic start
+.artic/strategy-prompt.md  # strategy が無い時の raw compiler fallback prompt
 .artic/state.json
 docs/artic-brief.md
+docs/artic-strategy.md     # human-readable strategy contract
 DESIGN.md
 docs/design-rules.md
 docs/design-qa-checklist.md
 docs/homepage-design-prompt.md
-.artic/show/index.html     # @artic show が生成する preview 専用ファイル。デフォルトではアプリファイルを変更しません
+.artic/show/index.html     # strategy artifacts から @artic show が生成する preview 専用ファイル。デフォルトではアプリファイルを変更しません
 ```
 
 ## Repository Layout

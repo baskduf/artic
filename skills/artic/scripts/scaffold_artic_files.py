@@ -64,7 +64,7 @@ def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
     north_star = f"{project_name} should feel clear, trustworthy, and ready for implementation before it feels decorative."
     intent = {
         "schema_version": 1,
-        "mapper": "artic-llm-first-contract-scaffold",
+        "mapper": "artic-internal-normalized-input-scaffold",
         "selected_preset": "clean-saas",
         "design_north_star": north_star,
         "catalog_query": "homepage clean-saas trust mobile-first wcag",
@@ -78,6 +78,26 @@ def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
             {"role": "homepage_patterns", "source_ids": ["voltagent-awesome-design-md"], "selection_reason": "Use compatible homepage and SaaS reference patterns."},
             {"role": "token_accessibility", "source_ids": ["material-design"], "selection_reason": "Preserve token and accessibility discipline."},
         ],
+    }
+    strategy = {
+        "schema_version": 1,
+        "created_by": "agent-assisted",
+        "project_summary": f"{project_name} is a scaffolded homepage for early adopters and buyers, optimized for waitlist signup.",
+        "design_north_star": north_star,
+        "target_user_interpretation": "Visitors need a fast explanation, immediate proof, and a low-friction path to join the waitlist.",
+        "conversion_strategy": "Use one primary waitlist CTA in the hero and final section, with proof and feature clarity reducing hesitation between them.",
+        "reference_roles": [
+            {"source_id": "google-design-md", "role": "output_contract", "why_selected": "Keep generated DESIGN.md structured and machine-readable.", "extract": ["tokens", "validation"], "avoid": ["generic prose only"]},
+            {"source_id": "voltagent-awesome-design-md", "role": "homepage_patterns", "why_selected": "Use compatible homepage and SaaS reference patterns.", "extract": ["layout", "cta", "proof"], "avoid": ["exact layouts"]},
+            {"source_id": "material-design", "role": "token_accessibility", "why_selected": "Preserve token and accessibility discipline.", "extract": ["tokens", "accessibility", "components"], "avoid": ["brand identity"]},
+        ],
+        "conflict_resolution": "When references disagree, prefer the project conversion goal, WCAG AA accessibility, and original visual identity over any single reference source.",
+        "visual_system": "Clean SaaS hierarchy with role-based blue primary, restrained accent use, generous whitespace, clear typographic scale, and subtle surfaces.",
+        "component_rules": "Buttons, cards, forms, proof strips, feature blocks, FAQ, and final CTA must use documented tokens and have one clear job per component.",
+        "accessibility": "Target WCAG AA contrast, visible focus states, semantic controls, labeled forms, readable line lengths, and reduced decorative density on mobile.",
+        "implementation_guidance": "Build a mobile-first hero, proof strip, feature sections, trust/comparison block, waitlist form, FAQ, and final CTA using DESIGN.md tokens.",
+        "reference_policy": "artic-policy: reference-safety-v1",
+        "forbidden_copy_elements": ["logos", "trademarks", "proprietary illustrations", "exact layouts", "source copywriting"],
     }
     brief = {
         "artic_version": "0.3.0",
@@ -119,12 +139,18 @@ def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
         ],
         "synthesis": "Clean SaaS hierarchy with token discipline and mobile-first accessibility.",
     }
-    state = {"artic_version": "0.3.0", "last_generated_at": now, "status": "scaffolded", "language": language, "intent_path": ".artic/intent.json"}
+    state = {"artic_version": "0.3.0", "last_generated_at": now, "status": "scaffolded", "language": language, "intent_path": ".artic/intent.json", "strategy_path": ".artic/strategy.json"}
     write(root / ".artic" / "intent.json", json.dumps(intent, indent=2, ensure_ascii=False) + "\n")
+    write(root / ".artic" / "strategy.json", json.dumps(strategy, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "brief.json", json.dumps(brief, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "references.json", json.dumps(references, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "state.json", json.dumps(state, indent=2, ensure_ascii=False) + "\n")
     write(root / "docs" / "artic-brief.md", f"# Artic Brief\n\nProject: {project_name}\nLanguage: {language['locale']} / {language['output_language']}\n\n{policy}\n")
+    roles_md = "\n".join(
+        f"- `{role['source_id']}` as **{role['role']}** — {role['why_selected']} Extract: {', '.join(role['extract'])}. Avoid: {', '.join(role['avoid'])}."
+        for role in strategy["reference_roles"]
+    )
+    write(root / "docs" / "artic-strategy.md", f"# Artic Strategy: {project_name}\n\n{language_info}\n\n{policy}\n\n## Project Summary\n\n{strategy['project_summary']}\n\n## Design North Star\n\n{strategy['design_north_star']}\n\n## Target User Interpretation\n\n{strategy['target_user_interpretation']}\n\n## Conversion Strategy\n\n{strategy['conversion_strategy']}\n\n## Reference Roles\n\n{roles_md}\n\n## Conflict Resolution\n\n{strategy['conflict_resolution']}\n\n## Visual System\n\n{strategy['visual_system']}\n\n## Component Rules\n\n{strategy['component_rules']}\n\n## Accessibility\n\n{strategy['accessibility']}\n\n## Implementation Guidance\n\n{strategy['implementation_guidance']}\n\n## Forbidden Copy Elements\n\n- logos\n- trademarks\n- proprietary illustrations\n- exact layouts\n- source copywriting\n")
     design = f'''---
 version: alpha
 name: "{project_name}"

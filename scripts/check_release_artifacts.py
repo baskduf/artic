@@ -19,6 +19,9 @@ REQUIRED_PLUGIN_FILES = [
     "skills/artic/scripts/search_reference_catalog.py",
     "skills/artic/scripts/synthesize_reference_notes.py",
     "skills/artic/scripts/validate_artic_outputs.py",
+    "skills/artic/scripts/validate_artic_strategy.py",
+    "skills/artic/templates/strategy.schema.json",
+    "skills/artic/templates/strategy-prompt.template.md",
     "plugins/claude-artic/.claude-plugin/plugin.json",
     "plugins/codex-artic/.codex-plugin/plugin.json",
 ]
