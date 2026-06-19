@@ -7,15 +7,6 @@
     <strong>더 나은 홈페이지를 위한 레퍼런스 기반 AI-native 디자인 문서.</strong>
   </p>
 
-  <p>
-    <img alt="Claude Skill" src="https://img.shields.io/badge/Claude-Skill-D97745?style=for-the-badge" />
-    <img alt="Codex Plugin" src="https://img.shields.io/badge/Codex-Plugin-black?style=for-the-badge" />
-    <img alt="DESIGN.md" src="https://img.shields.io/badge/DESIGN.md-AI_Native-39C5BB?style=for-the-badge" />
-    <img alt="License MIT" src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" />
-    <a href="https://github.com/baskduf/artic/actions/workflows/ci.yml">
-      <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/baskduf/artic/ci.yml?branch=main&label=CI&style=for-the-badge" />
-    </a>
-  </p>
 
   <p>
     <a href="README.md">English</a> | 한국어 | <a href="README.ja.md">日本語</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文（台灣）</a>

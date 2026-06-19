@@ -211,6 +211,32 @@ def strategy_doc(brief: dict[str, Any], strategy: dict[str, Any]) -> str:
     ])
 
 
+def overview(brief: dict[str, Any], references: dict[str, Any]) -> str:
+    project_obj = brief.get("project")
+    style_obj = brief.get("style")
+    implementation_obj = brief.get("implementation")
+    project = project_obj if isinstance(project_obj, dict) else {}
+    style = style_obj if isinstance(style_obj, dict) else {}
+    implementation = implementation_obj if isinstance(implementation_obj, dict) else {}
+    audience = ", ".join(str(item) for item in project.get("target_users", []) if item) or "the target audience"
+    goal = str(project.get("primary_goal") or "the primary conversion goal")
+    impressions = ", ".join(str(item) for item in style.get("desired_impression", []) if item) or "clear, trustworthy, modern"
+    stack = str(implementation.get("stack") or "unspecified stack")
+    ref_count = len(references.get("selected_sources", [])) if isinstance(references.get("selected_sources"), list) else 0
+    locale = str(brief_language(brief).get("locale") or "en-US")
+    if locale.startswith("ko"):
+        return (
+            f"{project_name(brief)}는 {audience}를 위한 홈페이지 방향입니다. "
+            f"이 페이지는 {impressions} 인상으로 {goal}을 이끌어야 하며, 구현 스택은 {stack}입니다. "
+            f"아래 시스템은 {ref_count or '선택된'}개의 Artic 레퍼런스 소스를 원본 그대로 복제하지 않고 토큰, 컴포넌트, 레이아웃 규칙, QA 가드레일로 변환합니다."
+        )
+    return (
+        f"{project_name(brief)} is a homepage direction for {audience}. "
+        f"The page should drive {goal} with a {impressions} impression, implemented in {stack}. "
+        f"The system below turns {ref_count or 'the selected'} Artic reference sources into original tokens, components, layout rules, and QA guardrails."
+    )
+
+
 def replace_policy_text(text: str, block: str) -> str:
     if f"{POLICY_MARKER}\n{POLICY}" in text:
         return text.replace(f"{POLICY_MARKER}\n{POLICY}", block)
@@ -253,6 +279,7 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
     design = design.replace("{{PROJECT_NAME}}", yaml_double_quoted(name))
     design = design.replace("{{DESIGN_DESCRIPTION}}", yaml_double_quoted(description))
     overview_text = "\n\n".join([
+        overview(brief, references),
         as_markdown(strategy.get("project_summary", "")),
         language,
         "### Target User Interpretation",

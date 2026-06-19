@@ -86,6 +86,13 @@ Default interview questions:
 10. Tech stack?
 11. Accessibility target? Default: WCAG AA.
 12. Existing docs that must be reflected?
+13. May Artic search/use owned or clearly licensed public assets, or should external sources stay as reference principles only?
+
+External reference vs external asset boundary:
+- External references are design/runtime sources used for reusable principles, interaction patterns, accessibility/performance constraints, token relationships, and implementation guidance.
+- External assets are concrete media that can appear in the generated site: GLB files, images, models, icons, textures, fonts, illustrations, or similar files.
+- Unless the user explicitly allows asset usage, treat all external sources as reference-principles only.
+- If the user allows asset usage, use only user-owned assets or license-verifiable public assets such as CC0/CC-BY/public-domain/MIT/Apache-2.0 where appropriate, and record source URL, license, and attribution in `docs/artic-brief.md` or implementation docs.
 
 Fast path: if user says `@artic init quick`, ask only product, audience, goal, vibe, and references.
 
@@ -125,10 +132,12 @@ Required behavior:
 5. Search/combine multiple professional/OSS design sources.
 6. Extract reusable design principles only.
 7. Resolve conflicts explicitly based on user goal.
-8. Author `.artic/strategy.json` and `docs/artic-strategy.md` as the design-direction contract.
-9. Generate `DESIGN.md`, `docs/design-rules.md`, `docs/design-qa-checklist.md`, and `docs/homepage-design-prompt.md` from the strategy.
-10. Validate with `scripts/validate_artic_outputs.py` when available.
-11. If Node is available, optionally run `npx -y @google/design.md lint DESIGN.md`.
+8. Preserve arbitrary custom answer fields from init in `.artic/brief.json` under `requirements` or `constraints`; examples: `must_have_feature`, `brand_constraints`.
+9. Normalize long `project` answers into `project.name` and `project.description` instead of using the full requirement sentence as the title.
+10. Author `.artic/strategy.json` and `docs/artic-strategy.md` as the design-direction contract.
+11. Generate `DESIGN.md`, `docs/design-rules.md`, `docs/design-qa-checklist.md`, and `docs/homepage-design-prompt.md` from the strategy.
+12. Validate with `scripts/validate_artic_outputs.py` when available.
+13. If Node is available, optionally run `npx -y @google/design.md lint DESIGN.md`.
 
 Lifecycle transition rule: `@artic start` is the only transition that may finalize a ready init session. If `.artic/init-session.json` is `collecting`, stop and ask the remaining questions; if it is `ready`, finalize it and then generate docs.
 
@@ -147,7 +156,8 @@ Required behavior:
 2. Generate `.artic/show/index.html` as a static preview of the homepage direction.
 3. Do not modify app/source files by default; downstream files such as `app/page.tsx`, `src/App.tsx`, or `pages/index.tsx` require an explicit future `--apply` or separate apply command.
 4. Include the reference-safety policy in the preview so the preview remains reference-informed, not reference-copied.
-5. Return JSON with `preview_file` and `modified_app_files` for verification.
+5. If selected reference roles include `3d_runtime`, render a runtime-aware preview structure such as a `model-viewer`/Three.js placeholder, central interaction zone, poster/reduced-motion fallback notes, and asset-license reminders instead of a generic landing-page-only preview.
+6. Return JSON with `preview_file` and `modified_app_files` for verification.
 
 ### `@artic review` MVP-light
 
