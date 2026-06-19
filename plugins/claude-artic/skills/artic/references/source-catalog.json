@@ -2439,5 +2439,937 @@
       "motion-sensitive-audience"
     ],
     "application_guidance": "Use this to define purposeful interaction motion, layout transitions, gestures, and presence patterns; include reduced-motion, performance, and restraint rules in the final design docs."
+  },
+  {
+    "id": "razorpay-blade",
+    "name": "Razorpay Blade Design System",
+    "type": "oss-fintech-design-system",
+    "url": "https://blade.razorpay.com/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/razorpay/blade/master/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "fintech",
+      "payments",
+      "design-system",
+      "react",
+      "react-native",
+      "tokens",
+      "accessibility",
+      "forms"
+    ],
+    "strengths": [
+      "fintech-grade component discipline",
+      "cross-platform React and React Native coverage",
+      "payment and merchant workflow fit"
+    ],
+    "use_for": [
+      "payment products",
+      "merchant dashboards",
+      "financial forms",
+      "cross-platform design systems"
+    ],
+    "product_fit": [
+      "fintech",
+      "payments",
+      "merchant-tools",
+      "dashboard",
+      "mobile-app",
+      "enterprise",
+      "saas"
+    ],
+    "visual_traits": [
+      "trustworthy",
+      "operational",
+      "clear",
+      "consistent",
+      "fintech-grade"
+    ],
+    "page_patterns": [
+      "payment-operations",
+      "merchant-dashboard",
+      "forms",
+      "alerts",
+      "settings",
+      "financial-workflows"
+    ],
+    "implementation_fit": [
+      "react",
+      "react-native",
+      "tokens",
+      "components",
+      "accessibility",
+      "figma"
+    ],
+    "extraction_targets": [
+      "component-discipline",
+      "payment-ux",
+      "cross-platform-tokens",
+      "accessibility-patterns",
+      "form-states"
+    ],
+    "avoid_when": [
+      "pure-editorial-marketing",
+      "playful-consumer-brand",
+      "non-financial-visual-inspiration"
+    ],
+    "application_guidance": "Use this for fintech-grade component discipline, payment workflow clarity, and cross-platform token structure; translate its operational patterns into original merchant, finance, or trust-heavy product interfaces."
+  },
+  {
+    "id": "semi-design",
+    "name": "Semi Design",
+    "type": "oss-enterprise-design-system",
+    "url": "https://semi.design/en-US/start/introduction",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/DouyinFE/semi-design/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "enterprise",
+      "react",
+      "tokens",
+      "i18n",
+      "rtl",
+      "dark-mode",
+      "designops",
+      "components"
+    ],
+    "strengths": [
+      "large token set",
+      "internationalization and RTL coverage",
+      "enterprise React component depth"
+    ],
+    "use_for": [
+      "globalized SaaS",
+      "admin consoles",
+      "creator platforms",
+      "enterprise tools"
+    ],
+    "product_fit": [
+      "enterprise",
+      "saas",
+      "dashboard",
+      "global-product",
+      "creator-tool",
+      "admin"
+    ],
+    "visual_traits": [
+      "modern",
+      "flexible",
+      "token-rich",
+      "enterprise-grade",
+      "systematic"
+    ],
+    "page_patterns": [
+      "admin-console",
+      "data-tables",
+      "forms",
+      "dashboards",
+      "settings",
+      "globalized-ui"
+    ],
+    "implementation_fit": [
+      "react",
+      "typescript",
+      "tokens",
+      "i18n",
+      "rtl",
+      "figma",
+      "designops"
+    ],
+    "extraction_targets": [
+      "token-scale",
+      "i18n-rules",
+      "dark-mode",
+      "enterprise-components",
+      "design-to-code"
+    ],
+    "avoid_when": [
+      "simple-static-landing",
+      "non-technical-brand-site",
+      "minimal-one-page"
+    ],
+    "application_guidance": "Use this for global enterprise surfaces, token-rich component systems, and internationalized admin UX; adapt its i18n, dark-mode, and DesignOps patterns into project-specific product architecture."
+  },
+  {
+    "id": "vant-mobile-ui",
+    "name": "Vant Mobile UI",
+    "type": "oss-mobile-commerce-ui-library",
+    "url": "https://vant-ui.github.io/vant/#/en-US",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/youzan/vant/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "mobile",
+      "commerce",
+      "vue",
+      "components",
+      "forms",
+      "mini-app",
+      "i18n",
+      "dark-mode"
+    ],
+    "strengths": [
+      "mobile-first commerce components",
+      "compact form and picker patterns",
+      "multi-language mobile web coverage"
+    ],
+    "use_for": [
+      "mobile commerce",
+      "H5 apps",
+      "mini-app-like product flows",
+      "checkout-adjacent forms"
+    ],
+    "product_fit": [
+      "mobile-commerce",
+      "marketplace",
+      "retail",
+      "consumer-app",
+      "mini-program",
+      "mobile-first"
+    ],
+    "visual_traits": [
+      "compact",
+      "mobile-native",
+      "commerce-oriented",
+      "efficient",
+      "app-like"
+    ],
+    "page_patterns": [
+      "product-list",
+      "product-detail",
+      "checkout-controls",
+      "forms",
+      "pickers",
+      "action-sheets"
+    ],
+    "implementation_fit": [
+      "vue",
+      "nuxt",
+      "mobile-web",
+      "components",
+      "theming",
+      "i18n"
+    ],
+    "extraction_targets": [
+      "mobile-components",
+      "commerce-patterns",
+      "form-controls",
+      "picker-behavior",
+      "app-like-navigation"
+    ],
+    "avoid_when": [
+      "desktop-enterprise-dashboard",
+      "editorial-landing-page",
+      "non-mobile-product"
+    ],
+    "application_guidance": "Use this for mobile commerce density, app-like interaction controls, and checkout-adjacent form behavior; convert its component taxonomy into original mobile-first product flows."
+  },
+  {
+    "id": "sgds",
+    "name": "Singapore Government Design System",
+    "type": "oss-government-design-system",
+    "url": "https://www.designsystem.tech.gov.sg/",
+    "license": "MIT/open-source ecosystem",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/GovTechSG/sgds/master/README.md",
+        "kind": "markdown",
+        "license": "MIT/open-source ecosystem"
+      }
+    ],
+    "tags": [
+      "government",
+      "accessibility",
+      "public-service",
+      "trust",
+      "forms",
+      "templates",
+      "tokens",
+      "asia"
+    ],
+    "strengths": [
+      "Asian public-service design system",
+      "templates and blocks",
+      "trust-heavy form and content guidance"
+    ],
+    "use_for": [
+      "public services",
+      "regulated services",
+      "trust-heavy forms",
+      "civic content pages"
+    ],
+    "product_fit": [
+      "government",
+      "regulated",
+      "public-service",
+      "forms",
+      "trust-heavy",
+      "asia"
+    ],
+    "visual_traits": [
+      "official",
+      "accessible",
+      "reliable",
+      "structured",
+      "mobile-friendly"
+    ],
+    "page_patterns": [
+      "public-service-content",
+      "forms",
+      "templates",
+      "blocks",
+      "navigation",
+      "service-flows"
+    ],
+    "implementation_fit": [
+      "web-components",
+      "css",
+      "tokens",
+      "templates",
+      "public-service"
+    ],
+    "extraction_targets": [
+      "service-templates",
+      "form-patterns",
+      "trust-signals",
+      "accessibility",
+      "content-structure"
+    ],
+    "avoid_when": [
+      "playful-consumer-brand",
+      "luxury-editorial",
+      "highly-expressive-marketing"
+    ],
+    "application_guidance": "Use this for accessible public-service structure, official content hierarchy, and trust-heavy forms; translate the service patterns into product-specific IA while keeping government identity cues out of private brands."
+  },
+  {
+    "id": "base-ui",
+    "name": "Base UI",
+    "type": "oss-accessible-component-primitives",
+    "url": "https://base-ui.com/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/mui/base-ui/master/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "unstyled",
+      "react",
+      "components",
+      "primitives",
+      "aria",
+      "design-system"
+    ],
+    "strengths": [
+      "unstyled accessible primitives",
+      "modern React composition model",
+      "design-system-friendly state and behavior"
+    ],
+    "use_for": [
+      "custom component systems",
+      "accessible behavior",
+      "unstyled primitives",
+      "interaction states"
+    ],
+    "product_fit": [
+      "design-system",
+      "saas",
+      "developer-tool",
+      "web-app",
+      "accessibility-heavy"
+    ],
+    "visual_traits": [
+      "unstyled",
+      "composable",
+      "behavior-focused",
+      "systematic",
+      "accessible"
+    ],
+    "page_patterns": [
+      "dialogs",
+      "menus",
+      "popovers",
+      "forms",
+      "interactive-states",
+      "component-library"
+    ],
+    "implementation_fit": [
+      "react",
+      "aria",
+      "components",
+      "unstyled",
+      "css-integration"
+    ],
+    "extraction_targets": [
+      "component-behavior",
+      "state-attributes",
+      "focus-management",
+      "composition-model",
+      "accessibility"
+    ],
+    "avoid_when": [
+      "visual-inspiration-only",
+      "non-react-stack",
+      "static-marketing-page"
+    ],
+    "application_guidance": "Use this as a behavior layer for original visual systems: extract focus, state, and ARIA interaction models, then pair them with project-specific tokens and visual references."
+  },
+  {
+    "id": "react-aria",
+    "name": "React Aria",
+    "type": "oss-accessibility-primitives",
+    "url": "https://react-spectrum.adobe.com/react-aria/",
+    "license": "Apache-2.0",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/adobe/react-spectrum/main/README.md",
+        "kind": "markdown",
+        "license": "Apache-2.0"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "i18n",
+      "react",
+      "aria",
+      "hooks",
+      "components",
+      "keyboard",
+      "screen-reader"
+    ],
+    "strengths": [
+      "deep accessibility behavior",
+      "internationalization primitives",
+      "keyboard and screen-reader coverage"
+    ],
+    "use_for": [
+      "accessible component behavior",
+      "globalized UI",
+      "keyboard interaction",
+      "screen-reader-friendly products"
+    ],
+    "product_fit": [
+      "accessibility-heavy",
+      "global-product",
+      "web-app",
+      "saas",
+      "design-system",
+      "forms"
+    ],
+    "visual_traits": [
+      "behavioral",
+      "inclusive",
+      "internationalized",
+      "systematic",
+      "unstyled"
+    ],
+    "page_patterns": [
+      "forms",
+      "collections",
+      "overlays",
+      "selection-controls",
+      "navigation",
+      "interaction-states"
+    ],
+    "implementation_fit": [
+      "react",
+      "hooks",
+      "aria",
+      "i18n",
+      "components",
+      "accessibility"
+    ],
+    "extraction_targets": [
+      "keyboard-models",
+      "screen-reader-behavior",
+      "i18n-patterns",
+      "interaction-hooks",
+      "component-semantics"
+    ],
+    "avoid_when": [
+      "visual-style-source",
+      "non-react-stack",
+      "brand-moodboard"
+    ],
+    "application_guidance": "Use this for inclusive interaction behavior and internationalized component semantics; combine its accessibility models with project-owned styling, copy, and layout decisions."
+  },
+  {
+    "id": "web-awesome",
+    "name": "Web Awesome",
+    "type": "oss-web-components-design-system",
+    "url": "https://www.webawesome.com/",
+    "license": "MIT core / Pro assets separate",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/shoelace-style/webawesome/main/README.md",
+        "kind": "markdown",
+        "license": "MIT core / Pro assets separate"
+      }
+    ],
+    "tags": [
+      "web-components",
+      "framework-agnostic",
+      "components",
+      "themes",
+      "css-variables",
+      "accessibility",
+      "localization"
+    ],
+    "strengths": [
+      "framework-agnostic components",
+      "theme and CSS variable model",
+      "web component delivery"
+    ],
+    "use_for": [
+      "framework-neutral design systems",
+      "web component libraries",
+      "themeable product UI"
+    ],
+    "product_fit": [
+      "developer-tool",
+      "design-system",
+      "saas",
+      "web-app",
+      "multi-framework"
+    ],
+    "visual_traits": [
+      "themeable",
+      "componentized",
+      "modern",
+      "framework-neutral",
+      "systematic"
+    ],
+    "page_patterns": [
+      "component-library",
+      "forms",
+      "navigation",
+      "settings",
+      "themeable-ui",
+      "docs"
+    ],
+    "implementation_fit": [
+      "web-components",
+      "html",
+      "css-variables",
+      "themes",
+      "localization"
+    ],
+    "extraction_targets": [
+      "web-component-patterns",
+      "theme-variables",
+      "component-taxonomy",
+      "localization",
+      "native-web-ui"
+    ],
+    "avoid_when": [
+      "native-mobile-only",
+      "pro-asset-copying",
+      "visual-inspiration-only"
+    ],
+    "application_guidance": "Use this for framework-neutral component strategy and themeable web UI; focus on open-core component taxonomy and CSS variable patterns while keeping premium assets and identity choices separate."
+  },
+  {
+    "id": "utopia-fluid-responsive-design",
+    "name": "Utopia Fluid Responsive Design",
+    "type": "responsive-design-methodology",
+    "url": "https://utopia.fyi/",
+    "license": "public web tool / terms vary",
+    "live_sources": [
+      {
+        "url": "https://utopia.fyi/",
+        "kind": "html",
+        "license": "public web tool / terms vary"
+      }
+    ],
+    "tags": [
+      "responsive",
+      "typography",
+      "spacing",
+      "fluid-type",
+      "css",
+      "tokens",
+      "clamp"
+    ],
+    "strengths": [
+      "fluid typography scales",
+      "responsive spacing model",
+      "tokenizable clamp-based formulas"
+    ],
+    "use_for": [
+      "responsive type scales",
+      "fluid spacing",
+      "homepage typography rhythm",
+      "design-token generation"
+    ],
+    "product_fit": [
+      "landing-page",
+      "content-heavy",
+      "saas",
+      "editorial",
+      "marketing-site",
+      "design-system"
+    ],
+    "visual_traits": [
+      "fluid",
+      "responsive",
+      "rhythmic",
+      "typographic",
+      "systematic"
+    ],
+    "page_patterns": [
+      "hero",
+      "content-sections",
+      "typography-scale",
+      "responsive-layout",
+      "spacing-system"
+    ],
+    "implementation_fit": [
+      "css",
+      "clamp",
+      "tokens",
+      "responsive-design",
+      "typography"
+    ],
+    "extraction_targets": [
+      "fluid-type",
+      "fluid-space",
+      "clamp-formulas",
+      "responsive-tokens",
+      "typographic-rhythm"
+    ],
+    "avoid_when": [
+      "fixed-pixel-design",
+      "native-only-ui",
+      "teams-without-css-control"
+    ],
+    "application_guidance": "Use this to create fluid typography and spacing rules that scale across devices; translate its formulas into project token ranges and verify readability, zoom, and layout stability."
+  },
+  {
+    "id": "w3c-wai-designing-accessibility",
+    "name": "W3C WAI Designing for Web Accessibility",
+    "type": "accessibility-design-guidance",
+    "url": "https://www.w3.org/WAI/tips/designing/",
+    "license": "W3C Document License",
+    "live_sources": [
+      {
+        "url": "https://www.w3.org/WAI/tips/designing/",
+        "kind": "html",
+        "license": "W3C Document License"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "design",
+      "wcag",
+      "forms",
+      "contrast",
+      "motion",
+      "navigation",
+      "content"
+    ],
+    "strengths": [
+      "designer-friendly accessibility checklist",
+      "clear visual and interaction tips",
+      "bridge from WCAG to design decisions"
+    ],
+    "use_for": [
+      "accessible visual rules",
+      "form feedback",
+      "contrast guidance",
+      "motion controls",
+      "design QA"
+    ],
+    "product_fit": [
+      "accessibility-heavy",
+      "public-service",
+      "saas",
+      "commerce",
+      "content-heavy",
+      "regulated"
+    ],
+    "visual_traits": [
+      "inclusive",
+      "clear",
+      "usable",
+      "robust",
+      "accessible"
+    ],
+    "page_patterns": [
+      "forms",
+      "navigation",
+      "feedback",
+      "content-hierarchy",
+      "media",
+      "motion-controls"
+    ],
+    "implementation_fit": [
+      "web",
+      "design-qa",
+      "wcag",
+      "content",
+      "forms"
+    ],
+    "extraction_targets": [
+      "accessibility-checklist",
+      "contrast",
+      "labels",
+      "feedback",
+      "navigation",
+      "motion-control"
+    ],
+    "avoid_when": [
+      "visual-inspiration-only",
+      "brand-style-source"
+    ],
+    "application_guidance": "Use this as a designer-readable accessibility checklist; turn its tips into concrete color, label, feedback, navigation, and motion requirements inside project-specific design docs."
+  },
+  {
+    "id": "observable-plot",
+    "name": "Observable Plot",
+    "type": "oss-data-visualization-grammar",
+    "url": "https://observablehq.com/plot/",
+    "license": "ISC",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/observablehq/plot/main/README.md",
+        "kind": "markdown",
+        "license": "ISC"
+      }
+    ],
+    "tags": [
+      "dataviz",
+      "charts",
+      "javascript",
+      "grammar-of-graphics",
+      "svg",
+      "dashboard",
+      "analytics"
+    ],
+    "strengths": [
+      "concise chart grammar",
+      "marks/scales/transforms model",
+      "exploratory visualization examples"
+    ],
+    "use_for": [
+      "analytics dashboards",
+      "exploratory charts",
+      "data storytelling",
+      "visualization specs"
+    ],
+    "product_fit": [
+      "analytics",
+      "dashboard",
+      "data-product",
+      "observability",
+      "research-tool",
+      "saas"
+    ],
+    "visual_traits": [
+      "data-rich",
+      "exploratory",
+      "structured",
+      "analytical",
+      "clear"
+    ],
+    "page_patterns": [
+      "charts",
+      "dashboards",
+      "faceted-views",
+      "data-storytelling",
+      "reports"
+    ],
+    "implementation_fit": [
+      "javascript",
+      "svg",
+      "charts",
+      "d3-ecosystem",
+      "analytics"
+    ],
+    "extraction_targets": [
+      "chart-marks",
+      "scales",
+      "transforms",
+      "facets",
+      "exploratory-patterns"
+    ],
+    "avoid_when": [
+      "decorative-illustration",
+      "non-data-homepage",
+      "native-mobile-only"
+    ],
+    "application_guidance": "Use this for clear exploratory chart structure and dashboard storytelling; map its marks, scales, and transforms into product-specific chart guidance and tokenized visual hierarchy."
+  },
+  {
+    "id": "vega-lite",
+    "name": "Vega-Lite",
+    "type": "oss-declarative-visualization-grammar",
+    "url": "https://vega.github.io/vega-lite/",
+    "license": "BSD-3-Clause",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/vega/vega-lite/main/README.md",
+        "kind": "markdown",
+        "license": "BSD-3-Clause"
+      }
+    ],
+    "tags": [
+      "dataviz",
+      "json",
+      "charts",
+      "declarative",
+      "interaction",
+      "dashboard",
+      "analytics"
+    ],
+    "strengths": [
+      "declarative JSON chart specs",
+      "structured encoding channels",
+      "composition and interaction model"
+    ],
+    "use_for": [
+      "AI-readable chart specs",
+      "standardized dashboards",
+      "interactive analytics",
+      "data visualization contracts"
+    ],
+    "product_fit": [
+      "analytics",
+      "dashboard",
+      "data-product",
+      "developer-tool",
+      "research-tool",
+      "enterprise"
+    ],
+    "visual_traits": [
+      "structured",
+      "declarative",
+      "analytical",
+      "systematic",
+      "portable"
+    ],
+    "page_patterns": [
+      "chart-spec",
+      "dashboards",
+      "interactive-filters",
+      "reports",
+      "data-exploration"
+    ],
+    "implementation_fit": [
+      "json",
+      "charts",
+      "visualization-grammar",
+      "analytics",
+      "interactive"
+    ],
+    "extraction_targets": [
+      "encoding-channels",
+      "chart-composition",
+      "interaction-selections",
+      "transforms",
+      "spec-contracts"
+    ],
+    "avoid_when": [
+      "pure-brand-marketing",
+      "custom-art-directed-visuals",
+      "no-data-product"
+    ],
+    "application_guidance": "Use this when Artic needs AI-readable chart contracts and repeatable dashboard grammar; connect declarative encodings to project tokens, accessibility labels, and interaction rules."
+  },
+  {
+    "id": "tokens-studio-figma",
+    "name": "Tokens Studio for Figma",
+    "type": "oss-design-token-workflow",
+    "url": "https://docs.tokens.studio/",
+    "license": "MIT plugin repository",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/tokens-studio/figma-plugin/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "tokens",
+      "figma",
+      "design-system",
+      "sync",
+      "dtcg",
+      "themes",
+      "handoff",
+      "workflow"
+    ],
+    "strengths": [
+      "Figma token workflow",
+      "GitHub sync and JSON storage",
+      "semantic token and theme management"
+    ],
+    "use_for": [
+      "design-to-code token handoff",
+      "Figma token governance",
+      "theme workflows",
+      "multi-brand systems"
+    ],
+    "product_fit": [
+      "design-system",
+      "multi-brand",
+      "developer-tool",
+      "saas",
+      "agency",
+      "ai-native-docs"
+    ],
+    "visual_traits": [
+      "workflow-oriented",
+      "token-driven",
+      "systematic",
+      "handoff-ready",
+      "collaborative"
+    ],
+    "page_patterns": [
+      "token-workflow",
+      "theme-management",
+      "handoff",
+      "design-system-docs",
+      "quality-gate"
+    ],
+    "implementation_fit": [
+      "figma",
+      "json",
+      "tokens",
+      "dtcg",
+      "github-sync",
+      "themes"
+    ],
+    "extraction_targets": [
+      "token-taxonomy",
+      "semantic-tokens",
+      "figma-sync",
+      "theme-workflow",
+      "handoff-process"
+    ],
+    "avoid_when": [
+      "visual-style-source",
+      "teams-without-figma",
+      "single-static-page"
+    ],
+    "application_guidance": "Use this to bridge design and code token workflows; translate Figma sync, semantic token, and theme management patterns into Artic handoff docs without making Figma tooling mandatory."
   }
 ]
