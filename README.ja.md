@@ -23,59 +23,59 @@
 </div>
 
 ---
-Artic は、ホームページのデザイン意図を AI-native なデザイン文書へ変換する Claude/Codex 互換 skill です。
+Artic は、実装前に参照駆動の AI-native ホームページデザイン文書を作る Claude/Codex 互換 skill です。
 
-内部パイプラインではなく、ユーザーフローを中心に設計されています:
+公開されるユーザーフローは小さくシンプルです:
 
 ```text
-@artic init
-@artic init quick
-@artic start
-@artic review
+@artic init      # 意図と参照を収集
+@artic start     # DESIGN.md と補助文書を生成
+@artic review    # 実装を文書に照らして確認
 ```
 
-エージェントは、ユーザーへのヒアリング、brief の検索 facet 化、専門/OSS デザイン参照の検索、パターン合成、`DESIGN.md` 生成、出力検証を処理します。
+エージェントは内部で、ユーザーへのヒアリング、brief の検索 facet 化、専門/OSS デザイン参照の検索、再利用可能なパターン合成、`DESIGN.md` 生成、出力検証を処理します。
 
-> Artic は参照サイトを **クローンしません**。
-> 専門/OSS デザインシステムから再利用可能な原則を抽出し、プロジェクト固有の AI-native 文書へコンパイルします。
+> Artic は参照サイトを **クローンしません**。専門/OSS デザインシステムから再利用可能な原則を抽出し、プロジェクト固有の AI-native 文書へコンパイルします。
 
 ## Quick Start
 
 ### Claude Code marketplace
+
+marketplace パッケージをインストールします:
 
 ```text
 /plugin marketplace add baskduf/artic
 /plugin install claude-artic@artic
 ```
 
-Then invoke the bundled skill:
+同梱 skill を実行します:
 
 ```text
 /claude-artic:artic init
 /claude-artic:artic start
 ```
 
-Or ask naturally:
+自然文でも依頼できます:
 
 ```text
-Use Artic to create AI-native design docs before building this homepage.
+このホームページを作る前に Artic で AI-native デザイン文書を作って。
 ```
 
 ### Codex marketplace
 
-リポジトリの現在のデフォルトブランチから marketplace を追加します:
+現在のデフォルトブランチから marketplace を追加します:
 
 ```bash
 codex plugin marketplace add baskduf/artic
 ```
 
-GitHub Release が存在する場合は、明示的なタグに固定できます:
+安定したインストールが必要な場合はリリースタグに固定します:
 
 ```bash
 codex plugin marketplace add baskduf/artic@<tag>
 ```
 
-Then open the plugin browser and install `codex-artic`:
+プラグインブラウザから `codex-artic` をインストールします:
 
 ```text
 /plugins
@@ -87,7 +87,7 @@ Then open the plugin browser and install `codex-artic`:
 codex plugin add codex-artic@artic
 ```
 
-Then ask Codex:
+Codex に依頼します:
 
 ```text
 @artic init
@@ -116,10 +116,10 @@ python3 skills/artic/scripts/artic_update.py --root .
 
 ## What Changes In The Agent
 
-When invoked, Artic asks the agent to:
+Artic が呼び出されると、エージェントは次を行います:
 
-1. Accept vague homepage/design requests without jumping straight to implementation.
-2. Run `@artic init` to collect product, audience, goal, vibe, constraints, and references.
+1. ホームページ/デザイン依頼が曖昧な場合、実装前に立ち止まります。
+2. `@artic init` で product、audience、goal、vibe、constraints、references を収集します。
 3. Search multiple professional/OSS design resources instead of relying on one style.
 4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
 5. Resolve conflicts between references based on the user's project goal.
@@ -128,14 +128,14 @@ When invoked, Artic asks the agent to:
 
 ## When To Use It
 
-Use it for:
+使う場面:
 
 - Homepages, landing pages, product pages, and website redesigns.
 - Projects with weak or missing design docs.
 - AI-native design documentation before coding.
 - Reference-driven design direction without exact brand copying.
 
-Skip it for:
+使わない場面:
 
 - Exact cloning of a website or brand.
 - Logo, trademark, illustration, or copyrighted asset copying.
@@ -143,41 +143,14 @@ Skip it for:
 
 ## How Users Control It
 
-Design interview:
-
-```text
-@artic init
-```
-
-Fast interview:
-
-```text
-@artic init quick
-```
-
-Compile docs:
-
-```text
-@artic start
-```
-
-Review implementation:
-
-```text
-@artic review the homepage against DESIGN.md
-```
-
-インストール済みの Artic バージョンと最新 GitHub Release を確認します:
-
-```text
-@artic version
-```
-
-Claude Code、Codex、または local checkout 向けの安全な更新コマンドを表示します:
-
-```text
-@artic update
-```
+| 目的 | コマンド |
+| --- | --- |
+| デザインヒアリング開始 | `@artic init` |
+| 高速ヒアリング実行 | `@artic init quick` |
+| 文書をコンパイル | `@artic start` |
+| 実装をレビュー | `@artic review the homepage against DESIGN.md` |
+| インストール済み/最新バージョン確認 | `@artic version` |
+| 安全な更新コマンド表示 | `@artic update` |
 
 ## Output Policy
 

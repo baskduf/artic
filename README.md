@@ -23,32 +23,32 @@
 </div>
 
 ---
-Artic is a Claude/Codex-compatible skill that turns homepage design intent into AI-native design docs.
+Artic is a Claude/Codex-compatible skill for creating reference-driven, AI-native homepage design docs before implementation.
 
-It is designed around the user flow, not the pipeline:
+It keeps the public workflow small:
 
 ```text
-@artic init
-@artic init quick
-@artic start
-@artic review
+@artic init      # collect intent and references
+@artic start     # generate DESIGN.md and supporting docs
+@artic review    # check implementation against the docs
 ```
 
-The agent handles the internal workflow: interview the user, normalize the brief into search facets, search professional/open-source design references, synthesize compatible patterns, generate `DESIGN.md`, and validate the output.
+The agent handles the internal work: interview the user, normalize the brief into search facets, search professional/open-source design references, synthesize reusable patterns, generate `DESIGN.md`, and validate the output.
 
-> Artic does **not** clone reference sites.
-> It extracts reusable principles from professional and OSS design systems, then compiles project-specific AI-native docs.
+> Artic does **not** clone reference sites. It extracts reusable principles from professional and OSS design systems, then compiles project-specific AI-native docs.
 
 ## Quick Start
 
 ### Claude Code marketplace
+
+Install the marketplace package:
 
 ```text
 /plugin marketplace add baskduf/artic
 /plugin install claude-artic@artic
 ```
 
-Then invoke the bundled skill:
+Run the bundled skill:
 
 ```text
 /claude-artic:artic init
@@ -63,19 +63,19 @@ Use Artic to create AI-native design docs before building this homepage.
 
 ### Codex marketplace
 
-Add the marketplace from the repository's current default branch:
+Add the marketplace from the current default branch:
 
 ```bash
 codex plugin marketplace add baskduf/artic
 ```
 
-When a GitHub Release exists, you can pin an explicit tag instead:
+Pin a released version when you want a stable install:
 
 ```bash
 codex plugin marketplace add baskduf/artic@<tag>
 ```
 
-Then open the plugin browser and install `codex-artic`:
+Install `codex-artic` from the plugin browser:
 
 ```text
 /plugins
@@ -118,7 +118,7 @@ python3 skills/artic/scripts/artic_update.py --root .
 
 When invoked, Artic asks the agent to:
 
-1. Accept vague homepage/design requests without jumping straight to implementation.
+1. Pause before implementation when a homepage/design request is vague.
 2. Run `@artic init` to collect product, audience, goal, vibe, constraints, and references.
 3. Search multiple professional/OSS design resources instead of relying on one style.
 4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
@@ -143,41 +143,14 @@ Skip it for:
 
 ## How Users Control It
 
-Design interview:
-
-```text
-@artic init
-```
-
-Fast interview:
-
-```text
-@artic init quick
-```
-
-Compile docs:
-
-```text
-@artic start
-```
-
-Review implementation:
-
-```text
-@artic review the homepage against DESIGN.md
-```
-
-Check the installed Artic version and latest GitHub release:
-
-```text
-@artic version
-```
-
-Print safe update commands for Claude Code, Codex, or a local checkout:
-
-```text
-@artic update
-```
+| Goal | Command |
+| --- | --- |
+| Start the design interview | `@artic init` |
+| Run a fast interview | `@artic init quick` |
+| Compile docs | `@artic start` |
+| Review implementation | `@artic review the homepage against DESIGN.md` |
+| Check installed/latest version | `@artic version` |
+| Print safe update commands | `@artic update` |
 
 ## Output Policy
 

@@ -23,59 +23,59 @@
 </div>
 
 ---
-Artic 是一个兼容 Claude/Codex 的 skill，用于把首页设计意图转成 AI-native 设计文档。
+Artic 是一个兼容 Claude/Codex 的 skill，用于在实现前创建参考驱动的 AI-native 首页设计文档。
 
-它围绕用户流程设计，而不是暴露内部流水线：
+它把公开用户流程保持得很小：
 
 ```text
-@artic init
-@artic init quick
-@artic start
-@artic review
+@artic init      # 收集意图和参考
+@artic start     # 生成 DESIGN.md 和辅助文档
+@artic review    # 按文档检查实现
 ```
 
-Agent 会处理内部流程：访谈用户、把 brief 归一化为搜索 facets、检索专业/开源设计参考、合成兼容模式、生成 `DESIGN.md` 并验证输出。
+Agent 会在内部处理用户访谈、把 brief 归一化为搜索 facets、检索专业/开源设计参考、合成可复用模式、生成 `DESIGN.md` 并验证输出。
 
-> Artic **不会** 克隆参考网站。
-> 它从专业/OSS 设计系统中提取可复用原则，并编译成项目专属的 AI-native 文档。
+> Artic **不会** 克隆参考网站。它从专业/OSS 设计系统中提取可复用原则，并编译成项目专属的 AI-native 文档。
 
 ## Quick Start
 
 ### Claude Code marketplace
+
+安装 marketplace 包：
 
 ```text
 /plugin marketplace add baskduf/artic
 /plugin install claude-artic@artic
 ```
 
-Then invoke the bundled skill:
+运行内置 skill：
 
 ```text
 /claude-artic:artic init
 /claude-artic:artic start
 ```
 
-Or ask naturally:
+也可以用自然语言请求：
 
 ```text
-Use Artic to create AI-native design docs before building this homepage.
+在构建这个首页之前，用 Artic 创建 AI-native 设计文档。
 ```
 
 ### Codex marketplace
 
-从仓库当前默认分支添加 marketplace：
+从当前默认分支添加 marketplace：
 
 ```bash
 codex plugin marketplace add baskduf/artic
 ```
 
-如果存在 GitHub Release，可以改为固定明确标签：
+需要稳定安装时固定到发布标签：
 
 ```bash
 codex plugin marketplace add baskduf/artic@<tag>
 ```
 
-Then open the plugin browser and install `codex-artic`:
+在插件浏览器中安装 `codex-artic`：
 
 ```text
 /plugins
@@ -87,7 +87,7 @@ Then open the plugin browser and install `codex-artic`:
 codex plugin add codex-artic@artic
 ```
 
-Then ask Codex:
+然后向 Codex 请求：
 
 ```text
 @artic init
@@ -116,10 +116,10 @@ python3 skills/artic/scripts/artic_update.py --root .
 
 ## What Changes In The Agent
 
-When invoked, Artic asks the agent to:
+Artic 被调用后，Agent 会：
 
-1. Accept vague homepage/design requests without jumping straight to implementation.
-2. Run `@artic init` to collect product, audience, goal, vibe, constraints, and references.
+1. 当首页/设计请求很模糊时，先暂停而不是直接实现。
+2. 运行 `@artic init` 收集 product、audience、goal、vibe、constraints 和 references。
 3. Search multiple professional/OSS design resources instead of relying on one style.
 4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
 5. Resolve conflicts between references based on the user's project goal.
@@ -128,14 +128,14 @@ When invoked, Artic asks the agent to:
 
 ## When To Use It
 
-Use it for:
+适合用于：
 
 - Homepages, landing pages, product pages, and website redesigns.
 - Projects with weak or missing design docs.
 - AI-native design documentation before coding.
 - Reference-driven design direction without exact brand copying.
 
-Skip it for:
+不适合用于：
 
 - Exact cloning of a website or brand.
 - Logo, trademark, illustration, or copyrighted asset copying.
@@ -143,41 +143,14 @@ Skip it for:
 
 ## How Users Control It
 
-Design interview:
-
-```text
-@artic init
-```
-
-Fast interview:
-
-```text
-@artic init quick
-```
-
-Compile docs:
-
-```text
-@artic start
-```
-
-Review implementation:
-
-```text
-@artic review the homepage against DESIGN.md
-```
-
-检查已安装的 Artic 版本和最新 GitHub Release：
-
-```text
-@artic version
-```
-
-输出适用于 Claude Code、Codex 或 local checkout 的安全更新命令：
-
-```text
-@artic update
-```
+| 目标 | 命令 |
+| --- | --- |
+| 开始设计访谈 | `@artic init` |
+| 运行快速访谈 | `@artic init quick` |
+| 编译文档 | `@artic start` |
+| 审查实现 | `@artic review the homepage against DESIGN.md` |
+| 检查已安装/最新版本 | `@artic version` |
+| 输出安全更新命令 | `@artic update` |
 
 ## Output Policy
 
