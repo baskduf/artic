@@ -1,0 +1,11 @@
+{
+  "name": "claude-artic",
+  "version": "0.1.0",
+  "description": "Artic design onboarding skill for Claude Code.",
+  "skills": [
+    {
+      "name": "artic",
+      "path": "skills/artic"
+    }
+  ]
+}

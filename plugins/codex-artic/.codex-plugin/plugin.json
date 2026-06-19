@@ -1,0 +1,11 @@
+{
+  "name": "codex-artic",
+  "version": "0.1.0",
+  "description": "Artic design onboarding skill for Codex.",
+  "skills": [
+    {
+      "name": "artic",
+      "path": "skills/artic"
+    }
+  ]
+}
