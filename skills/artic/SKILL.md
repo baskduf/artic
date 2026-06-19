@@ -30,8 +30,8 @@ Core flow:
 → validate outputs
 
 @artic show
-→ render the strategy artifacts and generated design docs into a safe static homepage preview
-→ write `.artic/show/index.html` without modifying app source files by default
+→ render the strategy artifacts and sourced/generated assets into a provenance-recorded asset-first visual draft bundle
+→ write `.artic/show/` preview files without modifying app source files
 
 @artic review
 → compare implementation against `.artic/strategy.json`, `docs/artic-strategy.md`, and `DESIGN.md`
@@ -91,8 +91,9 @@ Default interview questions:
 External reference vs external asset boundary:
 - External references are design/runtime sources used for reusable principles, interaction patterns, accessibility/performance constraints, token relationships, and implementation guidance.
 - External assets are concrete media that can appear in the generated site: GLB files, images, models, icons, textures, fonts, illustrations, or similar files.
-- Unless the user explicitly allows asset usage, treat all external sources as reference-principles only.
-- If the user allows asset usage, use only user-owned assets or license-verifiable public assets such as CC0/CC-BY/public-domain/MIT/Apache-2.0 where appropriate, and record source URL, license, and attribution in `docs/artic-brief.md` or implementation docs.
+- `@artic start` still treats external sources as reference-principles unless the user explicitly allows asset usage.
+- `@artic show` may use sourced or generated assets for the preview bundle when doing so improves the first visual draft, but every asset must be recorded in `.artic/show/assets/manifest.json` and `.artic/show/report.json` with source/generation notes, license status when known, and preview-only status when unverified.
+- Unverified assets are allowed only inside the preview bundle as provenance-recorded, preview-only material. Do not claim production license clearance; production/apply review belongs to a future `@artic apply` flow or a separate implementation review.
 
 Fast path: if user says `@artic init quick`, ask only product, audience, goal, vibe, and references.
 
@@ -143,7 +144,7 @@ Lifecycle transition rule: `@artic start` is the only transition that may finali
 
 ### `@artic show`
 
-Purpose: render the current Artic design outputs into a safe static homepage preview.
+Purpose: render the current Artic strategy into a provenance-recorded, asset-first first visual draft bundle. The goal is a stronger strategy-grounded first visual draft by using sourced/generated assets when helpful, while recording where each asset came from and whether it is preview-only.
 
 Executable path for agents/hosts that expose shell-backed commands:
 
@@ -153,11 +154,14 @@ python3 <artic-skill>/scripts/artic_show.py --root <project-root>
 
 Required behavior:
 1. Require `DESIGN.md`, `docs/homepage-design-prompt.md`, `.artic/brief.json`, `.artic/references.json`, and `.artic/strategy.json` from a completed `@artic start` flow.
-2. Generate `.artic/show/index.html` as a static preview of the homepage direction.
-3. Do not modify app/source files by default; downstream files such as `app/page.tsx`, `src/App.tsx`, or `pages/index.tsx` require an explicit future `--apply` or separate apply command.
-4. Include the reference-safety policy in the preview so the preview remains reference-informed, not reference-copied.
-5. If selected reference roles include `3d_runtime`, render a runtime-aware preview structure such as a `model-viewer`/Three.js placeholder, central interaction zone, poster/reduced-motion fallback notes, and asset-license reminders instead of a generic landing-page-only preview.
-6. Return JSON with `preview_file` and `modified_app_files` for verification.
+2. Generate a strategy-grounded first visual draft bundle under `.artic/show/`, not just a minimal static preview.
+3. Prefer asset-first draft quality: use user-provided, sourced, or generated images/models/icons/textures when they improve the first visual draft, and fall back to styled placeholders only when assets are unavailable or inappropriate.
+4. Record provenance for every preview asset in `.artic/show/assets/manifest.json` and summarize asset decisions, gaps, and warnings in `.artic/show/report.json`.
+5. Mark unverified assets as preview-only/provenance-recorded. Do not state or imply production license clearance for unverified sourced/generated assets.
+6. Do not modify app/source files. Downstream files such as `app/page.tsx`, `src/App.tsx`, or `pages/index.tsx` are out of scope for `@artic show`; a future `@artic apply` or separate implementation review would handle production/apply decisions later.
+7. Include the reference-safety policy in the preview so the preview remains reference-informed, not reference-copied.
+8. If selected reference roles include `3d_runtime`, render a runtime-aware preview structure such as a `model-viewer`/Three.js placeholder, central interaction zone, poster/reduced-motion fallback notes, and asset provenance/license reminders instead of a generic landing-page-only preview.
+9. Return JSON with at least `preview_file`, `bundle_dir`, `asset_manifest`, `report_file`, and `modified_app_files` for verification.
 
 ### `@artic review` MVP-light
 
@@ -275,6 +279,21 @@ docs/design-rules.md
 docs/design-qa-checklist.md
 docs/homepage-design-prompt.md
 ```
+
+`@artic show` creates a provenance-recorded preview bundle:
+
+```text
+.artic/show/index.html
+.artic/show/styles.css
+.artic/show/tokens.json
+.artic/show/assets/manifest.json
+.artic/show/report.json
+.artic/show/critique.md
+.artic/show/selected.json
+.artic/show/iterations/<NNN>/...
+```
+
+Show bundles are preview-only and do not modify app source files. Unverified sourced/generated assets may be included for first-draft visual quality only when marked preview-only and provenance-recorded; production/apply clearance is out of scope for `@artic show` and belongs to future `@artic apply`/implementation review.
 
 Optional exports: `tailwind.theme.json`, `tokens.json`.
 
