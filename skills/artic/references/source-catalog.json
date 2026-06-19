@@ -1481,5 +1481,963 @@
       "consumer-brand"
     ],
     "risk_notes": "Not permissive OSS; use as high-level data UX reference only after license caution, and do not copy Elastic branding or component code."
+  },
+  {
+    "id": "wai-aria-apg",
+    "name": "WAI-ARIA Authoring Practices Guide",
+    "type": "accessibility-spec-patterns",
+    "url": "https://www.w3.org/WAI/ARIA/apg/",
+    "license": "W3C Document License / W3C Software License",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/w3c/aria-practices/main/README.md",
+        "kind": "markdown",
+        "license": "W3C"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "aria",
+      "keyboard",
+      "components",
+      "patterns",
+      "wcag",
+      "semantics"
+    ],
+    "strengths": [
+      "authoritative ARIA widget patterns",
+      "keyboard interaction guidance",
+      "semantic component examples"
+    ],
+    "use_for": [
+      "interactive component accessibility",
+      "keyboard behavior",
+      "semantic widget patterns"
+    ],
+    "product_fit": [
+      "accessibility-heavy",
+      "web-app",
+      "saas",
+      "design-system",
+      "forms",
+      "dashboard"
+    ],
+    "visual_traits": [
+      "behavioral",
+      "semantic",
+      "accessible",
+      "interaction-focused"
+    ],
+    "page_patterns": [
+      "dialogs",
+      "menus",
+      "tabs",
+      "accordions",
+      "forms",
+      "interactive-states"
+    ],
+    "implementation_fit": [
+      "html",
+      "javascript",
+      "aria",
+      "components",
+      "accessibility"
+    ],
+    "extraction_targets": [
+      "keyboard-interaction",
+      "aria-semantics",
+      "focus-management",
+      "component-behavior",
+      "accessibility"
+    ],
+    "avoid_when": [
+      "visual-style-only",
+      "brand-moodboard"
+    ],
+    "risk_notes": "Authoritative behavior source, not a visual style source; use to validate interaction semantics rather than page aesthetics."
+  },
+  {
+    "id": "wcag-quickref",
+    "name": "WCAG Quick Reference",
+    "type": "accessibility-standard-reference",
+    "url": "https://www.w3.org/WAI/WCAG22/quickref/",
+    "license": "W3C Document License",
+    "live_sources": [
+      {
+        "url": "https://www.w3.org/WAI/WCAG22/quickref/",
+        "kind": "html",
+        "license": "W3C Document License"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "wcag",
+      "contrast",
+      "forms",
+      "content",
+      "keyboard",
+      "compliance"
+    ],
+    "strengths": [
+      "authoritative WCAG success criteria",
+      "filterable accessibility requirements",
+      "broad design and content coverage"
+    ],
+    "use_for": [
+      "accessibility QA",
+      "contrast and content rules",
+      "compliance-oriented checklists"
+    ],
+    "product_fit": [
+      "accessibility-heavy",
+      "regulated",
+      "government",
+      "saas",
+      "commerce",
+      "public-service"
+    ],
+    "visual_traits": [
+      "standardized",
+      "compliance-focused",
+      "inclusive",
+      "robust"
+    ],
+    "page_patterns": [
+      "accessibility-checklist",
+      "forms",
+      "content-hierarchy",
+      "media",
+      "navigation"
+    ],
+    "implementation_fit": [
+      "web",
+      "qa",
+      "accessibility",
+      "content",
+      "forms"
+    ],
+    "extraction_targets": [
+      "wcag-criteria",
+      "contrast",
+      "keyboard",
+      "labels",
+      "error-prevention",
+      "accessibility-qa"
+    ],
+    "avoid_when": [
+      "visual-inspiration-only",
+      "fast-moodboard"
+    ],
+    "risk_notes": "Use as a standard and QA source; translate criteria into product-specific rules instead of dumping compliance prose into DESIGN.md."
+  },
+  {
+    "id": "inclusive-components",
+    "name": "Inclusive Components",
+    "type": "accessibility-pattern-library",
+    "url": "https://inclusive-components.design/",
+    "license": "public web content / copyright retained",
+    "live_sources": [
+      {
+        "url": "https://inclusive-components.design/",
+        "kind": "html",
+        "license": "public web content / copyright retained"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "inclusive-design",
+      "components",
+      "forms",
+      "content",
+      "patterns",
+      "usability"
+    ],
+    "strengths": [
+      "practical inclusive component explanations",
+      "edge-case thinking",
+      "content and interaction tradeoffs"
+    ],
+    "use_for": [
+      "human-readable accessibility guidance",
+      "component pitfalls",
+      "inclusive UX rationale"
+    ],
+    "product_fit": [
+      "accessibility-heavy",
+      "content-heavy",
+      "forms",
+      "saas",
+      "public-service",
+      "education"
+    ],
+    "visual_traits": [
+      "inclusive",
+      "plain",
+      "practical",
+      "content-aware"
+    ],
+    "page_patterns": [
+      "cards",
+      "menus",
+      "forms",
+      "notifications",
+      "content-structure",
+      "interactive-states"
+    ],
+    "implementation_fit": [
+      "html",
+      "css",
+      "javascript",
+      "components",
+      "accessibility"
+    ],
+    "extraction_targets": [
+      "inclusive-patterns",
+      "component-pitfalls",
+      "content-accessibility",
+      "forms",
+      "interaction-rationale"
+    ],
+    "avoid_when": [
+      "code-copy-needed",
+      "brand-style-source"
+    ],
+    "risk_notes": "Use for principles and pitfalls only; do not copy article text or examples verbatim."
+  },
+  {
+    "id": "a11y-project",
+    "name": "The A11Y Project",
+    "type": "accessibility-community-reference",
+    "url": "https://www.a11yproject.com/",
+    "license": "open-source project / site content terms vary",
+    "live_sources": [
+      {
+        "url": "https://www.a11yproject.com/",
+        "kind": "html",
+        "license": "open-source project / site content terms vary"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "checklist",
+      "beginner-friendly",
+      "wcag",
+      "content",
+      "qa",
+      "community"
+    ],
+    "strengths": [
+      "plain-language accessibility education",
+      "practical checklist framing",
+      "broad web accessibility topics"
+    ],
+    "use_for": [
+      "accessible-design checklist",
+      "team-readable QA",
+      "accessibility onboarding"
+    ],
+    "product_fit": [
+      "accessibility-heavy",
+      "startup",
+      "saas",
+      "content-heavy",
+      "public-service"
+    ],
+    "visual_traits": [
+      "plain-language",
+      "practical",
+      "educational",
+      "inclusive"
+    ],
+    "page_patterns": [
+      "qa-checklist",
+      "content-pages",
+      "forms",
+      "navigation",
+      "media"
+    ],
+    "implementation_fit": [
+      "web",
+      "qa",
+      "content",
+      "accessibility"
+    ],
+    "extraction_targets": [
+      "qa-checklist",
+      "plain-language-a11y",
+      "content-rules",
+      "forms",
+      "navigation"
+    ],
+    "avoid_when": [
+      "strict-legal-compliance-only",
+      "visual-style-only"
+    ],
+    "risk_notes": "Community reference; cross-check strict requirements against WCAG/WAI-ARIA before treating as normative."
+  },
+  {
+    "id": "dtcg-design-tokens",
+    "name": "Design Tokens Community Group Specification",
+    "type": "token-standard",
+    "url": "https://www.designtokens.org/",
+    "license": "W3C Community Group / spec terms",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/design-tokens/community-group/main/README.md",
+        "kind": "markdown",
+        "license": "W3C Community Group"
+      }
+    ],
+    "tags": [
+      "tokens",
+      "dtcg",
+      "design-system",
+      "schema",
+      "theming",
+      "interoperability",
+      "json"
+    ],
+    "strengths": [
+      "standardized token concepts",
+      "cross-tool interoperability",
+      "token naming and type guidance"
+    ],
+    "use_for": [
+      "DESIGN.md token structure",
+      "token export planning",
+      "theme interoperability"
+    ],
+    "product_fit": [
+      "design-system",
+      "developer-tool",
+      "saas",
+      "multi-platform",
+      "ai-native-docs"
+    ],
+    "visual_traits": [
+      "structured",
+      "token-driven",
+      "portable",
+      "systematic"
+    ],
+    "page_patterns": [
+      "token-spec",
+      "theme",
+      "design-doc",
+      "quality-gate"
+    ],
+    "implementation_fit": [
+      "json",
+      "tokens",
+      "dtcg",
+      "design-md",
+      "build-tools"
+    ],
+    "extraction_targets": [
+      "token-types",
+      "token-schema",
+      "aliases",
+      "theming",
+      "export"
+    ],
+    "avoid_when": [
+      "visual-inspiration-only",
+      "one-off-graphic"
+    ],
+    "risk_notes": "Standard source, not a style source; use for token architecture and validation language."
+  },
+  {
+    "id": "style-dictionary",
+    "name": "Style Dictionary",
+    "type": "oss-token-build-system",
+    "url": "https://styledictionary.com/",
+    "license": "Apache-2.0",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/style-dictionary/style-dictionary/main/README.md",
+        "kind": "markdown",
+        "license": "Apache-2.0"
+      }
+    ],
+    "tags": [
+      "tokens",
+      "build-system",
+      "css",
+      "ios",
+      "android",
+      "export",
+      "design-system"
+    ],
+    "strengths": [
+      "multi-platform token transforms",
+      "design token build pipeline",
+      "CSS/JS/native exports"
+    ],
+    "use_for": [
+      "token export guidance",
+      "multi-platform design docs",
+      "implementation handoff"
+    ],
+    "product_fit": [
+      "design-system",
+      "multi-platform",
+      "developer-tool",
+      "saas",
+      "mobile-app"
+    ],
+    "visual_traits": [
+      "systematic",
+      "portable",
+      "implementation-ready",
+      "token-driven"
+    ],
+    "page_patterns": [
+      "token-spec",
+      "handoff",
+      "theme",
+      "export"
+    ],
+    "implementation_fit": [
+      "javascript",
+      "css",
+      "ios",
+      "android",
+      "tokens",
+      "build-tools"
+    ],
+    "extraction_targets": [
+      "token-export",
+      "platform-mapping",
+      "build-pipeline",
+      "theme-architecture",
+      "handoff"
+    ],
+    "avoid_when": [
+      "visual-style-source",
+      "non-technical-brief"
+    ],
+    "risk_notes": "Implementation pipeline reference; pair with visual and accessibility sources for user-facing design direction."
+  },
+  {
+    "id": "tailwind-css",
+    "name": "Tailwind CSS",
+    "type": "oss-css-framework",
+    "url": "https://tailwindcss.com/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/tailwindlabs/tailwindcss/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "css",
+      "tailwind",
+      "utility-first",
+      "tokens",
+      "theme",
+      "responsive",
+      "web"
+    ],
+    "strengths": [
+      "utility-first implementation model",
+      "theme token conventions",
+      "responsive composition"
+    ],
+    "use_for": [
+      "Tailwind theme guidance",
+      "responsive spacing rules",
+      "implementation-ready class architecture"
+    ],
+    "product_fit": [
+      "saas",
+      "developer-tool",
+      "startup",
+      "landing-page",
+      "web-app",
+      "prototype"
+    ],
+    "visual_traits": [
+      "implementation-friendly",
+      "systematic",
+      "responsive",
+      "utility-driven"
+    ],
+    "page_patterns": [
+      "responsive-layout",
+      "theme",
+      "spacing",
+      "components",
+      "landing-page"
+    ],
+    "implementation_fit": [
+      "tailwind",
+      "css",
+      "react",
+      "web",
+      "theme"
+    ],
+    "extraction_targets": [
+      "theme-tokens",
+      "responsive-rules",
+      "spacing-scale",
+      "utility-composition",
+      "implementation-guidance"
+    ],
+    "avoid_when": [
+      "non-web-output",
+      "visual-moodboard-only"
+    ],
+    "risk_notes": "Use for implementation and token mapping, not as a visual identity; avoid generic Tailwind template sameness."
+  },
+  {
+    "id": "panda-css",
+    "name": "Panda CSS",
+    "type": "oss-styling-system",
+    "url": "https://panda-css.com/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/chakra-ui/panda/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "css-in-js",
+      "tokens",
+      "recipes",
+      "design-system",
+      "type-safe",
+      "theme",
+      "components"
+    ],
+    "strengths": [
+      "type-safe styling",
+      "token and recipe architecture",
+      "design-system-oriented CSS generation"
+    ],
+    "use_for": [
+      "component recipe structure",
+      "typed token systems",
+      "scalable theme architecture"
+    ],
+    "product_fit": [
+      "design-system",
+      "developer-tool",
+      "web-app",
+      "saas",
+      "multi-brand"
+    ],
+    "visual_traits": [
+      "structured",
+      "token-driven",
+      "componentized",
+      "implementation-ready"
+    ],
+    "page_patterns": [
+      "component-recipes",
+      "theme",
+      "tokens",
+      "variants",
+      "design-system"
+    ],
+    "implementation_fit": [
+      "css",
+      "typescript",
+      "tokens",
+      "recipes",
+      "components"
+    ],
+    "extraction_targets": [
+      "recipes",
+      "variants",
+      "theme-tokens",
+      "component-api",
+      "implementation-architecture"
+    ],
+    "avoid_when": [
+      "visual-style-only",
+      "non-technical-output"
+    ],
+    "risk_notes": "Implementation architecture reference; combine with visual references so Artic outputs design intent, not only code structure."
+  },
+  {
+    "id": "park-ui",
+    "name": "Park UI",
+    "type": "oss-ui-kit",
+    "url": "https://park-ui.com/",
+    "license": "MIT/open-source ecosystem",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/chakra-ui/park-ui/main/README.md",
+        "kind": "markdown",
+        "license": "MIT/open-source ecosystem"
+      }
+    ],
+    "tags": [
+      "components",
+      "panda-css",
+      "ark-ui",
+      "design-system",
+      "multi-framework",
+      "accessible",
+      "theme"
+    ],
+    "strengths": [
+      "designed components on accessible primitives",
+      "Panda CSS recipes",
+      "multi-framework component examples"
+    ],
+    "use_for": [
+      "modern component aesthetics",
+      "recipe-based component docs",
+      "design-system starter patterns"
+    ],
+    "product_fit": [
+      "saas",
+      "developer-tool",
+      "web-app",
+      "startup",
+      "design-system"
+    ],
+    "visual_traits": [
+      "modern",
+      "clean",
+      "componentized",
+      "themeable",
+      "accessible"
+    ],
+    "page_patterns": [
+      "components",
+      "cards",
+      "forms",
+      "docs",
+      "settings",
+      "cta"
+    ],
+    "implementation_fit": [
+      "panda-css",
+      "ark-ui",
+      "react",
+      "vue",
+      "solid",
+      "components"
+    ],
+    "extraction_targets": [
+      "component-recipes",
+      "variants",
+      "themeable-components",
+      "accessible-primitives",
+      "implementation-patterns"
+    ],
+    "avoid_when": [
+      "strict-brand-originality",
+      "non-component-output"
+    ],
+    "risk_notes": "Use as a component pattern source; avoid copying exact demo compositions or default visual treatment without project-specific tokens."
+  },
+  {
+    "id": "salesforce-lightning",
+    "name": "Salesforce Lightning Design System",
+    "type": "professional-design-system",
+    "url": "https://www.lightningdesignsystem.com/",
+    "license": "BSD-3-Clause source / CC-BY assets mixed",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/salesforce-ux/design-system/main/README.md",
+        "kind": "markdown",
+        "license": "BSD-3-Clause source / CC-BY assets mixed"
+      }
+    ],
+    "tags": [
+      "enterprise",
+      "crm",
+      "forms",
+      "data",
+      "components",
+      "dashboard",
+      "accessibility"
+    ],
+    "strengths": [
+      "enterprise CRM patterns",
+      "dense form/data layouts",
+      "mature component taxonomy"
+    ],
+    "use_for": [
+      "enterprise SaaS",
+      "CRM/admin workflows",
+      "data-entry and record pages"
+    ],
+    "product_fit": [
+      "enterprise",
+      "crm",
+      "dashboard",
+      "admin",
+      "forms",
+      "data"
+    ],
+    "visual_traits": [
+      "enterprise",
+      "structured",
+      "dense",
+      "trustworthy",
+      "component-rich"
+    ],
+    "page_patterns": [
+      "record-pages",
+      "forms",
+      "tables",
+      "dashboard",
+      "navigation",
+      "enterprise-proof"
+    ],
+    "implementation_fit": [
+      "components",
+      "design-system",
+      "enterprise",
+      "forms",
+      "data"
+    ],
+    "extraction_targets": [
+      "enterprise-layout",
+      "forms",
+      "record-patterns",
+      "component-taxonomy",
+      "data-density"
+    ],
+    "avoid_when": [
+      "consumer-brand",
+      "simple-marketing-page",
+      "permissive-assets-required"
+    ],
+    "risk_notes": "Source and assets have mixed licenses; extract abstract enterprise UX patterns only, not Salesforce branding, icons, illustrations, or exact component styling."
+  },
+  {
+    "id": "atlassian-design-system",
+    "name": "Atlassian Design System",
+    "type": "professional-design-system",
+    "url": "https://atlassian.design/",
+    "license": "Atlassian limited design-system license",
+    "live_sources": [
+      {
+        "url": "https://atlassian.design/",
+        "kind": "html",
+        "license": "Atlassian limited design-system license"
+      }
+    ],
+    "tags": [
+      "enterprise",
+      "collaboration",
+      "productivity",
+      "tokens",
+      "accessibility",
+      "ai-patterns",
+      "components"
+    ],
+    "strengths": [
+      "collaboration/productivity product patterns",
+      "well-documented tokens",
+      "enterprise workflow guidance"
+    ],
+    "use_for": [
+      "team collaboration products",
+      "workflow/productivity SaaS",
+      "token naming ideas"
+    ],
+    "product_fit": [
+      "productivity",
+      "collaboration",
+      "enterprise",
+      "developer-tool",
+      "saas",
+      "workflow-product"
+    ],
+    "visual_traits": [
+      "friendly-enterprise",
+      "clear",
+      "structured",
+      "collaborative",
+      "accessible"
+    ],
+    "page_patterns": [
+      "workflow-pages",
+      "navigation",
+      "collaboration",
+      "admin",
+      "settings",
+      "ai-patterns"
+    ],
+    "implementation_fit": [
+      "tokens",
+      "components",
+      "react",
+      "enterprise",
+      "web"
+    ],
+    "extraction_targets": [
+      "workflow-patterns",
+      "token-taxonomy",
+      "collaboration-ui",
+      "ai-patterns",
+      "accessibility"
+    ],
+    "avoid_when": [
+      "exact-brand-copy",
+      "unlicensed-component-use",
+      "consumer-lifestyle"
+    ],
+    "risk_notes": "License is limited; use as high-level pattern/reference guidance only and do not copy Atlassian branding, exact component styling, token names wholesale, or illustrations."
+  },
+  {
+    "id": "apple-hig",
+    "name": "Apple Human Interface Guidelines",
+    "type": "platform-design-guidelines",
+    "url": "https://developer.apple.com/design/human-interface-guidelines",
+    "license": "Apple documentation terms",
+    "live_sources": [
+      {
+        "url": "https://developer.apple.com/design/human-interface-guidelines",
+        "kind": "html",
+        "license": "Apple documentation terms"
+      }
+    ],
+    "tags": [
+      "mobile",
+      "ios",
+      "macos",
+      "platform",
+      "interaction",
+      "motion",
+      "accessibility"
+    ],
+    "strengths": [
+      "platform-native interaction guidance",
+      "mobile/app UX principles",
+      "motion and input conventions"
+    ],
+    "use_for": [
+      "mobile-first app landing pages",
+      "iOS/macOS product constraints",
+      "native-feeling interaction rules"
+    ],
+    "product_fit": [
+      "mobile-app",
+      "ios",
+      "consumer",
+      "productivity",
+      "app-landing",
+      "mobile-first"
+    ],
+    "visual_traits": [
+      "native",
+      "polished",
+      "restrained",
+      "platform-consistent",
+      "accessible"
+    ],
+    "page_patterns": [
+      "app-landing",
+      "mobile-hero",
+      "onboarding",
+      "settings",
+      "motion",
+      "platform-guidance"
+    ],
+    "implementation_fit": [
+      "ios",
+      "macos",
+      "mobile",
+      "platform-guidelines",
+      "accessibility"
+    ],
+    "extraction_targets": [
+      "platform-principles",
+      "mobile-interaction",
+      "motion",
+      "accessibility",
+      "native-conventions"
+    ],
+    "avoid_when": [
+      "web-only-enterprise-dashboard",
+      "android-first-product",
+      "exact-apple-style-copy"
+    ],
+    "risk_notes": "Apple documentation is not OSS; use only high-level platform principles and avoid copying Apple visual identity, layouts, icons, or marketing style."
+  },
+  {
+    "id": "motion-dev",
+    "name": "Motion for JavaScript / React",
+    "type": "oss-motion-library",
+    "url": "https://motion.dev/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/motiondivision/motion/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "motion",
+      "animation",
+      "react",
+      "javascript",
+      "gestures",
+      "transitions",
+      "ui"
+    ],
+    "strengths": [
+      "production-grade UI motion primitives",
+      "layout transitions",
+      "gesture and presence patterns"
+    ],
+    "use_for": [
+      "motion rules",
+      "interaction transitions",
+      "restrained animation guidance"
+    ],
+    "product_fit": [
+      "saas",
+      "consumer",
+      "ai-product",
+      "mobile-first",
+      "prototype",
+      "web-app"
+    ],
+    "visual_traits": [
+      "dynamic",
+      "polished",
+      "interactive",
+      "motion-rich"
+    ],
+    "page_patterns": [
+      "hero-motion",
+      "microinteractions",
+      "transitions",
+      "gesture-feedback",
+      "progressive-disclosure"
+    ],
+    "implementation_fit": [
+      "react",
+      "javascript",
+      "vue",
+      "animation",
+      "web"
+    ],
+    "extraction_targets": [
+      "motion-principles",
+      "transition-rules",
+      "gesture-feedback",
+      "reduced-motion-cautions",
+      "interaction-polish"
+    ],
+    "avoid_when": [
+      "static-enterprise-compliance",
+      "reduced-motion-only",
+      "motion-sensitive-audience"
+    ],
+    "risk_notes": "Use to define purposeful, accessible motion; always include reduced-motion and performance constraints."
   }
 ]
