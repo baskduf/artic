@@ -82,11 +82,14 @@ def test_readmes_document_version_and_update_commands():
             assert phrase in text, (rel, phrase)
 
 
-def test_readmes_document_init_start_lifecycle_boundary():
+def test_readmes_document_init_start_show_lifecycle_boundary():
     required_phrases = [
         ".artic/init-session.json",
+        ".artic/show/index.html",
         "@artic init",
         "@artic start",
+        "@artic show",
+        "python3 skills/artic/scripts/artic_show.py --root .",
     ]
     for rel in README_FILES:
         text = (ROOT / rel).read_text(encoding="utf-8")
