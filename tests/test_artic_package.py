@@ -1281,9 +1281,28 @@ def test_artic_show_3d_runtime_bundle_records_asset_provenance_and_runtime_marke
         serialized_manifest = json.dumps(manifest, ensure_ascii=False).lower()
         assert "3d" in serialized_manifest or "model-viewer" in serialized_manifest or "webgl" in serialized_manifest
         assert "provenance" in serialized_manifest
+        manifest_paths = {asset["path"] for asset in manifest["assets"] if asset.get("path")}
+        asset_files = {str(path.relative_to(show)) for path in (show / "assets").rglob("*") if path.is_file()}
+        assert asset_files - {"assets/manifest.json"} <= manifest_paths
         html = (show / "index.html").read_text(encoding="utf-8")
         assert "runtime-3d" in html or "model-viewer" in html
         assert "interaction-zone" in html or "3D" in html
+
+
+def test_artic_show_cleans_stale_iteration_directories_between_runs():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+
+        run_artic_show(root)
+        assert sorted(path.name for path in (root / ".artic" / "show" / "iterations").iterdir() if path.is_dir()) == ["001", "002", "003"]
+
+        result = run_artic_show(root, "--max-iterations", "1")
+
+        assert result.returncode == 0
+        assert sorted(path.name for path in (root / ".artic" / "show" / "iterations").iterdir() if path.is_dir()) == ["001"]
+        report = read_json_file(root / ".artic" / "show" / "report.json")
+        assert report["selected_iteration"] == "001"
 
 
 def test_artic_show_blocks_missing_design_inputs_without_creating_preview():

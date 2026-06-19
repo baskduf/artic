@@ -324,6 +324,22 @@ def build_asset_manifest(root: Path, show_dir: Path, iteration: str, variant: st
                 "local_path": "assets/placeholders/model-poster.svg",
             },
             {
+                "id": "generated-model-poster-root-alias",
+                "path": "assets/model-poster.svg",
+                "type": "image/svg+xml",
+                "status": "generated",
+                "retrieval": "generated-placeholder",
+                "provenance": "generated locally by Artic show",
+                "kind": "generated-placeholder",
+                "title": "3D model poster placeholder root alias",
+                "source": "generated locally by Artic show",
+                "license": "Artic generated preview placeholder",
+                "license_status": "preview-only-generated",
+                "usage": "backward-compatible 3D poster fallback alias",
+                "downloaded": False,
+                "local_path": "assets/model-poster.svg",
+            },
+            {
                 "id": "generated-scene-fallback",
                 "path": "assets/placeholders/scene-fallback.svg",
                 "type": "image/svg+xml",
@@ -338,6 +354,22 @@ def build_asset_manifest(root: Path, show_dir: Path, iteration: str, variant: st
                 "usage": "runtime failure and reduced-motion scene fallback",
                 "downloaded": False,
                 "local_path": "assets/placeholders/scene-fallback.svg",
+            },
+            {
+                "id": "generated-scene-fallback-root-alias",
+                "path": "assets/scene-fallback.svg",
+                "type": "image/svg+xml",
+                "status": "generated",
+                "retrieval": "generated-placeholder",
+                "provenance": "generated locally by Artic show",
+                "kind": "generated-placeholder",
+                "title": "3D scene fallback placeholder root alias",
+                "source": "generated locally by Artic show",
+                "license": "Artic generated preview placeholder",
+                "license_status": "preview-only-generated",
+                "usage": "backward-compatible runtime failure fallback alias",
+                "downloaded": False,
+                "local_path": "assets/scene-fallback.svg",
             },
         ])
     return {
@@ -571,6 +603,8 @@ def create_show_preview(root: Path, max_iterations: int = 3, min_score: float = 
     show_root = root / ".artic" / "show"
     iterations_root = show_root / "iterations"
     show_root.mkdir(parents=True, exist_ok=True)
+    if iterations_root.exists():
+        shutil.rmtree(iterations_root)
     iterations_root.mkdir(parents=True, exist_ok=True)
 
     tokens = build_tokens(design_text)
