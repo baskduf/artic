@@ -65,7 +65,7 @@ codex plugin marketplace add baskduf/artic
 안정적인 설치가 필요하면 릴리즈 태그로 고정:
 
 ```bash
-codex plugin marketplace add baskduf/artic@v0.3.0
+codex plugin marketplace add baskduf/artic@v0.4.0
 ```
 
 플러그인 브라우저에서 `codex-artic` 설치:

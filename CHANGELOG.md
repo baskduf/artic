@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 - 2026-06-19
+
+### Added
+- Added asset-first `@artic show` preview bundles with iterations, selected candidate metadata, critique output, token/style artifacts, and asset provenance manifests under `.artic/show/`.
+- Added Artic risk-readiness analysis so high-risk homepage requests can proceed as explicit placeholder previews while blocking production implementation until required assets, interactions, trust, or integration details are supplied.
+- Added mirrored Claude/Codex risk-readiness and asset-first show support, including schema/template updates and package coverage.
+
+### Changed
+- Updated English, Korean, Japanese, Simplified Chinese, and Traditional Chinese docs to describe the asset-first show bundle contract and stable marketplace install tag.
+- Strengthened release/package tests for show bundle outputs, risk readiness, mirrored plugin payloads, version sync, and artifact hygiene.
+
 ## 0.3.0 - 2026-06-19
 
 ### Added
