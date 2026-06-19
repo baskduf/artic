@@ -104,6 +104,8 @@ python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product d
 python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product developer saas" --limit 3 --live-fetch --cache-dir /tmp/artic-cache --fixtures-dir /tmp/no-fixtures --output /tmp/artic-smoke/docs/live-reference-synthesis.md
 python3 skills/artic/scripts/scaffold_artic_files.py --root /tmp/artic-smoke
 python3 skills/artic/scripts/validate_artic_outputs.py --root /tmp/artic-smoke
+python3 skills/artic/scripts/artic_version.py --root .
+python3 skills/artic/scripts/artic_update.py --root .
 ```
 
 ## What Changes In The Agent
@@ -157,6 +159,18 @@ Artic이 호출되면 에이전트는 다음을 수행합니다:
 
 ```text
 @artic review the homepage against DESIGN.md
+```
+
+설치된 Artic 버전과 최신 GitHub Release 확인:
+
+```text
+@artic version
+```
+
+Claude Code, Codex, local checkout용 안전한 업데이트 명령 출력:
+
+```text
+@artic update
 ```
 
 ## Output Policy

@@ -104,6 +104,8 @@ python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product d
 python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product developer saas" --limit 3 --live-fetch --cache-dir /tmp/artic-cache --fixtures-dir /tmp/no-fixtures --output /tmp/artic-smoke/docs/live-reference-synthesis.md
 python3 skills/artic/scripts/scaffold_artic_files.py --root /tmp/artic-smoke
 python3 skills/artic/scripts/validate_artic_outputs.py --root /tmp/artic-smoke
+python3 skills/artic/scripts/artic_version.py --root .
+python3 skills/artic/scripts/artic_update.py --root .
 ```
 
 ## What Changes In The Agent
@@ -157,6 +159,18 @@ Review implementation:
 
 ```text
 @artic review the homepage against DESIGN.md
+```
+
+Check the installed Artic version and latest GitHub release:
+
+```text
+@artic version
+```
+
+Print safe update commands for Claude Code, Codex, or a local checkout:
+
+```text
+@artic update
 ```
 
 ## Output Policy

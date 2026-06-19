@@ -52,6 +52,19 @@ def test_readmes_have_language_nav():
                 assert target in text or (target == "README.md" and "English" in text), rel
 
 
+def test_readmes_document_version_and_update_commands():
+    required_phrases = [
+        "@artic version",
+        "@artic update",
+        "python3 skills/artic/scripts/artic_version.py --root .",
+        "python3 skills/artic/scripts/artic_update.py --root .",
+    ]
+    for rel in README_FILES:
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        for phrase in required_phrases:
+            assert phrase in text, (rel, phrase)
+
+
 def test_artic_version_no_network_marks_latest_unchecked():
     payload = artic_version.collect_version_info(ROOT, no_network=True)
     assert payload["latest_state"] == "unchecked"
