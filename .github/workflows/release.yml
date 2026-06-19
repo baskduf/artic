@@ -99,7 +99,7 @@ jobs:
       - name: Run release verification
         run: |
           set -euo pipefail
-          python -m py_compile skills/artic/scripts/*.py tests/*.py
+          python -m py_compile skills/artic/scripts/*.py tests/*.py scripts/*.py
           python -m pytest -q
           python skills/artic/scripts/scaffold_artic_files.py --root /tmp/artic-release-smoke
           python skills/artic/scripts/validate_artic_outputs.py --root /tmp/artic-release-smoke
@@ -119,9 +119,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m build --sdist --wheel
-          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
-            -czf "dist/artic-skill-${RELEASE_TAG}.tar.gz" \
-            skills plugins .claude-plugin .agents README.md README.ko.md README.ja.md README.zh-CN.md README.zh-TW.md LICENSE
+          python scripts/build_skill_archive.py --output "dist/artic-skill-${RELEASE_TAG}.tar.gz"
           expected=(
             "artic-${VERSION}.tar.gz"
             "artic-${VERSION}-py3-none-any.whl"
@@ -131,6 +129,10 @@ jobs:
             test -s "dist/$file"
           done
           (cd dist && shasum -a 256 "${expected[@]}" > SHA256SUMS.txt)
+          python scripts/check_release_artifacts.py --require-payload \
+            "dist/artic-${VERSION}.tar.gz" \
+            "dist/artic-skill-${RELEASE_TAG}.tar.gz"
+          python scripts/check_release_artifacts.py "dist/artic-${VERSION}-py3-none-any.whl"
 
       - name: Upload release assets for publish job
         uses: actions/upload-artifact@v4
