@@ -217,6 +217,31 @@ def replace_policy_text(text: str, block: str) -> str:
     return text.replace(POLICY, block)
 
 
+def validate_runtime_inputs(intent: dict[str, Any], references: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    for key in ("mapper", "design_north_star", "reference_roles", "design_rules", "catalog_query"):
+        if key not in intent:
+            errors.append(f"ERROR: intent missing key: {key}")
+    roles = intent.get("reference_roles", [])
+    if not isinstance(roles, list) or len(roles) < 1:
+        errors.append("ERROR: intent reference_roles must include at least 1 role assignment")
+    for role in roles if isinstance(roles, list) else []:
+        if not isinstance(role, dict):
+            errors.append("ERROR: intent reference role must be an object")
+            continue
+        for key in ("role", "source_ids", "selection_reason"):
+            if key not in role:
+                errors.append(f"ERROR: intent reference role missing key: {key}")
+
+    selected = references.get("selected_sources", [])
+    if not isinstance(selected, list) or len(selected) < 1:
+        errors.append("ERROR: references selected_sources must include at least 1 candidate")
+    source_plan = references.get("source_plan", [])
+    if not isinstance(source_plan, list) or len(source_plan) < 1:
+        errors.append("ERROR: references source_plan must include at least 1 source plan")
+    return errors
+
+
 def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any], strategy: dict[str, Any], intent: dict[str, Any] | None = None) -> list[str]:
     name = project_name(brief)
     description = f"{project_description(brief, strategy)} Artic-generated homepage design system."
@@ -371,6 +396,9 @@ def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, 
     strategy_errors = validate_strategy_payload(strategy)
     if strategy_errors:
         raise ValueError(json.dumps({"error": "invalid_strategy", "errors": strategy_errors}, ensure_ascii=False))
+    input_errors = validate_runtime_inputs(intent, references)
+    if input_errors:
+        raise ValueError(json.dumps({"error": "invalid_runtime_inputs", "errors": input_errors}, ensure_ascii=False))
 
     generated = render_outputs(root, brief, references, strategy, intent)
     payload: dict[str, Any] = {

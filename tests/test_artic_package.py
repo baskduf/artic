@@ -845,6 +845,39 @@ def test_artic_start_synthesis_preserves_initialized_reference_selection():
         assert "voltagent-awesome-design-md" not in synthesized_ids - initialized_ids
 
 
+def test_artic_start_rejects_invalid_runtime_inputs_before_writing_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Invalid Intent Fixture",
+            "--audience",
+            "operators",
+            "--goal",
+            "signup",
+            "--vibe",
+            "clean trustworthy saas",
+            "--stack",
+            "React",
+            "--limit",
+            "3",
+        ], check=True)
+        write_fixture_strategy(root)
+        (root / ".artic" / "intent.json").write_text(json.dumps({"schema_version": 1}) + "\n", encoding="utf-8")
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "invalid_runtime_inputs" in result.stdout
+        assert not (root / "DESIGN.md").exists()
+        state = json.loads((root / ".artic" / "state.json").read_text(encoding="utf-8"))
+        assert state.get("status") != "generated"
+
+
 def test_validator_rejects_missing_strategy_contract():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
