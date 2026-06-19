@@ -131,24 +131,11 @@ def test_json_manifests_parse():
         json.loads((ROOT / rel).read_text())
 
 def test_skill_copies_are_in_sync():
-    # This worktree intentionally keeps new canonical risk/readiness artifacts out
-    # of plugin copies; the release parent syncs plugin packages in a separate step.
-    canonical_only_until_plugin_sync = {
-        Path("scripts/artic_init_session.py"),
-        Path("scripts/risk_readiness.py"),
-        Path("scripts/artic_start.py"),
-        Path("scripts/validate_artic_outputs.py"),
-        Path("scripts/test_artic_scripts.py"),
-        Path("templates/brief.schema.json"),
-        Path("templates/strategy.schema.json"),
-    }
     canonical = ROOT / "skills" / "artic"
     for copy in [ROOT / "plugins" / "claude-artic" / "skills" / "artic", ROOT / "plugins" / "codex-artic" / "skills" / "artic"]:
         for path in canonical.rglob("*"):
             if path.is_file() and "__pycache__" not in path.parts:
                 rel = path.relative_to(canonical)
-                if rel in canonical_only_until_plugin_sync:
-                    continue
                 assert (copy / rel).read_bytes() == path.read_bytes(), rel
 
 

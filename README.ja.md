@@ -65,7 +65,7 @@ codex plugin marketplace add baskduf/artic
 安定したインストールが必要な場合はリリースタグに固定します:
 
 ```bash
-codex plugin marketplace add baskduf/artic@v0.3.0
+codex plugin marketplace add baskduf/artic@v0.4.0
 ```
 
 プラグインブラウザから `codex-artic` をインストールします:
