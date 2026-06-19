@@ -92,6 +92,7 @@ plugins/codex-artic                  # Codex 플러그인 패키지
 
 ```bash
 python3 skills/artic/scripts/search_reference_catalog.py --query "ai product developer saas" --limit 3
+python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product developer saas" --limit 3 --output /tmp/artic-smoke/docs/reference-synthesis.md
 python3 skills/artic/scripts/scaffold_artic_files.py --root /tmp/artic-smoke
 python3 skills/artic/scripts/validate_artic_outputs.py --root /tmp/artic-smoke
 ```
@@ -183,7 +184,9 @@ python3 -m pip install pytest pyyaml
 python3 -m pytest -q
 ```
 
-CI는 Python scripts, JSON manifests, README 번역 구조, skill copy sync, smoke scaffolding을 검증합니다.
+CI는 Python scripts, JSON manifests, README 번역 구조, skill copy sync, smoke scaffolding, warning-free DESIGN.md lint, marketplace plugin layout을 검증합니다.
+
+Distribution note: the wheel is metadata-only; marketplace packages, release tarballs, and sdists carry the skill/plugin payload.
 
 ## Community
 

@@ -54,6 +54,106 @@ def test_catalog_search_smoke():
     assert rows[0]["score"] > 0
 
 
+def test_reference_synthesis_smoke_uses_local_fixture_corpus():
+    with tempfile.TemporaryDirectory() as tmp:
+        output = Path(tmp) / "reference-synthesis.md"
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/synthesize_reference_notes.py"),
+            "--query",
+            "ai product developer saas",
+            "--limit",
+            "3",
+            "--output",
+            str(output),
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        assert payload["output"].endswith("reference-synthesis.md")
+        assert payload["selected_count"] == 3
+        assert payload["fixture_count"] >= 3
+        synthesis = output.read_text(encoding="utf-8")
+        assert "## Selected Sources" in synthesis
+        assert "## Extracted Common Patterns" in synthesis
+        assert "Reference policy: extract reusable principles only" in synthesis
+        assert "VoltAgent awesome-design-md" in synthesis
+
+
+
+def test_validator_rejects_missing_design_frontmatter_closing_delimiter():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        design = Path(tmp) / "DESIGN.md"
+        design.write_text(design.read_text(encoding="utf-8").replace("\n---\n\n## Overview", "\n\n## Overview"), encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "closing delimiter" in result.stdout
+
+
+def test_validator_requires_policy_in_each_generated_doc():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        checklist = Path(tmp) / "docs" / "design-qa-checklist.md"
+        checklist.write_text("# Artic Design QA Checklist\n\n- [ ] Tokens are used consistently.\n", encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "docs/design-qa-checklist.md missing reference safety phrase" in result.stdout
+
+
+def test_reference_synthesis_rejects_invalid_limit():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/synthesize_reference_notes.py"),
+            "--query",
+            "ai product developer saas",
+            "--limit",
+            "0",
+            "--output",
+            str(Path(tmp) / "reference-synthesis.md"),
+        ], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "limit must be >= 1" in result.stdout
+
+def test_design_templates_reference_all_declared_color_tokens():
+    for rel in [
+        "skills/artic/templates/DESIGN.template.md",
+        "plugins/claude-artic/skills/artic/templates/DESIGN.template.md",
+        "plugins/codex-artic/skills/artic/templates/DESIGN.template.md",
+    ]:
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        for token in ("primary", "secondary", "accent", "surface", "neutral", "text", "muted", "border"):
+            assert f"colors.{token}" in text, (rel, token)
+
+
+def test_marketplace_plugin_layout_smoke():
+    required_skill_files = [
+        "SKILL.md",
+        "references/source-catalog.json",
+        "references/fixtures/voltagent-saas.design.md",
+        "scripts/search_reference_catalog.py",
+        "scripts/synthesize_reference_notes.py",
+        "scripts/scaffold_artic_files.py",
+        "scripts/validate_artic_outputs.py",
+        "templates/DESIGN.template.md",
+        "templates/reference-synthesis.template.md",
+    ]
+    for plugin_root, manifest_rel in [
+        (ROOT / "plugins/claude-artic", ".claude-plugin/plugin.json"),
+        (ROOT / "plugins/codex-artic", ".codex-plugin/plugin.json"),
+    ]:
+        manifest = json.loads((plugin_root / manifest_rel).read_text(encoding="utf-8"))
+        skill_path = plugin_root / manifest["skills"][0]["path"]
+        for rel in required_skill_files:
+            assert (skill_path / rel).exists(), (plugin_root, rel)
+
+
+def test_readmes_document_distribution_intent():
+    for rel in README_FILES:
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        assert "wheel is metadata-only" in text
+        assert "marketplace packages, release tarballs, and sdists carry the skill/plugin payload" in text
+
+
 def test_versions_are_synced_across_manifests():
     version_match = re.search(r'^version = "([^"]+)"', (ROOT / "pyproject.toml").read_text(encoding="utf-8"), re.MULTILINE)
     assert version_match, "pyproject.toml missing project version"
@@ -83,14 +183,18 @@ def test_ci_and_release_workflows_are_hardened():
     assert "actions/checkout@v5" in ci
     assert "actions/setup-python@v6" in ci
     assert "actions/upload-artifact@v4" in ci
+    assert "rhysd/actionlint@v1" in ci
     assert "permissions:" in release
     assert "contents: write" in release
     assert "Resolve and validate release ref" in release
     assert "DISPATCH_TAG: ${{ inputs.tag }}" in release
-    assert "grep -Eq '^v[0-9]+\\.[0-9]+\\.[0-9]+$'" in release
+    assert "re.fullmatch(r'v\\d+\\.\\d+\\.\\d+', tag)" in release
+    assert "persist-credentials: false" in release
     assert "--verify-tag" in release
     assert "Verify tag points at HEAD" in release
     assert "Verify version matches tag" in release
+    assert "publish GitHub release" in release
+    assert "actions/download-artifact@v4" in release
 
 
 def test_readmes_document_release_and_ci_expectations():

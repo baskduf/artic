@@ -18,6 +18,11 @@ rounded: {sm: 6px, md: 12px, lg: 20px}
 spacing: {sm: 8px, md: 16px, lg: 24px}
 components:
   button-primary: {backgroundColor: "{colors.primary}", textColor: "#FFFFFF", rounded: "{rounded.md}", padding: 12px}
+  button-secondary: {backgroundColor: "{colors.secondary}", textColor: "#FFFFFF", rounded: "{rounded.md}", padding: 12px}
+  accent-badge: {backgroundColor: "{colors.accent}", textColor: "#FFFFFF", rounded: "{rounded.sm}", padding: "{spacing.sm}"}
+  card: {backgroundColor: "{colors.surface}", textColor: "{colors.text}", rounded: "{rounded.lg}", padding: "{spacing.lg}"}
+  divider: {backgroundColor: "{colors.border}", height: 1px, width: 100%}
+  muted-panel: {backgroundColor: "{colors.neutral}", textColor: "{colors.muted}", rounded: "{rounded.md}", padding: "{spacing.md}"}
 ---
 
 ## Overview

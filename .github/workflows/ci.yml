@@ -48,8 +48,17 @@ jobs:
       - name: Validate scaffolded Artic docs
         run: python skills/artic/scripts/validate_artic_outputs.py --root /tmp/artic-smoke
 
-      - name: Lint scaffolded DESIGN.md
-        run: npx -y @google/design.md lint /tmp/artic-smoke/DESIGN.md
+      - name: Lint scaffolded DESIGN.md without warnings
+        run: |
+          set -euo pipefail
+          npx -y @google/design.md lint /tmp/artic-smoke/DESIGN.md | tee /tmp/artic-design-lint.json
+          python - <<'PY'
+          import json, pathlib
+          data = json.loads(pathlib.Path('/tmp/artic-design-lint.json').read_text())
+          summary = data.get('summary', {})
+          assert summary.get('errors', 0) == 0, data
+          assert summary.get('warnings', 0) == 0, data
+          PY
 
       - name: Build Python package metadata
         run: python -m build --sdist --wheel
@@ -84,6 +93,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - name: Lint GitHub Actions workflows
+        uses: rhysd/actionlint@v1
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -154,9 +166,28 @@ jobs:
 
       - name: Build release archives
         run: |
+          set -euo pipefail
+          VERSION=$(python - <<'PY'
+          import pathlib, re
+          match = re.search(r'^version = "([^"]+)"', pathlib.Path('pyproject.toml').read_text(), re.MULTILINE)
+          assert match, 'pyproject.toml missing version'
+          print(match.group(1))
+          PY
+          )
+          RELEASE_TAG="v${VERSION}"
           python -m build --sdist --wheel
-          tar -czf dist/artic-skill-v0.1.0.tar.gz skills plugins .claude-plugin .agents README.md README.ko.md README.ja.md README.zh-CN.md README.zh-TW.md LICENSE
-          (cd dist && shasum -a 256 * > SHA256SUMS.txt)
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
+            -czf "dist/artic-skill-${RELEASE_TAG}.tar.gz" \
+            skills plugins .claude-plugin .agents README.md README.ko.md README.ja.md README.zh-CN.md README.zh-TW.md LICENSE
+          expected=(
+            "artic-${VERSION}.tar.gz"
+            "artic-${VERSION}-py3-none-any.whl"
+            "artic-skill-${RELEASE_TAG}.tar.gz"
+          )
+          for file in "${expected[@]}"; do
+            test -s "dist/$file"
+          done
+          (cd dist && shasum -a 256 "${expected[@]}" > SHA256SUMS.txt)
 
       - name: Upload dry-run artifacts
         uses: actions/upload-artifact@v4

@@ -45,6 +45,15 @@ def validate(root: Path) -> list[str]:
         design = design_path.read_text(encoding="utf-8")
         if not design.startswith("---\n"):
             errors.append("ERROR: DESIGN.md must start with YAML front matter")
+        else:
+            closing = design.find("\n---\n", 4)
+            if closing < 0:
+                errors.append("ERROR: DESIGN.md YAML front matter must have a closing delimiter")
+            else:
+                frontmatter = design[4:closing]
+                for required in ("version:", "name:", "description:", "colors:", "typography:", "components:"):
+                    if required not in frontmatter:
+                        errors.append(f"ERROR: DESIGN.md front matter missing key: {required.rstrip(':')}")
         last_index = -1
         for section in REQUIRED_DESIGN_SECTIONS:
             idx = design.find(section)
@@ -60,7 +69,10 @@ def validate(root: Path) -> list[str]:
     for rel in ("docs/design-rules.md", "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md"):
         path = root / rel
         if path.exists():
-            combined_docs += "\n" + path.read_text(encoding="utf-8")
+            text = path.read_text(encoding="utf-8")
+            combined_docs += "\n" + text
+            if POLICY_FRAGMENT not in text:
+                errors.append(f"ERROR: {rel} missing reference safety phrase")
     if combined_docs and POLICY_FRAGMENT not in combined_docs:
         errors.append("ERROR: generated docs missing reference safety phrase")
     return errors

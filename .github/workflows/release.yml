@@ -12,17 +12,22 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release-${{ github.ref }}-${{ inputs.tag || '' }}
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: build and publish release
+  build:
+    name: verify and build release assets
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.ref.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Resolve and validate release ref
         id: ref
@@ -33,29 +38,27 @@ jobs:
           PUSH_REF: ${{ github.ref }}
         run: |
           set -euo pipefail
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            TAG="$DISPATCH_TAG"
-            REF="refs/tags/$DISPATCH_TAG"
-          else
-            TAG="$PUSH_TAG"
-            REF="$PUSH_REF"
-          fi
-          case "$TAG" in
-            v[0-9]*.[0-9]*.[0-9]*) ;;
-            *) echo "Invalid release tag: $TAG" >&2; exit 1 ;;
-          esac
-          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "Release tag must be stable semver, got: $TAG" >&2
-            exit 1
-          fi
-          printf 'tag=%s\n' "$TAG" >> "$GITHUB_OUTPUT"
-          printf 'ref=%s\n' "$REF" >> "$GITHUB_OUTPUT"
+          python - <<'PY'
+          import os, pathlib, re
+          event = os.environ['EVENT_NAME']
+          tag = os.environ['DISPATCH_TAG'] if event == 'workflow_dispatch' else os.environ['PUSH_TAG']
+          ref = f"refs/tags/{tag}" if event == 'workflow_dispatch' else os.environ['PUSH_REF']
+          if not re.fullmatch(r'v\d+\.\d+\.\d+', tag):
+              raise SystemExit(f'Release tag must be stable semver, got: {tag!r}')
+          if '\n' in tag or '\r' in tag or '\n' in ref or '\r' in ref:
+              raise SystemExit('Release tag/ref must not contain newlines')
+          output = pathlib.Path(os.environ['GITHUB_OUTPUT'])
+          with output.open('a', encoding='utf-8') as fh:
+              fh.write(f'tag={tag}\n')
+              fh.write(f'ref={ref}\n')
+          PY
 
-      - name: Checkout tag
+      - name: Checkout tag without persisted credentials
         uses: actions/checkout@v5
         with:
           ref: ${{ steps.ref.outputs.ref }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Verify tag points at HEAD
         env:
@@ -74,6 +77,7 @@ jobs:
         run: python -m pip install --upgrade pip build pytest pyyaml
 
       - name: Verify version matches tag
+        id: version
         env:
           RELEASE_TAG: ${{ steps.ref.outputs.tag }}
         run: |
@@ -88,6 +92,8 @@ jobs:
               raise SystemExit(f'tag {tag} does not match pyproject version {expected}')
           if not re.fullmatch(r'v\d+\.\d+\.\d+', tag):
               raise SystemExit(f'tag {tag} is not a stable semver release tag')
+          with pathlib.Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as fh:
+              fh.write(f'version={version}\n')
           PY
 
       - name: Run release verification
@@ -97,24 +103,72 @@ jobs:
           python -m pytest -q
           python skills/artic/scripts/scaffold_artic_files.py --root /tmp/artic-release-smoke
           python skills/artic/scripts/validate_artic_outputs.py --root /tmp/artic-release-smoke
-          npx -y @google/design.md lint /tmp/artic-release-smoke/DESIGN.md
+          npx -y @google/design.md lint /tmp/artic-release-smoke/DESIGN.md | tee /tmp/artic-release-design-lint.json
+          python - <<'PY'
+          import json, pathlib
+          data = json.loads(pathlib.Path('/tmp/artic-release-design-lint.json').read_text())
+          summary = data.get('summary', {})
+          assert summary.get('errors', 0) == 0, data
+          assert summary.get('warnings', 0) == 0, data
+          PY
 
       - name: Build release assets
         env:
           RELEASE_TAG: ${{ steps.ref.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
           python -m build --sdist --wheel
-          tar -czf "dist/artic-skill-${RELEASE_TAG}.tar.gz" skills plugins .claude-plugin .agents README.md README.ko.md README.ja.md README.zh-CN.md README.zh-TW.md LICENSE
-          (cd dist && shasum -a 256 * > SHA256SUMS.txt)
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
+            -czf "dist/artic-skill-${RELEASE_TAG}.tar.gz" \
+            skills plugins .claude-plugin .agents README.md README.ko.md README.ja.md README.zh-CN.md README.zh-TW.md LICENSE
+          expected=(
+            "artic-${VERSION}.tar.gz"
+            "artic-${VERSION}-py3-none-any.whl"
+            "artic-skill-${RELEASE_TAG}.tar.gz"
+          )
+          for file in "${expected[@]}"; do
+            test -s "dist/$file"
+          done
+          (cd dist && shasum -a 256 "${expected[@]}" > SHA256SUMS.txt)
+
+      - name: Upload release assets for publish job
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets-${{ steps.ref.outputs.tag }}
+          path: |
+            dist/artic-${{ steps.version.outputs.version }}.tar.gz
+            dist/artic-${{ steps.version.outputs.version }}-py3-none-any.whl
+            dist/artic-skill-${{ steps.ref.outputs.tag }}.tar.gz
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+
+  publish:
+    name: publish GitHub release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: release-assets-${{ needs.build.outputs.tag }}
+          path: dist
 
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ steps.ref.outputs.tag }}
+          RELEASE_TAG: ${{ needs.build.outputs.tag }}
+          VERSION: ${{ needs.build.outputs.version }}
         run: |
           set -euo pipefail
-          gh release create "$RELEASE_TAG" dist/* \
+          gh release create "$RELEASE_TAG" \
+            "dist/artic-${VERSION}.tar.gz" \
+            "dist/artic-${VERSION}-py3-none-any.whl" \
+            "dist/artic-skill-${RELEASE_TAG}.tar.gz" \
+            "dist/SHA256SUMS.txt" \
             --repo '${{ github.repository }}' \
             --title "Artic $RELEASE_TAG" \
             --generate-notes \
