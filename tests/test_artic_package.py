@@ -64,6 +64,23 @@ def test_readme_hero_image_is_synced():
         found = image_re.search((ROOT / rel).read_text(encoding="utf-8"))
         assert found and found.group(0) == expected.group(0), rel
 
+
+def test_readmes_do_not_render_badges():
+    badge_patterns = [
+        "img.shields.io",
+        "github/actions/workflow/status",
+        "alt=\"Claude Skill\"",
+        "alt=\"Codex Plugin\"",
+        "alt=\"DESIGN.md\"",
+        "alt=\"License MIT\"",
+        "alt=\"CI\"",
+    ]
+    for rel in README_FILES:
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        for pattern in badge_patterns:
+            assert pattern not in text, (rel, pattern)
+
+
 def test_readme_translations_have_synced_structure():
     expected = headings(ROOT / "README.md")
     assert expected
