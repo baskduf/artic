@@ -3371,5 +3371,914 @@
       "single-static-page"
     ],
     "application_guidance": "Use this to bridge design and code token workflows; translate Figma sync, semantic token, and theme management patterns into Artic handoff docs without making Figma tooling mandatory."
+  },
+  {
+    "id": "growth-design-landing-page-psychology",
+    "name": "Growth.Design Landing Page UX Psychology",
+    "type": "conversion-ux-case-study",
+    "url": "https://growth.design/case-studies/landing-page-ux-psychology",
+    "license": "Public web content; principle extraction only",
+    "live_sources": [
+      {
+        "url": "https://growth.design/case-studies/landing-page-ux-psychology",
+        "kind": "html",
+        "license": "Public web content"
+      }
+    ],
+    "tags": [
+      "landing-page",
+      "conversion",
+      "ux-psychology",
+      "cta",
+      "hierarchy",
+      "cognitive-load"
+    ],
+    "strengths": [
+      "landing page critique patterns",
+      "psychology-backed CTA and hierarchy guidance",
+      "cognitive load reduction examples"
+    ],
+    "use_for": [
+      "hero clarity",
+      "CTA focus",
+      "section hierarchy",
+      "conversion diagnosis"
+    ],
+    "product_fit": [
+      "saas",
+      "ai-product",
+      "developer-tool",
+      "marketing-site",
+      "startup"
+    ],
+    "visual_traits": [
+      "clear",
+      "focused",
+      "low-friction",
+      "proof-oriented",
+      "readable"
+    ],
+    "page_patterns": [
+      "hero-section",
+      "single-primary-cta",
+      "benefit-hierarchy",
+      "social-proof",
+      "objection-reduction"
+    ],
+    "implementation_fit": [
+      "homepage",
+      "landing-page",
+      "copywriting",
+      "design-review",
+      "conversion-checklist"
+    ],
+    "extraction_targets": [
+      "cta-focus",
+      "proximity-grouping",
+      "reading-aesthetics",
+      "attention-flow",
+      "cognitive-load-rules"
+    ],
+    "avoid_when": [
+      "needs-implementation-components",
+      "requires-oss-license",
+      "pure-dashboard-ui"
+    ],
+    "application_guidance": "Use this to turn landing-page psychology into practical section rules: reduce competing CTAs, group related proof near claims, and make the first screen earn attention before asking for conversion."
+  },
+  {
+    "id": "marketing-examples-landing-page-guide",
+    "name": "Marketing Examples Landing Page Guide",
+    "type": "conversion-copywriting-guide",
+    "url": "https://marketingexamples.com/landing-page/guide",
+    "license": "Public web content; principle extraction only",
+    "fixture": "references/fixtures/marketing-examples-landing-page.design.md",
+    "live_sources": [
+      {
+        "url": "https://marketingexamples.com/landing-page/guide",
+        "kind": "html",
+        "license": "Public web content"
+      }
+    ],
+    "tags": [
+      "landing-page",
+      "copywriting",
+      "conversion",
+      "hero",
+      "social-proof",
+      "saas"
+    ],
+    "strengths": [
+      "clear hero formula",
+      "conversion-focused copy structure",
+      "product-in-action visual guidance"
+    ],
+    "use_for": [
+      "headline strategy",
+      "subtitle mechanics",
+      "CTA microcopy",
+      "above-the-fold structure"
+    ],
+    "product_fit": [
+      "saas",
+      "startup",
+      "developer-tool",
+      "ai-product",
+      "self-serve-product"
+    ],
+    "visual_traits": [
+      "direct",
+      "plainspoken",
+      "benefit-led",
+      "product-forward",
+      "conversion-oriented"
+    ],
+    "page_patterns": [
+      "value-headline",
+      "mechanism-subtitle",
+      "product-screenshot",
+      "call-to-value",
+      "proof-near-claim"
+    ],
+    "implementation_fit": [
+      "homepage",
+      "landing-page",
+      "copy-system",
+      "design-prompt",
+      "section-outline"
+    ],
+    "extraction_targets": [
+      "clarity-over-creativity",
+      "hero-copy-formula",
+      "cta-value-language",
+      "objection-handling",
+      "product-visual-placement"
+    ],
+    "avoid_when": [
+      "enterprise-procurement-page",
+      "brand-campaign",
+      "visual-system-only"
+    ],
+    "application_guidance": "Use this to make Artic hero sections sharper: state the outcome in the headline, explain the mechanism in the subtitle, show the product doing useful work, and phrase CTAs around user value."
+  },
+  {
+    "id": "google-pair-people-ai-guidebook",
+    "name": "Google PAIR People + AI Guidebook",
+    "type": "ai-product-ux-guidebook",
+    "url": "https://pair.withgoogle.com/guidebook/",
+    "license": "Public Google guidebook; principle extraction only",
+    "live_sources": [
+      {
+        "url": "https://pair.withgoogle.com/guidebook/",
+        "kind": "html",
+        "license": "Public Google guidebook"
+      }
+    ],
+    "tags": [
+      "ai-product",
+      "human-ai",
+      "trust",
+      "feedback",
+      "controls",
+      "responsible-ai"
+    ],
+    "strengths": [
+      "AI expectation-setting framework",
+      "trust and control guidance",
+      "feedback and failure-state patterns"
+    ],
+    "use_for": [
+      "AI product trust",
+      "capability framing",
+      "user control",
+      "feedback loops"
+    ],
+    "product_fit": [
+      "ai-product",
+      "ai-saas",
+      "developer-tool",
+      "productivity-tool",
+      "enterprise-ai"
+    ],
+    "visual_traits": [
+      "trust-forward",
+      "transparent",
+      "calibrated",
+      "human-centered",
+      "explainable"
+    ],
+    "page_patterns": [
+      "ai-capability-section",
+      "trust-section",
+      "control-explanation",
+      "feedback-loop",
+      "limitation-disclosure"
+    ],
+    "implementation_fit": [
+      "ai-product-copy",
+      "trust-messaging",
+      "onboarding",
+      "interaction-guidelines",
+      "design-doc"
+    ],
+    "extraction_targets": [
+      "user-needs",
+      "mental-models",
+      "trust-calibration",
+      "controls",
+      "graceful-failures"
+    ],
+    "avoid_when": [
+      "non-ai-product",
+      "pure-visual-reference",
+      "static-brand-site"
+    ],
+    "application_guidance": "Use this for AI product pages that need more than magic-language: explain what the system does well, where users stay in control, how feedback improves outcomes, and how limitations are handled gracefully."
+  },
+  {
+    "id": "microsoft-hax-ai-guidelines",
+    "name": "Microsoft HAX Human-AI Interaction Guidelines",
+    "type": "ai-ux-guidelines",
+    "url": "https://www.microsoft.com/en-us/haxtoolkit/ai-guidelines/",
+    "license": "Public Microsoft research guidance; principle extraction only",
+    "live_sources": [
+      {
+        "url": "https://www.microsoft.com/en-us/haxtoolkit/ai-guidelines/",
+        "kind": "html",
+        "license": "Public Microsoft guidance"
+      }
+    ],
+    "tags": [
+      "ai-product",
+      "human-ai",
+      "guidelines",
+      "trust",
+      "correction",
+      "transparency"
+    ],
+    "strengths": [
+      "18 evidence-based AI interaction guidelines",
+      "clear lifecycle framing",
+      "strong correction and recovery guidance"
+    ],
+    "use_for": [
+      "AI expectations",
+      "AI confidence messaging",
+      "correction flows",
+      "trust calibration"
+    ],
+    "product_fit": [
+      "ai-product",
+      "enterprise-ai",
+      "developer-tool",
+      "automation-product",
+      "assistant-ui"
+    ],
+    "visual_traits": [
+      "predictable",
+      "transparent",
+      "recovery-oriented",
+      "controlled",
+      "trustworthy"
+    ],
+    "page_patterns": [
+      "expectation-setting",
+      "model-limitation-section",
+      "user-correction-loop",
+      "confidence-explanation",
+      "progressive-trust"
+    ],
+    "implementation_fit": [
+      "ai-ux-rules",
+      "product-copy",
+      "onboarding",
+      "interaction-spec",
+      "design-qa"
+    ],
+    "extraction_targets": [
+      "system-capability-clarity",
+      "performance-boundaries",
+      "efficient-correction",
+      "uncertainty-handling",
+      "learning-over-time"
+    ],
+    "avoid_when": [
+      "non-ai-product",
+      "emotional-brand-campaign",
+      "visual-inspiration-only"
+    ],
+    "application_guidance": "Use this to keep AI homepage claims credible: pair autonomy promises with capability boundaries, correction paths, confidence cues, and user-control language that supports calibrated trust."
+  },
+  {
+    "id": "diataxis-documentation-framework",
+    "name": "Diátaxis Documentation Framework",
+    "type": "developer-documentation-framework",
+    "url": "https://diataxis.fr/",
+    "license": "Creative Commons Attribution-ShareAlike 4.0 International",
+    "live_sources": [
+      {
+        "url": "https://diataxis.fr/",
+        "kind": "html",
+        "license": "CC BY-SA 4.0"
+      }
+    ],
+    "tags": [
+      "developer-tool",
+      "documentation",
+      "information-architecture",
+      "quickstart",
+      "docs",
+      "onboarding"
+    ],
+    "strengths": [
+      "clear documentation intent model",
+      "developer journey structure",
+      "tutorial-howto-reference-explanation separation"
+    ],
+    "use_for": [
+      "developer onboarding",
+      "docs CTA structure",
+      "information architecture",
+      "quickstart planning"
+    ],
+    "product_fit": [
+      "developer-tool",
+      "api-product",
+      "ai-native-docs",
+      "open-source",
+      "platform"
+    ],
+    "visual_traits": [
+      "structured",
+      "task-oriented",
+      "educational",
+      "clear",
+      "developer-friendly"
+    ],
+    "page_patterns": [
+      "quickstart-path",
+      "docs-cta",
+      "learning-path",
+      "reference-navigation",
+      "concept-explanation"
+    ],
+    "implementation_fit": [
+      "docs",
+      "developer-portal",
+      "homepage-ia",
+      "content-strategy",
+      "design-prompt"
+    ],
+    "extraction_targets": [
+      "tutorials",
+      "how-to-guides",
+      "reference",
+      "explanation",
+      "developer-intent-model"
+    ],
+    "avoid_when": [
+      "consumer-app",
+      "no-documentation-surface",
+      "pure-visual-branding"
+    ],
+    "application_guidance": "Use this for developer-tool homepages where docs are part of conversion: separate learning, task completion, reference lookup, and conceptual explanation instead of collapsing every CTA into a generic docs link."
+  },
+  {
+    "id": "figma-pricing-page-best-practices",
+    "name": "Figma Pricing Page Best Practices",
+    "type": "pricing-ux-guide",
+    "url": "https://www.figma.com/resource-library/pricing-page-best-practices/",
+    "license": "Public Figma resource; principle extraction only",
+    "live_sources": [
+      {
+        "url": "https://www.figma.com/resource-library/pricing-page-best-practices/",
+        "kind": "html",
+        "license": "Public Figma resource"
+      }
+    ],
+    "tags": [
+      "pricing",
+      "saas",
+      "conversion",
+      "trust",
+      "plans",
+      "faq"
+    ],
+    "strengths": [
+      "pricing page structure",
+      "plan hierarchy and transparency guidance",
+      "trust and objection handling patterns"
+    ],
+    "use_for": [
+      "pricing cards",
+      "plan comparison",
+      "billing transparency",
+      "pricing FAQ"
+    ],
+    "product_fit": [
+      "saas",
+      "developer-tool",
+      "ai-product",
+      "self-serve-product",
+      "subscription"
+    ],
+    "visual_traits": [
+      "transparent",
+      "tiered",
+      "trustworthy",
+      "comparative",
+      "low-friction"
+    ],
+    "page_patterns": [
+      "pricing-cards",
+      "recommended-plan",
+      "feature-matrix",
+      "billing-toggle",
+      "pricing-faq"
+    ],
+    "implementation_fit": [
+      "pricing-page",
+      "homepage-section",
+      "conversion-copy",
+      "saas-ia",
+      "design-checklist"
+    ],
+    "extraction_targets": [
+      "plan-simplicity",
+      "transparent-pricing",
+      "feature-comparison",
+      "pricing-social-proof",
+      "mobile-pricing"
+    ],
+    "avoid_when": [
+      "no-pricing-page",
+      "complex-usage-billing-only",
+      "brand-storytelling-only"
+    ],
+    "application_guidance": "Use this to shape SaaS pricing sections around clear plan count, visible tradeoffs, transparent billing language, recommendation cues, and FAQ coverage for common buyer objections."
+  },
+  {
+    "id": "cloudscape-design-system",
+    "name": "Cloudscape Design System",
+    "type": "oss-enterprise-cloud-design-system",
+    "url": "https://cloudscape.design/",
+    "license": "Apache-2.0 components",
+    "live_sources": [
+      {
+        "url": "https://cloudscape.design/",
+        "kind": "html",
+        "license": "Public docs"
+      },
+      {
+        "url": "https://github.com/cloudscape-design/components",
+        "kind": "repository",
+        "license": "Apache-2.0"
+      }
+    ],
+    "tags": [
+      "enterprise",
+      "cloud",
+      "dashboard",
+      "accessibility",
+      "react",
+      "patterns"
+    ],
+    "strengths": [
+      "enterprise cloud UX patterns",
+      "data-heavy product components",
+      "accessible React implementation"
+    ],
+    "use_for": [
+      "enterprise SaaS",
+      "cloud console previews",
+      "dashboard sections",
+      "product credibility"
+    ],
+    "product_fit": [
+      "enterprise-saas",
+      "developer-tool",
+      "cloud-product",
+      "ai-ops",
+      "dashboard"
+    ],
+    "visual_traits": [
+      "structured",
+      "dense",
+      "credible",
+      "operational",
+      "accessible"
+    ],
+    "page_patterns": [
+      "resource-list",
+      "dashboard-shell",
+      "wizard-flow",
+      "settings-page",
+      "product-preview"
+    ],
+    "implementation_fit": [
+      "react",
+      "components",
+      "patterns",
+      "accessibility",
+      "enterprise-ui"
+    ],
+    "extraction_targets": [
+      "cloud-console-patterns",
+      "resource-management",
+      "empty-error-loading-states",
+      "navigation-structure",
+      "table-filtering"
+    ],
+    "avoid_when": [
+      "consumer-brand-site",
+      "editorial-landing",
+      "playful-visual-direction"
+    ],
+    "application_guidance": "Use this when a homepage must make the product feel operationally trustworthy; translate cloud-console structure, resource management, and status patterns into original product previews and dashboard sections."
+  },
+  {
+    "id": "line-design-system",
+    "name": "LINE Design System",
+    "type": "asia-mobile-design-system",
+    "url": "https://designsystem.line.me/",
+    "license": "Public design-system docs; brand assets governed by LINE terms",
+    "live_sources": [
+      {
+        "url": "https://designsystem.line.me/",
+        "kind": "html",
+        "license": "Public docs"
+      }
+    ],
+    "tags": [
+      "mobile",
+      "asia",
+      "messaging",
+      "super-app",
+      "voice-tone",
+      "ux-guidelines"
+    ],
+    "strengths": [
+      "Asia mobile service grammar",
+      "friendly voice and UX guidelines",
+      "components and case studies for service ecosystems"
+    ],
+    "use_for": [
+      "mobile-first services",
+      "friendly product tone",
+      "super-app navigation",
+      "localized onboarding"
+    ],
+    "product_fit": [
+      "mobile-app",
+      "consumer-service",
+      "social-product",
+      "asia-market",
+      "commerce"
+    ],
+    "visual_traits": [
+      "friendly",
+      "rounded",
+      "mobile-native",
+      "clear",
+      "approachable"
+    ],
+    "page_patterns": [
+      "service-hub",
+      "profile-list",
+      "bottom-sheet",
+      "modal-feedback",
+      "onboarding-copy"
+    ],
+    "implementation_fit": [
+      "mobile-ux",
+      "content-tone",
+      "component-guidance",
+      "case-studies",
+      "localized-design"
+    ],
+    "extraction_targets": [
+      "mobile-interaction-grammar",
+      "voice-and-tone",
+      "foundation-rules",
+      "component-usage",
+      "service-ecosystem-patterns"
+    ],
+    "avoid_when": [
+      "enterprise-dashboard",
+      "desktop-first-saas",
+      "formal-government-service"
+    ],
+    "application_guidance": "Use this for approachable Asia-market mobile experiences; extract interaction grammar, tone, and service-hub patterns while replacing LINE-specific color, icon, and brand identity with project-specific tokens."
+  },
+  {
+    "id": "krds-korea-design-system",
+    "name": "KRDS Korea Design System",
+    "type": "public-service-design-system",
+    "url": "https://www.krds.go.kr/",
+    "license": "Korean public design-system docs; verify asset-specific terms",
+    "live_sources": [
+      {
+        "url": "https://www.krds.go.kr/",
+        "kind": "html",
+        "license": "Public docs"
+      }
+    ],
+    "tags": [
+      "korea",
+      "public-service",
+      "accessibility",
+      "trust",
+      "forms",
+      "localized-ux"
+    ],
+    "strengths": [
+      "Korean-language public-service UX patterns",
+      "digital inclusion and accessibility guidance",
+      "forms, login, search, and application flows"
+    ],
+    "use_for": [
+      "Korean trust UX",
+      "forms and application flows",
+      "accessibility",
+      "localized service patterns"
+    ],
+    "product_fit": [
+      "korean-market",
+      "fintech",
+      "public-service",
+      "trust-heavy-service",
+      "onboarding"
+    ],
+    "visual_traits": [
+      "trustworthy",
+      "clear",
+      "accessible",
+      "official",
+      "structured"
+    ],
+    "page_patterns": [
+      "login",
+      "search",
+      "application-flow",
+      "forms",
+      "faq-notice"
+    ],
+    "implementation_fit": [
+      "korean-content",
+      "forms",
+      "service-patterns",
+      "component-docs",
+      "accessibility"
+    ],
+    "extraction_targets": [
+      "digital-inclusion",
+      "form-structure",
+      "search-patterns",
+      "login-guidance",
+      "service-flow-patterns"
+    ],
+    "avoid_when": [
+      "playful-consumer-brand",
+      "luxury-editorial-site",
+      "global-only-english-site"
+    ],
+    "application_guidance": "Use this to add Korean trust, accessibility, and service-flow discipline to fintech, onboarding, and application-heavy pages; transform public-service clarity into project-specific product language."
+  },
+  {
+    "id": "tencent-tdesign",
+    "name": "TDesign Tencent Enterprise Design System",
+    "type": "oss-asia-enterprise-design-system",
+    "url": "https://tdesign.tencent.com/index-en",
+    "license": "MIT components",
+    "live_sources": [
+      {
+        "url": "https://tdesign.tencent.com/index-en",
+        "kind": "html",
+        "license": "Public docs"
+      },
+      {
+        "url": "https://github.com/Tencent/tdesign",
+        "kind": "repository",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "asia",
+      "enterprise",
+      "mobile",
+      "mini-program",
+      "react",
+      "vue"
+    ],
+    "strengths": [
+      "multi-platform enterprise components",
+      "desktop, mobile, and mini-program coverage",
+      "token and theme support"
+    ],
+    "use_for": [
+      "Asia enterprise UX",
+      "multi-platform products",
+      "admin plus mobile systems",
+      "themeable components"
+    ],
+    "product_fit": [
+      "enterprise-saas",
+      "mobile-app",
+      "commerce-operations",
+      "fintech-dashboard",
+      "asia-market"
+    ],
+    "visual_traits": [
+      "practical",
+      "themeable",
+      "structured",
+      "enterprise-grade",
+      "multi-platform"
+    ],
+    "page_patterns": [
+      "dashboard",
+      "form-list-detail",
+      "mobile-components",
+      "mini-program-components",
+      "theme-system"
+    ],
+    "implementation_fit": [
+      "react",
+      "vue",
+      "mobile",
+      "mini-program",
+      "tokens"
+    ],
+    "extraction_targets": [
+      "multi-platform-component-taxonomy",
+      "design-tokens",
+      "mobile-patterns",
+      "enterprise-layouts",
+      "theme-customization"
+    ],
+    "avoid_when": [
+      "editorial-marketing-site",
+      "brand-storytelling-only",
+      "minimal-static-page"
+    ],
+    "application_guidance": "Use this for products that must stay coherent across desktop admin, mobile, and mini-program surfaces; extract taxonomy and theming patterns rather than Tencent-specific visual identity."
+  },
+  {
+    "id": "patternfly",
+    "name": "PatternFly",
+    "type": "oss-enterprise-design-system",
+    "url": "https://www.patternfly.org/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://www.patternfly.org/",
+        "kind": "html",
+        "license": "MIT"
+      },
+      {
+        "url": "https://github.com/patternfly/patternfly",
+        "kind": "repository",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "enterprise",
+      "dashboard",
+      "admin",
+      "charts",
+      "accessibility",
+      "react"
+    ],
+    "strengths": [
+      "enterprise application patterns",
+      "data-dense navigation and table guidance",
+      "chart and dashboard support"
+    ],
+    "use_for": [
+      "admin UI",
+      "dashboard UX",
+      "enterprise product surfaces",
+      "data-heavy pages"
+    ],
+    "product_fit": [
+      "enterprise-saas",
+      "developer-tool",
+      "security-product",
+      "infra-product",
+      "dashboard"
+    ],
+    "visual_traits": [
+      "pragmatic",
+      "structured",
+      "dense",
+      "reliable",
+      "accessible"
+    ],
+    "page_patterns": [
+      "masthead-sidebar",
+      "data-list",
+      "toolbar-filtering",
+      "dashboard-cards",
+      "bulk-actions"
+    ],
+    "implementation_fit": [
+      "react",
+      "css",
+      "charts",
+      "components",
+      "enterprise-layout"
+    ],
+    "extraction_targets": [
+      "navigation-patterns",
+      "table-and-toolbar-states",
+      "chart-guidance",
+      "enterprise-page-anatomy",
+      "empty-states"
+    ],
+    "avoid_when": [
+      "consumer-landing-page",
+      "luxury-minimal-brand",
+      "mobile-only-service"
+    ],
+    "application_guidance": "Use this to make complex product surfaces legible: reduce PatternFly's enterprise density for homepage previews, but keep its navigation, toolbar, table, and dashboard grammar as credibility signals."
+  },
+  {
+    "id": "ark-ui",
+    "name": "Ark UI",
+    "type": "oss-accessible-component-primitives",
+    "url": "https://ark-ui.com/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://ark-ui.com/",
+        "kind": "html",
+        "license": "MIT"
+      },
+      {
+        "url": "https://github.com/chakra-ui/ark",
+        "kind": "repository",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "headless-ui",
+      "component-primitives",
+      "state-machines",
+      "multi-framework",
+      "aria"
+    ],
+    "strengths": [
+      "unstyled accessible component parts",
+      "multi-framework primitive coverage",
+      "Zag.js state-machine behavior model"
+    ],
+    "use_for": [
+      "component behavior contracts",
+      "accessibility requirements",
+      "design-system primitives",
+      "framework-flexible implementation"
+    ],
+    "product_fit": [
+      "design-system",
+      "developer-tool",
+      "saas",
+      "ai-native-docs",
+      "component-library"
+    ],
+    "visual_traits": [
+      "headless",
+      "composable",
+      "accessible",
+      "behavior-first",
+      "themeable"
+    ],
+    "page_patterns": [
+      "dialog",
+      "combobox",
+      "menu",
+      "tabs",
+      "toast"
+    ],
+    "implementation_fit": [
+      "react",
+      "vue",
+      "solid",
+      "svelte",
+      "aria"
+    ],
+    "extraction_targets": [
+      "component-anatomy",
+      "keyboard-behavior",
+      "aria-roles",
+      "state-data-attributes",
+      "composition-patterns"
+    ],
+    "avoid_when": [
+      "visual-style-source",
+      "marketing-layout-only",
+      "no-interactive-components"
+    ],
+    "application_guidance": "Use this to give Artic component specs a reliable behavior and accessibility layer; combine Ark's headless contracts with a separate visual source for tokens, tone, and layout."
   }
 ]
