@@ -22,6 +22,7 @@ WEIGHTS = {
     "tags": 3,
     "strengths": 2,
     "use_for": 2,
+    "application_guidance": 2,
     "id": 1,
     "name": 1,
     "type": 1,

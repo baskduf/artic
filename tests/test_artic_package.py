@@ -58,13 +58,18 @@ def test_catalog_search_smoke():
 
 def test_catalog_sources_have_quality_retrieval_metadata():
     catalog = json.loads((ROOT / "skills/artic/references/source-catalog.json").read_text(encoding="utf-8"))
-    required = {"product_fit", "visual_traits", "page_patterns", "implementation_fit", "extraction_targets", "avoid_when", "risk_notes"}
+    required = {"product_fit", "visual_traits", "page_patterns", "implementation_fit", "extraction_targets", "avoid_when", "application_guidance"}
+    banned_guidance_terms = re.compile(r"\b(risk|risky|warning|caution|danger|be careful)\b", re.IGNORECASE)
     for source in catalog:
         missing = required - set(source)
         assert not missing, (source["id"], missing)
-        for key in required - {"risk_notes"}:
+        assert "risk_notes" not in source, source["id"]
+        for key in required - {"application_guidance"}:
             assert isinstance(source[key], list) and source[key], (source["id"], key)
-        assert isinstance(source["risk_notes"], str) and source["risk_notes"], source["id"]
+        guidance = source["application_guidance"]
+        assert isinstance(guidance, str) and guidance, source["id"]
+        assert banned_guidance_terms.search(guidance) is None, (source["id"], guidance)
+        assert any(verb in guidance for verb in ["Use ", "Apply ", "Translate ", "Pair ", "Ground ", "Keep ", "Connect ", "Adapt "]), (source["id"], guidance)
 
 
 def test_weighted_catalog_search_routes_distinct_design_intents():
@@ -483,6 +488,8 @@ def test_marketplace_plugin_layout_smoke():
         "references/fixtures/voltagent-saas.design.md",
         "scripts/search_reference_catalog.py",
         "scripts/artic_init.py",
+        "scripts/artic_version.py",
+        "scripts/artic_update.py",
         "scripts/synthesize_reference_notes.py",
         "scripts/scaffold_artic_files.py",
         "scripts/validate_artic_outputs.py",
@@ -518,6 +525,71 @@ def test_versions_are_synced_across_manifests():
     ]
     for path in manifest_paths:
         assert json.loads(path.read_text(encoding="utf-8"))["version"] == version, path
+    skill_text = (ROOT / "skills" / "artic" / "SKILL.md").read_text(encoding="utf-8")
+    skill_version = re.search(r"^version: ([^\n]+)", skill_text, re.MULTILINE)
+    assert skill_version and skill_version.group(1).strip() == version
+
+
+def test_version_command_reports_installed_versions_without_network():
+    script = ROOT / "skills" / "artic" / "scripts" / "artic_version.py"
+    result = subprocess.run([
+        sys.executable,
+        str(script),
+        "--root",
+        str(ROOT),
+        "--no-network",
+        "--json",
+    ], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr or result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["installed"]["pyproject"] == "0.1.0"
+    assert payload["installed"]["skill"] == "0.1.0"
+    assert payload["status"] == "latest-unchecked"
+    assert payload["version_mismatches"] == []
+
+
+def test_update_command_is_dry_run_by_default_without_network():
+    script = ROOT / "skills" / "artic" / "scripts" / "artic_update.py"
+    result = subprocess.run([
+        sys.executable,
+        str(script),
+        "--root",
+        str(ROOT),
+        "--no-network",
+    ], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr or result.stdout
+    assert "No files were modified" in result.stdout
+    assert "codex plugin marketplace add baskduf/artic" in result.stdout
+    assert "/plugin marketplace add baskduf/artic" in result.stdout
+
+
+def test_skill_docs_expose_version_and_update_commands():
+    for rel in [
+        "skills/artic/SKILL.md",
+        "plugins/claude-artic/skills/artic/SKILL.md",
+        "plugins/codex-artic/skills/artic/SKILL.md",
+    ]:
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        assert "@artic version" in text, rel
+        assert "@artic update" in text, rel
+
+
+def test_skill_docs_expose_shared_catalog_curation_instruction():
+    required_phrases = [
+        "Shared Catalog Curation Instruction",
+        "user-facing design intelligence",
+        "not an internal audit log",
+        "application guidance",
+        "project-specific homepage/design docs",
+    ]
+    for rel in [
+        "skills/artic/SKILL.md",
+        "plugins/claude-artic/skills/artic/SKILL.md",
+        "plugins/codex-artic/skills/artic/SKILL.md",
+    ]:
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        for phrase in required_phrases:
+            assert phrase in text, (rel, phrase)
 
 
 def test_ci_and_release_workflows_are_hardened():
@@ -563,6 +635,8 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (payload / "skills/artic/references").mkdir(parents=True)
         (payload / "skills/artic/references/source-catalog.json").write_text("[]", encoding="utf-8")
         (payload / "skills/artic/scripts/artic_init.py").write_text("", encoding="utf-8")
+        (payload / "skills/artic/scripts/artic_version.py").write_text("", encoding="utf-8")
+        (payload / "skills/artic/scripts/artic_update.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/search_reference_catalog.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/synthesize_reference_notes.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/validate_artic_outputs.py").write_text("", encoding="utf-8")
@@ -576,6 +650,26 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         result = subprocess.run([sys.executable, str(checker), "--require-payload", str(bad_tar)], capture_output=True, text=True)
         assert result.returncode != 0
         assert "forbidden bytecode/cache entry" in result.stdout
+
+        missing_command_tar = root / "missing-command.tar.gz"
+        clean_payload = root / "clean-payload"
+        (clean_payload / "skills/artic/scripts").mkdir(parents=True)
+        (clean_payload / "skills/artic/SKILL.md").write_text("skill", encoding="utf-8")
+        (clean_payload / "skills/artic/references").mkdir(parents=True)
+        (clean_payload / "skills/artic/references/source-catalog.json").write_text("[]", encoding="utf-8")
+        (clean_payload / "skills/artic/scripts/artic_init.py").write_text("", encoding="utf-8")
+        (clean_payload / "skills/artic/scripts/search_reference_catalog.py").write_text("", encoding="utf-8")
+        (clean_payload / "skills/artic/scripts/synthesize_reference_notes.py").write_text("", encoding="utf-8")
+        (clean_payload / "skills/artic/scripts/validate_artic_outputs.py").write_text("", encoding="utf-8")
+        (clean_payload / "plugins/claude-artic/.claude-plugin").mkdir(parents=True)
+        (clean_payload / "plugins/claude-artic/.claude-plugin/plugin.json").write_text("{}", encoding="utf-8")
+        (clean_payload / "plugins/codex-artic/.codex-plugin").mkdir(parents=True)
+        (clean_payload / "plugins/codex-artic/.codex-plugin/plugin.json").write_text("{}", encoding="utf-8")
+        with tarfile.open(missing_command_tar, "w:gz") as tf:
+            tf.add(clean_payload, arcname="artic-0.1.0")
+        result = subprocess.run([sys.executable, str(checker), "--require-payload", str(missing_command_tar)], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "missing required payload skills/artic/scripts/artic_version.py" in result.stdout
 
         good_zip = root / "metadata.whl"
         with zipfile.ZipFile(good_zip, "w") as zf:

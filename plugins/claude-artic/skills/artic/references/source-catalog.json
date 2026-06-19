@@ -65,7 +65,7 @@
       "visual-inspiration-only",
       "brand-moodboard"
     ],
-    "risk_notes": "Specification source, not a visual style source; use for structure and validation rather than page aesthetics."
+    "application_guidance": "Use this to anchor DESIGN.md structure, token contracts, and lint-friendly accessibility sections; pair it with visual references when shaping the final aesthetic direction."
   },
   {
     "id": "voltagent-awesome-design-md",
@@ -133,7 +133,7 @@
       "exact-brand-clone",
       "regulated-enterprise-dashboard"
     ],
-    "risk_notes": "High brand-copy temptation; extract abstract homepage structure and hierarchy only."
+    "application_guidance": "Use this to compare homepage structure, narrative flow, and hierarchy patterns across many design docs; translate the best recurring moves into original project-specific sections and layouts."
   },
   {
     "id": "bergside-awesome-design-skills",
@@ -189,7 +189,7 @@
       "pure-visual-inspiration",
       "consumer-emotional-brand"
     ],
-    "risk_notes": "Use for process and gates, not final visual style."
+    "application_guidance": "Use this for agent workflow design, quality gates, and repeatable design-document procedures; combine it with visual systems when defining the final interface look."
   },
   {
     "id": "voltagent-awesome-claude-design",
@@ -244,7 +244,7 @@
       "strict-enterprise-system",
       "production-only-design-system"
     ],
-    "risk_notes": "Good for fast scaffolds; cross-check against stricter design systems before production."
+    "application_guidance": "Use this for fast AI design-package flow, preview scaffolding, and Claude-compatible handoff patterns; strengthen final docs with stricter token, accessibility, and source-specific guidance."
   },
   {
     "id": "ndroussi-design-md-for-ai",
@@ -297,10 +297,10 @@
       "cta"
     ],
     "avoid_when": [
-      "low-copy-risk-required",
+      "originality-first",
       "strict-original-brand"
     ],
-    "risk_notes": "Secondary corpus; use to cross-check, not to anchor a single brand direction."
+    "application_guidance": "Use this as a secondary comparison corpus for style patterns and DESIGN.md organization; triangulate with stronger sources before choosing the project’s main direction."
   },
   {
     "id": "meliwat-awesome-ios-design-md",
@@ -361,7 +361,7 @@
       "desktop-enterprise-dashboard",
       "dense-admin"
     ],
-    "risk_notes": "Strong mobile guidance; avoid over-applying native patterns to desktop-heavy SaaS."
+    "application_guidance": "Use this for mobile-first hierarchy, native-feeling interaction, and motion expectations; adapt platform principles to the product’s actual responsive and desktop needs."
   },
   {
     "id": "material-design",
@@ -422,7 +422,7 @@
       "luxury-minimal",
       "highly-editorial"
     ],
-    "risk_notes": "Reliable system baseline; may feel generic without project-specific personality."
+    "application_guidance": "Use this as a dependable baseline for tokens, component behavior, elevation, and accessibility; add project-specific personality through brand voice, spacing rhythm, and visual emphasis."
   },
   {
     "id": "shopify-polaris",
@@ -493,7 +493,7 @@
       "playful-consumer",
       "editorial-storytelling"
     ],
-    "risk_notes": "Excellent for trust and forms; avoid making all marketing pages feel like admin UI."
+    "application_guidance": "Use this for trustworthy commerce/admin flows, forms, validation, and decision clarity; adapt the confidence and usability patterns into marketing pages with a lighter brand-specific presentation."
   },
   {
     "id": "ibm-carbon",
@@ -554,7 +554,7 @@
       "luxury-consumer",
       "simple-one-page"
     ],
-    "risk_notes": "Strong for data/enterprise; can feel too heavy for lightweight consumer homepages."
+    "application_guidance": "Use this for enterprise credibility, dense information hierarchy, data visualization, and accessibility discipline; scale the weight and visual density to match the product’s audience and conversion goal."
   },
   {
     "id": "microsoft-fluent",
@@ -612,7 +612,7 @@
       "highly-playful",
       "luxury-minimal"
     ],
-    "risk_notes": "Good enterprise familiarity; pair with stronger brand direction to avoid generic productivity UI."
+    "application_guidance": "Use this for familiar productivity patterns, cross-platform component behavior, and enterprise polish; pair it with a distinct brand direction so the homepage feels specific rather than generic."
   },
   {
     "id": "ant-design",
@@ -674,7 +674,7 @@
       "playful-consumer",
       "luxury-minimal"
     ],
-    "risk_notes": "Strong for admin/dashboard density; too heavy for simple landing pages."
+    "application_guidance": "Use this for admin, dashboard, table, and form-heavy product surfaces; translate the density into only the sections that need operational depth while keeping landing pages focused."
   },
   {
     "id": "shadcn-ui",
@@ -744,7 +744,7 @@
       "non-react-stack",
       "highly-illustrated-brand"
     ],
-    "risk_notes": "Implementation-friendly; avoid default-template sameness by adding project-specific hierarchy and brand tokens."
+    "application_guidance": "Use this for modern React/Tailwind component defaults and developer-friendly product surfaces; make the result distinctive with project-specific hierarchy, tokens, copy, and composition."
   },
   {
     "id": "github-primer",
@@ -818,7 +818,7 @@
       "playful-brand",
       "image-led-editorial"
     ],
-    "risk_notes": "Use for developer/product clarity and component discipline; do not copy GitHub brand, Octicons identity, or exact repository UI composition."
+    "application_guidance": "Use this for developer-product clarity, dense navigation, documentation structure, and workflow proof; translate repository patterns into project-specific information architecture, tokens, and original interface composition."
   },
   {
     "id": "radix-ui-primitives",
@@ -889,7 +889,7 @@
       "visual-inspiration-only",
       "static-marketing-only"
     ],
-    "risk_notes": "Excellent behavior source, weak visual direction source; pair with visual/token references for final DESIGN.md aesthetics."
+    "application_guidance": "Use this as a behavioral reference for accessible primitives, keyboard flow, state, and focus management; pair it with a visual/token source to shape the final aesthetic system."
   },
   {
     "id": "govuk-design-system",
@@ -964,7 +964,7 @@
       "playful-consumer",
       "highly-visual-marketing"
     ],
-    "risk_notes": "Use for accessibility and service clarity; do not copy GOV.UK identity, crown/government cues, or exact public-service styling."
+    "application_guidance": "Use this for plain-language service clarity, form confidence, and accessibility-first journeys; translate its service patterns into the product’s own identity, content model, and page composition."
   },
   {
     "id": "uswds",
@@ -1040,7 +1040,7 @@
       "luxury-minimal",
       "playful-brand"
     ],
-    "risk_notes": "Strong accessibility/service source; can make private SaaS feel too institutional unless softened with brand-specific tokens."
+    "application_guidance": "Use this for mobile-accessible service structure, regulated-product clarity, and content hierarchy; soften the institutional feel with brand-specific tokens, voice, and visual pacing."
   },
   {
     "id": "adobe-spectrum",
@@ -1115,7 +1115,7 @@
       "playful-consumer",
       "brand-moodboard"
     ],
-    "risk_notes": "Use for accessible complex app behavior; avoid copying Adobe product identity, iconography, or creative-suite visual language."
+    "application_guidance": "Use this for accessible complex-app behavior, adaptive components, and creative-product workflows; express those patterns through original product identity, iconography, and visual language."
   },
   {
     "id": "chakra-ui",
@@ -1188,7 +1188,7 @@
       "non-react-stack",
       "highly-editorial"
     ],
-    "risk_notes": "Good pragmatic UI source; avoid generic component-library sameness by adding project-specific hierarchy and brand tokens."
+    "application_guidance": "Use this for pragmatic accessible React surfaces, theme token structure, and fast SaaS assembly; create distinction through project-specific hierarchy, rhythm, and brand tokens."
   },
   {
     "id": "mantine",
@@ -1263,7 +1263,7 @@
       "luxury-consumer",
       "non-react-stack"
     ],
-    "risk_notes": "Strong implementation reference for product UI; use separate brand/landing references for distinct homepage personality."
+    "application_guidance": "Use this for product UI breadth, form/settings patterns, and dark-mode token planning; pair it with brand and landing references to give the homepage a distinct personality."
   },
   {
     "id": "open-props",
@@ -1333,7 +1333,7 @@
       "component-behavior-needed",
       "brand-strategy-only"
     ],
-    "risk_notes": "Token source, not a complete product design system; combine with component/accessibility references."
+    "application_guidance": "Use this for CSS variable architecture, spacing scales, typography primitives, and motion defaults; combine it with component and accessibility sources to form a complete design system."
   },
   {
     "id": "headless-ui",
@@ -1405,7 +1405,7 @@
       "visual-inspiration-only",
       "non-tailwind-stack"
     ],
-    "risk_notes": "Behavior/reference source only; pair with visual systems so generated docs do not become implementation-only."
+    "application_guidance": "Use this for accessible interaction behavior in custom-branded Tailwind components; pair it with visual references so DESIGN.md defines both behavior and aesthetic direction."
   },
   {
     "id": "elastic-eui",
@@ -1480,7 +1480,7 @@
       "simple-landing-page",
       "consumer-brand"
     ],
-    "risk_notes": "Not permissive OSS; use as high-level data UX reference only after license caution, and do not copy Elastic branding or component code."
+    "application_guidance": "Use this for data-heavy dashboard hierarchy, filtering, search, and observability workflows; adapt the interaction model into original tokens, components, and information design."
   },
   {
     "id": "wai-aria-apg",
@@ -1554,7 +1554,7 @@
       "visual-style-only",
       "brand-moodboard"
     ],
-    "risk_notes": "Authoritative behavior source, not a visual style source; use to validate interaction semantics rather than page aesthetics."
+    "application_guidance": "Use this to ground dialogs, menus, tabs, accordions, and other widgets in correct semantics, keyboard behavior, and focus flow; layer visual design from separate brand sources."
   },
   {
     "id": "wcag-quickref",
@@ -1628,7 +1628,7 @@
       "visual-inspiration-only",
       "fast-moodboard"
     ],
-    "risk_notes": "Use as a standard and QA source; translate criteria into product-specific rules instead of dumping compliance prose into DESIGN.md."
+    "application_guidance": "Use this to convert accessibility criteria into concrete product rules for contrast, content, forms, motion, and keyboard access; keep the generated DESIGN.md practical and design-oriented."
   },
   {
     "id": "inclusive-components",
@@ -1702,7 +1702,7 @@
       "code-copy-needed",
       "brand-style-source"
     ],
-    "risk_notes": "Use for principles and pitfalls only; do not copy article text or examples verbatim."
+    "application_guidance": "Use this for inclusive component reasoning, edge cases, and human-centered tradeoffs; translate the insights into original patterns, copy guidance, and QA checks."
   },
   {
     "id": "a11y-project",
@@ -1773,7 +1773,7 @@
       "strict-legal-compliance-only",
       "visual-style-only"
     ],
-    "risk_notes": "Community reference; cross-check strict requirements against WCAG/WAI-ARIA before treating as normative."
+    "application_guidance": "Use this for team-readable accessibility onboarding and broad QA framing; validate normative requirements against WCAG and WAI-ARIA while keeping guidance practical for builders."
   },
   {
     "id": "dtcg-design-tokens",
@@ -1844,7 +1844,7 @@
       "visual-inspiration-only",
       "one-off-graphic"
     ],
-    "risk_notes": "Standard source, not a style source; use for token architecture and validation language."
+    "application_guidance": "Use this for token naming, types, and cross-tool interoperability; connect the architecture to project-specific color, type, spacing, and component decisions."
   },
   {
     "id": "style-dictionary",
@@ -1916,7 +1916,7 @@
       "visual-style-source",
       "non-technical-brief"
     ],
-    "risk_notes": "Implementation pipeline reference; pair with visual and accessibility sources for user-facing design direction."
+    "application_guidance": "Use this for multi-platform token export and implementation handoff; pair it with visual and accessibility sources so the docs describe both design intent and build path."
   },
   {
     "id": "tailwind-css",
@@ -1989,7 +1989,7 @@
       "non-web-output",
       "visual-moodboard-only"
     ],
-    "risk_notes": "Use for implementation and token mapping, not as a visual identity; avoid generic Tailwind template sameness."
+    "application_guidance": "Use this for implementation-ready theme mapping, responsive spacing, and utility composition; create a distinctive identity through custom tokens, components, and content hierarchy."
   },
   {
     "id": "panda-css",
@@ -2061,7 +2061,7 @@
       "visual-style-only",
       "non-technical-output"
     ],
-    "risk_notes": "Implementation architecture reference; combine with visual references so Artic outputs design intent, not only code structure."
+    "application_guidance": "Use this for typed token systems, component recipes, and scalable theme architecture; connect the implementation model to clear visual intent and user-facing design rules."
   },
   {
     "id": "park-ui",
@@ -2136,7 +2136,7 @@
       "strict-brand-originality",
       "non-component-output"
     ],
-    "risk_notes": "Use as a component pattern source; avoid copying exact demo compositions or default visual treatment without project-specific tokens."
+    "application_guidance": "Use this for modern accessible component aesthetics and recipe-based design-system docs; adapt component patterns through project-specific tokens and original demo compositions."
   },
   {
     "id": "salesforce-lightning",
@@ -2212,7 +2212,7 @@
       "simple-marketing-page",
       "permissive-assets-required"
     ],
-    "risk_notes": "Source and assets have mixed licenses; extract abstract enterprise UX patterns only, not Salesforce branding, icons, illustrations, or exact component styling."
+    "application_guidance": "Use this for enterprise workflow clarity, CRM-style data entry, record pages, and mature component taxonomy; translate patterns into original assets, styling, and product-specific flows."
   },
   {
     "id": "atlassian-design-system",
@@ -2288,7 +2288,7 @@
       "unlicensed-component-use",
       "consumer-lifestyle"
     ],
-    "risk_notes": "License is limited; use as high-level pattern/reference guidance only and do not copy Atlassian branding, exact component styling, token names wholesale, or illustrations."
+    "application_guidance": "Use this for collaboration-product structure, productivity workflows, and well-documented token ideas; adapt concepts into original naming, styling, illustrations, and page composition."
   },
   {
     "id": "apple-hig",
@@ -2364,7 +2364,7 @@
       "android-first-product",
       "exact-apple-style-copy"
     ],
-    "risk_notes": "Apple documentation is not OSS; use only high-level platform principles and avoid copying Apple visual identity, layouts, icons, or marketing style."
+    "application_guidance": "Use this for platform-native interaction principles, mobile constraints, input behavior, and motion expectations; express them through the product’s own identity, layout, and marketing voice."
   },
   {
     "id": "motion-dev",
@@ -2430,7 +2430,7 @@
       "motion-principles",
       "transition-rules",
       "gesture-feedback",
-      "reduced-motion-cautions",
+      "reduced-motion-guidance",
       "interaction-polish"
     ],
     "avoid_when": [
@@ -2438,6 +2438,6 @@
       "reduced-motion-only",
       "motion-sensitive-audience"
     ],
-    "risk_notes": "Use to define purposeful, accessible motion; always include reduced-motion and performance constraints."
+    "application_guidance": "Use this to define purposeful interaction motion, layout transitions, gestures, and presence patterns; include reduced-motion, performance, and restraint rules in the final design docs."
   }
 ]
