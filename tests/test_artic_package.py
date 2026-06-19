@@ -187,13 +187,22 @@ def test_artic_init_generates_brief_and_reference_search_outputs():
         payload = json.loads(result.stdout)
         assert payload["selected_count"] >= 3
         assert payload["query"]
+        assert payload["intent"]["mapper"].startswith("artic-llm-first")
+        assert payload["intent"]["design_north_star"]
         brief = json.loads((Path(tmp) / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        intent = json.loads((Path(tmp) / ".artic" / "intent.json").read_text(encoding="utf-8"))
         references = json.loads((Path(tmp) / ".artic" / "references.json").read_text(encoding="utf-8"))
         state = json.loads((Path(tmp) / ".artic" / "state.json").read_text(encoding="utf-8"))
+        assert intent["design_north_star"]
+        assert {"role", "source_ids", "selection_reason"} <= set(intent["reference_roles"][0])
         assert brief["style"]["search_facets"]
+        assert brief["style"]["design_north_star"] == intent["design_north_star"]
         assert len(references["selected_sources"]) >= 3
+        assert len(references["role_assignments"]) >= 3
         assert all({"id", "name", "score", "reason", "extraction_targets"} <= set(row) for row in references["selected_sources"])
+        assert all({"source_id", "role", "extract", "transform", "avoid"} <= set(row) for row in references["source_plan"])
         assert state["status"] == "initialized"
+        assert state["intent_path"] == ".artic/intent.json"
         assert "Reference candidates" in (Path(tmp) / "docs" / "artic-brief.md").read_text(encoding="utf-8")
 
 
@@ -236,8 +245,15 @@ def test_artic_start_generates_and_validates_docs_from_init_outputs():
         root = Path(tmp)
         for rel in payload["generated_files"]:
             assert (root / rel).exists(), rel
-        assert "Korean AI Meeting Assistant" in (root / "DESIGN.md").read_text(encoding="utf-8")
-        assert "Reference Synthesis" in (root / "docs" / "design-rules.md").read_text(encoding="utf-8")
+        design = (root / "DESIGN.md").read_text(encoding="utf-8")
+        rules = (root / "docs" / "design-rules.md").read_text(encoding="utf-8")
+        assert "Korean AI Meeting Assistant" in design
+        assert "## Design North Star" in design
+        assert design.count("<!-- artic-policy: reference-safety-v1 -->") == 1
+        assert "Reference Synthesis" in rules
+        assert "## Source Application Plan" in rules
+        assert "Transform:" in rules
+        assert "Avoid:" in rules
         state = json.loads((root / ".artic" / "state.json").read_text(encoding="utf-8"))
         assert state["status"] == "generated"
 
@@ -280,6 +296,58 @@ def test_artic_start_synthesis_preserves_initialized_reference_selection():
         assert "voltagent-awesome-design-md" not in synthesized_ids - initialized_ids
 
 
+def test_artic_init_role_assignments_only_reference_selected_sources():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "AI dev mobile app",
+            "--audience",
+            "startup operators",
+            "--goal",
+            "demo requests",
+            "--vibe",
+            "developer mobile ai trust",
+            "--stack",
+            "React Tailwind",
+            "--limit",
+            "3",
+        ], check=True)
+        references = json.loads((Path(tmp) / ".artic" / "references.json").read_text(encoding="utf-8"))
+        selected_ids = {row["id"] for row in references["selected_sources"]}
+        planned_ids = {row["source_id"] for row in references["source_plan"]}
+        assigned_ids = {
+            source_id
+            for role in references["role_assignments"]
+            for source_id in role.get("selected_source_ids", [])
+        }
+        assert assigned_ids <= selected_ids
+        assert assigned_ids <= planned_ids
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode == 0, result.stdout
+
+
+def test_validator_rejects_role_assignments_for_unselected_sources():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        references_path = Path(tmp) / ".artic" / "references.json"
+        references = json.loads(references_path.read_text(encoding="utf-8"))
+        references["role_assignments"].append({
+            "role": "unselected_role",
+            "source_ids": ["apple-hig"],
+            "selected_source_ids": ["apple-hig"],
+            "selection_reason": "Regression fixture for inconsistent role assignments.",
+        })
+        references_path.write_text(json.dumps(references, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode == 1
+        assert "role assignment references unselected source: apple-hig" in result.stdout
+
+
 def test_artic_start_no_validate_skips_validator_but_writes_outputs():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
@@ -293,6 +361,47 @@ def test_artic_start_no_validate_skips_validator_but_writes_outputs():
         payload = json.loads(result.stdout)
         assert payload["validated"] is False
         assert (Path(tmp) / "DESIGN.md").exists()
+
+
+def test_artic_start_migrates_legacy_init_outputs_without_intent_file():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        (Path(tmp) / ".artic" / "intent.json").unlink()
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_start.py"),
+            "--root",
+            tmp,
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        assert payload["validated"] is True
+        intent = json.loads((Path(tmp) / ".artic" / "intent.json").read_text(encoding="utf-8"))
+        assert intent["mapper"] == "artic-llm-first-contract-legacy-migration"
+        assert intent["design_north_star"]
+
+
+def test_validator_rejects_non_list_role_assignments():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        references_path = Path(tmp) / ".artic" / "references.json"
+        references = json.loads(references_path.read_text(encoding="utf-8"))
+        references["role_assignments"] = None
+        references_path.write_text(json.dumps(references, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode == 1
+        assert "references role_assignments must be a list" in result.stdout
+
+
+def test_validator_rejects_non_list_selected_source_ids():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        references_path = Path(tmp) / ".artic" / "references.json"
+        references = json.loads(references_path.read_text(encoding="utf-8"))
+        references["role_assignments"][0]["selected_source_ids"] = None
+        references_path.write_text(json.dumps(references, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode == 1
+        assert "role assignment selected_source_ids must be a list" in result.stdout
 
 
 def test_artic_init_persists_llm_native_language_contract():
