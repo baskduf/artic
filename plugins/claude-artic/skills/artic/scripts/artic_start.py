@@ -133,6 +133,124 @@ def as_markdown(value: Any, *, indent: int = 0) -> str:
     return str(value)
 
 
+RISK_LABELS = {
+    "en": {
+        "heading": "Risk / Readiness Summary",
+        "summary_line": "Risk Summary: risk/quality readiness details follow.",
+        "core_quality_requirements": "Core quality requirements",
+        "known_missing_information": "Known missing information",
+        "safe_assumptions": "Safe assumptions",
+        "unsafe_assumptions": "Unsafe assumptions",
+        "placeholder_fallback_boundary": "Placeholder/fallback boundary",
+        "implementation_stop_conditions": "Implementation stop conditions / Stop Conditions",
+        "completion_acceptance_criteria": "Completion/acceptance criteria",
+        "status_ready": "Strategy/preview can proceed.",
+        "status_blocked": "Strategy/preview can proceed, but implementation is blocked until missing inputs are resolved.",
+        "none": "None declared.",
+        "check_intent": "requested product photo/3D/map/payment trust intent is satisfied or explicitly blocked",
+        "check_placeholder": "placeholder is not accepted as production substitute for quality-critical requirement",
+    },
+    "ko": {
+        "heading": "위험/준비 상태 요약",
+        "summary_line": "위험 요약: 리스크와 품질 기준에 따른 준비 상태를 정리합니다.",
+        "core_quality_requirements": "핵심 품질 요구사항",
+        "known_missing_information": "알려진 누락 정보",
+        "safe_assumptions": "안전한 가정",
+        "unsafe_assumptions": "위험한 가정",
+        "placeholder_fallback_boundary": "플레이스홀더/대체 경계",
+        "implementation_stop_conditions": "구현 중단 조건",
+        "completion_acceptance_criteria": "완료/수용 기준",
+        "status_ready": "전략/프리뷰는 진행할 수 있습니다.",
+        "status_blocked": "전략/프리뷰는 진행할 수 있지만, 누락된 정보가 해결될 때까지 구현은 차단됩니다.",
+        "none": "명시된 항목 없음.",
+        "check_intent": "요청된 제품 사진/3D/지도/결제 신뢰 의도가 충족되었거나 명시적으로 차단됨",
+        "check_placeholder": "플레이스홀더는 품질 핵심 요구사항의 프로덕션 대체물로 인정되지 않음",
+    },
+}
+
+
+RISK_SECTION_KEYS = [
+    "core_quality_requirements",
+    "known_missing_information",
+    "safe_assumptions",
+    "unsafe_assumptions",
+    "placeholder_fallback_boundary",
+    "implementation_stop_conditions",
+    "completion_acceptance_criteria",
+]
+
+
+def risk_readiness(brief: dict[str, Any]) -> dict[str, Any]:
+    value = brief.get("risk_readiness")
+    return value if isinstance(value, dict) and value else {}
+
+
+def risk_labels(brief: dict[str, Any]) -> dict[str, str]:
+    locale = str(brief_language(brief).get("locale") or "en-US")
+    return RISK_LABELS["ko"] if locale.startswith("ko") else RISK_LABELS["en"]
+
+
+def risk_items(risk: dict[str, Any], key: str) -> list[str]:
+    aliases = {
+        "core_quality_requirements": ["quality_critical_requirements", "core_requirements"],
+        "known_missing_information": ["missing_information", "missing_inputs", "blockers"],
+        "placeholder_fallback_boundary": ["placeholder_boundary", "fallback_boundary"],
+        "implementation_stop_conditions": ["stop_conditions", "implementation_blockers"],
+        "completion_acceptance_criteria": ["acceptance_criteria", "completion_criteria"],
+    }
+    raw = risk.get(key)
+    if raw is None:
+        for alias in aliases.get(key, []):
+            raw = risk.get(alias)
+            if raw is not None:
+                break
+    if raw is None or raw == "":
+        return []
+    if isinstance(raw, list):
+        items: list[str] = []
+        for item in raw:
+            rendered = as_markdown(item).strip()
+            if rendered:
+                items.append(rendered)
+        return items
+    return [as_markdown(raw).strip()]
+
+
+def risk_readiness_block(brief: dict[str, Any], *, checklist: bool = False) -> str:
+    risk = risk_readiness(brief)
+    if not risk:
+        return ""
+    labels = risk_labels(brief)
+    implementation_blocked = bool(risk.get("implementation_blocked")) or risk.get("ready_for_implementation") is False
+    readiness = risk.get("readiness")
+    if isinstance(readiness, dict) and str(readiness.get("implementation") or "").lower() == "blocked":
+        implementation_blocked = True
+    lines = [f"## {labels['heading']}", "", f"- {labels['summary_line']}", f"- {labels['status_blocked'] if implementation_blocked else labels['status_ready']}"]
+    if "ready_for_strategy" in risk:
+        lines.append(f"- ready_for_strategy: {bool(risk.get('ready_for_strategy'))}")
+    if "implementation_blocked" in risk:
+        lines.append(f"- implementation_blocked: {bool(risk.get('implementation_blocked'))}")
+    lines.append("")
+    for key in RISK_SECTION_KEYS:
+        lines.extend([f"### {labels[key]}", ""])
+        items = risk_items(risk, key)
+        if items:
+            prefix = "- [ ]" if checklist else "-"
+            lines.extend(f"{prefix} {item}" for item in items)
+        else:
+            lines.append(f"- {labels['none']}")
+        lines.append("")
+    if checklist:
+        lines.extend([
+            "### Intent-matched QA gates",
+            "",
+            f"- [ ] {labels['check_intent']}.",
+            f"- [ ] {labels['check_placeholder']}.",
+            "",
+        ])
+    return "\n".join(lines).rstrip()
+
+
 def role_lines(strategy: dict[str, Any]) -> list[str]:
     roles = strategy.get("reference_roles", [])
     lines: list[str] = []
@@ -155,13 +273,18 @@ def role_lines(strategy: dict[str, Any]) -> list[str]:
 
 def strategy_doc(brief: dict[str, Any], strategy: dict[str, Any]) -> str:
     policy = policy_block(brief)
-    return "\n".join([
+    risk_block = risk_readiness_block(brief)
+    parts = [
         f"# Artic Strategy: {project_name(brief)}",
         "",
         language_block(brief),
         "",
         policy,
         "",
+    ]
+    if risk_block:
+        parts.extend([risk_block, ""])
+    parts.extend([
         "## Project Summary",
         "",
         as_markdown(strategy.get("project_summary", "")),
@@ -211,6 +334,7 @@ def strategy_doc(brief: dict[str, Any], strategy: dict[str, Any]) -> str:
         as_markdown(strategy.get("forbidden_copy_elements", FORBIDDEN_COPY_ELEMENTS)),
         "",
     ])
+    return "\n".join(parts)
 
 
 def overview(brief: dict[str, Any], references: dict[str, Any]) -> str:
@@ -293,6 +417,8 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
     description = f"{project_description(brief, strategy)} Artic-generated homepage design system."
     policy = policy_block(brief)
     language = language_block(brief)
+    risk_block = risk_readiness_block(brief)
+    risk_checklist_block = risk_readiness_block(brief, checklist=True)
     strategy_markdown = strategy_doc(brief, strategy)
 
     design = load_template("DESIGN.template.md")
@@ -317,6 +443,8 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
     design = design.replace("Recommended homepage sequence: hero with one primary promise, proof immediately near the hero, feature/job sections, trust or comparison section, conversion area, FAQ, and final CTA.", as_markdown(strategy.get("implementation_guidance", "")) or "Recommended homepage sequence: hero, proof, feature sections, trust, conversion area, FAQ, and final CTA.")
     design = design.replace("Do not use generic gradient blobs, random glassmorphism, off-token colors, multiple primary CTAs in one viewport, low-contrast muted copy, centered long paragraphs, or exact reference layouts.", "Do not copy " + ", ".join(str(item) for item in strategy.get("forbidden_copy_elements", FORBIDDEN_COPY_ELEMENTS)) + ". " + as_markdown(strategy.get("conflict_resolution", "")))
     design = replace_policy_text(design, policy)
+    if risk_block:
+        design += f"\n\n{risk_block}\n"
     write(root / "DESIGN.md", design)
     write(root / "docs" / "artic-strategy.md", strategy_markdown)
 
@@ -324,6 +452,8 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
     rules = rules.replace("{{PROJECT_NAME}}", name)
     rules = rules.replace("{{REFERENCE_SYNTHESIS}}", strategy_markdown)
     rules = replace_policy_text(rules, policy)
+    if risk_block:
+        rules += f"\n\n{risk_block}\n"
     write(root / "docs" / "design-rules.md", rules)
 
     checklist = load_template("design-qa-checklist.template.md")
@@ -331,6 +461,8 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
     checklist = replace_policy_text(checklist, policy)
     if "Accessibility" not in checklist:
         checklist = checklist.replace("- [ ] Text contrast targets WCAG AA.", "- [ ] Accessibility: text contrast targets WCAG AA, focus states are visible, controls are semantic, and forms are labeled.")
+    if risk_checklist_block:
+        checklist += f"\n\n{risk_checklist_block}\n"
     checklist += "\n## Strategy Gates\n\n- [ ] Visual hierarchy follows the strategy north star.\n- [ ] Brand coherence follows the visual_system field.\n- [ ] Conversion clarity follows the conversion_strategy field.\n- [ ] Mobile quality follows implementation_guidance.\n- [ ] Accessibility follows the accessibility field.\n- [ ] Reference safety forbids logos, trademarks, proprietary illustrations, exact layouts, and source copywriting.\n"
     write(root / "docs" / "design-qa-checklist.md", checklist)
 
@@ -339,6 +471,8 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
     prompt = prompt.replace("# Homepage Implementation Prompt\n", f"# Homepage Implementation Prompt\n\n{language}\n")
     prompt = prompt.replace("Rules:\n", f"Strategy source: `docs/artic-strategy.md`.\n\nRules:\n")
     prompt = replace_policy_text(prompt, policy)
+    if risk_block:
+        prompt += f"\n\n{risk_block}\n"
     write(root / "docs" / "homepage-design-prompt.md", prompt)
 
     update_state(root, brief)
@@ -457,7 +591,7 @@ def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, 
             raise ValueError("cannot run @artic start before init is ready" + (f": missing {missing}" if missing else "") + (f". Next questions: {questions}" if questions else ""))
         if not strategy_path.exists() and (status == "ready" or not brief_path.exists() or not references_path.exists()):
             answers = session.get("answers") if isinstance(session.get("answers"), dict) else {}
-            prompt_brief = {"answers": answers, "language": session.get("language", {})}
+            prompt_brief = {"answers": answers, "language": session.get("language", {}), "risk_readiness": session.get("risk_readiness", {})}
             prompt_references = {"selected_sources": [], "source_plan": [], "note": "@artic start requires the agent-authored strategy before finalizing init outputs."}
             prompt_path = write_strategy_prompt(root, prompt_brief, prompt_references, None)
             raise ValueError(json.dumps({

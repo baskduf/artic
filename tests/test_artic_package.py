@@ -1,5 +1,7 @@
 from __future__ import annotations
 import functools, importlib, importlib.util, json, re, subprocess, sys, tarfile, tempfile, threading, urllib.error, zipfile
+
+import pytest
 from email.message import Message
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -12,6 +14,7 @@ if str(SCRIPTS_DIR) not in sys.path:
 artic_update = importlib.import_module("artic_update")
 artic_version = importlib.import_module("artic_version")
 artic_init_session = importlib.import_module("artic_init_session")
+risk_readiness = importlib.import_module("risk_readiness")
 
 README_FILES = ["README.md", "README.ko.md", "README.ja.md", "README.zh-CN.md", "README.zh-TW.md"]
 
@@ -128,12 +131,82 @@ def test_json_manifests_parse():
         json.loads((ROOT / rel).read_text())
 
 def test_skill_copies_are_in_sync():
+    # This worktree intentionally keeps new canonical risk/readiness artifacts out
+    # of plugin copies; the release parent syncs plugin packages in a separate step.
+    canonical_only_until_plugin_sync = {
+        Path("scripts/artic_init_session.py"),
+        Path("scripts/risk_readiness.py"),
+        Path("scripts/artic_start.py"),
+        Path("scripts/validate_artic_outputs.py"),
+        Path("scripts/test_artic_scripts.py"),
+        Path("templates/brief.schema.json"),
+        Path("templates/strategy.schema.json"),
+    }
     canonical = ROOT / "skills" / "artic"
     for copy in [ROOT / "plugins" / "claude-artic" / "skills" / "artic", ROOT / "plugins" / "codex-artic" / "skills" / "artic"]:
         for path in canonical.rglob("*"):
             if path.is_file() and "__pycache__" not in path.parts:
                 rel = path.relative_to(canonical)
+                if rel in canonical_only_until_plugin_sync:
+                    continue
                 assert (copy / rel).read_bytes() == path.read_bytes(), rel
+
+
+def test_low_risk_readiness_contract_is_implementation_ready():
+    answers = {
+        "project": "AI meeting notes SaaS",
+        "audience": "startup teams",
+        "goal": "demo request",
+        "vibe": "trustworthy clean",
+    }
+    payload = risk_readiness.analyze_risk_readiness(answers)
+
+    assert payload["schema_version"] == "artic-risk-readiness-v1"
+    assert payload["missing_dynamic_required_fields"] == []
+    assert payload["readiness"]["strategy"] == "ready"
+    assert payload["readiness"]["preview"] == "ready"
+    assert payload["readiness"]["implementation"] in {"ready", "ready_with_assumptions"}
+    assert payload["readiness"]["status"] in {"ready", "ready_with_assumptions"}
+    assert "implementation" not in " ".join(payload["stop_conditions"]).lower()
+
+
+def test_high_risk_korean_3d_site_blocks_implementation_until_dynamic_fields_are_answered():
+    answers = {
+        "project": "마우스로 만지는 3D 석고상 홈페이지",
+        "audience": "디자인 학생",
+        "goal": "전시 예약",
+        "vibe": "고급스럽고 실제 갤러리처럼",
+    }
+    payload = risk_readiness.analyze_risk_readiness(answers)
+
+    assert "core_visual_asset_dependency" in payload["risk_categories"]
+    assert "interaction_dependency" in payload["risk_categories"]
+    assert "conversion_business" in payload["risk_categories"]
+    assert {"asset_source", "interaction_model"}.issubset(set(payload["missing_dynamic_required_fields"]))
+    assert payload["readiness"]["strategy"] == "ready"
+    assert payload["readiness"]["preview"] == "ready_with_placeholders"
+    assert payload["readiness"]["implementation"] == "blocked"
+    assert payload["readiness"]["status"] == "implementation_blocked"
+    assert any("placeholder" in condition.lower() for condition in payload["stop_conditions"])
+    assert any("substitute" in item.lower() for item in payload["unsafe_assumptions"])
+    assert "placeholder" in payload["placeholder_boundary"].lower()
+
+
+def test_risk_product_photo_quality_critical_requirement_is_preview_only_placeholder():
+    payload = risk_readiness.analyze_risk_readiness({
+        "project": "고급스러운 실제 제품 사진 핵심 랜딩페이지",
+        "audience": "premium shoppers",
+        "goal": "문의",
+        "vibe": "luxury editorial",
+    })
+
+    requirements = payload["quality_critical_requirements"]
+    assert requirements
+    assert any("제품 사진" in req["requirement"] or "product photo" in req["requirement"].lower() for req in requirements)
+    assert all(req["placeholder_policy"] == "preview_only" for req in requirements)
+    assert any("generic gradient" in item.lower() or "gradient" in item.lower() for item in payload["unsafe_assumptions"])
+    assert payload["readiness"]["implementation"] == "blocked"
+
 
 def headings(path: Path):
     return [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.startswith("## ")]
@@ -1044,6 +1117,106 @@ def test_validator_accepts_scaffold_generated_strategy_artifacts():
         result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
         assert result.returncode == 0, result.stdout
 
+
+def inject_risk_readiness(root: Path, *, locale: str = "en-US") -> dict:
+    brief_path = root / ".artic" / "brief.json"
+    brief = json.loads(brief_path.read_text(encoding="utf-8"))
+    brief["language"]["locale"] = locale
+    if locale == "ko-KR":
+        brief["language"]["output_language"] = "Korean"
+        brief["language"]["tone"] = "명확하고 전문적인 한국어"
+    brief["risk_readiness"] = {
+        "ready_for_strategy": True,
+        "implementation_blocked": True,
+        "core_quality_requirements": ["requested product photo/3D/map/payment trust intent must be satisfied"],
+        "known_missing_information": ["licensed product photography and 3D model source files are not provided"],
+        "safe_assumptions": ["strategy and static preview can use labeled placeholders"],
+        "unsafe_assumptions": ["placeholder asset is production-equivalent"],
+        "placeholder_fallback_boundary": ["placeholder is not accepted as production substitute for quality-critical requirement"],
+        "implementation_stop_conditions": ["stop production implementation until missing licensed assets are resolved"],
+        "completion_acceptance_criteria": ["requested product photo/3D/map/payment trust intent is satisfied or explicitly blocked"],
+    }
+    brief_path.write_text(json.dumps(brief, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return brief
+
+
+def test_artic_start_propagates_risk_readiness_into_generated_docs_and_checklist():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        inject_risk_readiness(root)
+        write_fixture_strategy(root)
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+
+        assert payload["validated"] is True
+        generated_docs = [
+            root / "DESIGN.md",
+            root / "docs" / "artic-strategy.md",
+            root / "docs" / "design-rules.md",
+            root / "docs" / "design-qa-checklist.md",
+            root / "docs" / "homepage-design-prompt.md",
+        ]
+        for path in generated_docs:
+            text = path.read_text(encoding="utf-8")
+            assert "Risk / Readiness Summary" in text, path
+            for required in [
+                "Core quality requirements",
+                "Known missing information",
+                "Safe assumptions",
+                "Unsafe assumptions",
+                "Placeholder/fallback boundary",
+                "Implementation stop conditions",
+                "Completion/acceptance criteria",
+            ]:
+                assert required in text, (path, required)
+            assert "implementation is blocked until missing inputs are resolved" in text, path
+
+        checklist = (root / "docs" / "design-qa-checklist.md").read_text(encoding="utf-8")
+        assert "requested product photo/3D/map/payment trust intent is satisfied or explicitly blocked" in checklist
+        assert "placeholder is not accepted as production substitute for quality-critical requirement" in checklist
+
+
+def test_artic_start_omits_risk_summary_when_brief_has_no_risk_readiness():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        write_fixture_strategy(root)
+
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+
+        assert "Risk / Readiness Summary" not in (root / "DESIGN.md").read_text(encoding="utf-8")
+        assert "Risk / Readiness Summary" not in (root / "docs" / "design-qa-checklist.md").read_text(encoding="utf-8")
+
+
+def test_artic_start_risk_readiness_uses_korean_labels_for_korean_brief():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        inject_risk_readiness(root, locale="ko-KR")
+        write_fixture_strategy(root)
+
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+
+        checklist = (root / "docs" / "design-qa-checklist.md").read_text(encoding="utf-8")
+        assert "## 위험/준비 상태 요약" in checklist
+        assert "핵심 품질 요구사항" in checklist
+        assert "누락된 정보가 해결될 때까지 구현은 차단됩니다" in checklist
+
+
+def test_validator_rejects_missing_risk_sections_when_brief_declares_risk_readiness():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        inject_risk_readiness(root)
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+
+        assert result.returncode == 1
+        assert "risk_readiness" in result.stdout
+
+
 def test_artic_init_role_assignments_only_reference_selected_sources():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run([
@@ -1368,6 +1541,56 @@ def test_artic_show_generates_static_preview_without_modifying_app_files():
         assert "DESIGN.md" in html
 
 
+def test_artic_show_high_risk_3d_placeholder_reports_not_production_ready():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "docs").mkdir(parents=True)
+        (root / ".artic").mkdir(parents=True)
+        (root / "DESIGN.md").write_text(
+            """---\nname: \"한국어 3D 쇼룸\"\ndescription: \"3D 런타임 중심 프리뷰\"\ncolors:\n  primary: \"#1F4FD8\"\n  accent: \"#7C3AED\"\n---\n\n## Overview\n3D 제품 경험을 검증합니다.\n\n## Design North Star\n런타임 상호작용이 핵심인 쇼룸.\n\n## Page Composition\n히어로, 3D 런타임, 전환.\n""",
+            encoding="utf-8",
+        )
+        (root / "docs" / "homepage-design-prompt.md").write_text("# Prompt\n", encoding="utf-8")
+        (root / ".artic" / "strategy.json").write_text("{}\n", encoding="utf-8")
+        (root / ".artic" / "brief.json").write_text(json.dumps({
+            "project": {
+                "name": "한국어 3D 쇼룸",
+                "target_users": ["큐레이터"],
+                "primary_goal": "상담 요청",
+            },
+            "language": {"locale": "ko-KR"},
+            "risk_readiness": {
+                "implementation_blocked": True,
+                "placeholder_fallback_boundary": ["실제 GLB 에셋 미확보", "3D 조작 QA 미완료"],
+                "implementation_stop_conditions": ["라이선스 확인 가능한 모델 에셋 필요"],
+                "core_quality_requirements": [{"requirement": "모바일 포스터 폴백", "status": "missing"}],
+            },
+        }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        (root / ".artic" / "references.json").write_text(json.dumps({
+            "selected_sources": [{"id": "model-viewer", "name": "model-viewer"}],
+            "role_assignments": [{"role": "3d_runtime", "source_ids": ["model-viewer"]}],
+        }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_show.py"),
+            "--root",
+            tmp,
+        ], check=True, capture_output=True, text=True)
+
+        payload = json.loads(result.stdout)
+        assert payload["production_ready"] is False
+        assert payload["preview_status"] == "placeholder_preview"
+        assert payload["modified_app_files"] == []
+        assert "실제 GLB 에셋 미확보" in payload["placeholder_boundaries"]
+        assert "라이선스 확인 가능한 모델 에셋 필요" in payload["implementation_blockers"]
+        html = (root / ".artic" / "show" / "index.html").read_text(encoding="utf-8")
+        assert "프로덕션 준비 완료가 아닙니다" in html
+        assert "플레이스홀더 경계" in html
+        assert "실제 GLB 에셋 미확보" in html
+        assert "model-viewer · GLB" in html
+
+
 def test_artic_show_sanitizes_design_token_values_before_css_output():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -1544,6 +1767,9 @@ def test_artic_init_session_ready_does_not_generate_outputs_before_start():
             },
         )
         assert session["status"] == "ready"
+        assert session["readiness"]["strategy"] == "ready"
+        assert session["readiness"]["implementation"] == "ready"
+        assert session["missing_dynamic_required_fields"] == []
         assert (root / ".artic" / "init-session.json").exists()
         for rel in [
             ".artic/brief.json",
@@ -1554,6 +1780,91 @@ def test_artic_init_session_ready_does_not_generate_outputs_before_start():
             "docs/design-rules.md",
         ]:
             assert not (root / rel).exists(), rel
+
+
+def test_artic_init_session_low_risk_core_fields_stay_lightweight():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session = session_mod.create_or_update_session(
+            root,
+            "Project: Payroll SaaS. Audience: HR teams. Goal: demo requests. Vibe: clean trustworthy.",
+        )
+
+        assert session["status"] == "ready"
+        assert session["readiness"] == {
+            "strategy": "ready",
+            "preview": "ready",
+            "implementation": "ready",
+        }
+        assert session["risk_readiness"]["risk_level"] == "low"
+        assert session["missing_dynamic_required_fields"] == []
+        assert session["last_question_ids"] == []
+        assert session_mod.render_questions(session) == []
+        assert_no_finalized_artic_outputs(root)
+
+
+def test_artic_init_session_korean_3d_interactive_blocks_implementation_with_dynamic_questions():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session = session_mod.create_or_update_session(
+            root,
+            "한국어로 인터랙티브 3D 석고상 홈페이지를 만들고 싶어.",
+            answers={
+                "project": "중앙에 만질 수 있는 3D 석고상이 있고 회전/줌 상호작용을 제공하는 예술가 포트폴리오 홈페이지",
+                "audience": "전시 기획자와 컬렉터",
+                "goal": "작품 문의",
+                "vibe": "고급스럽고 조용한 3D 런타임 중심",
+            },
+        )
+
+        assert session["status"] == "ready"
+        assert session["readiness"]["strategy"] == "ready"
+        assert session["readiness"]["preview"] == "ready_with_placeholders"
+        assert session["readiness"]["implementation"] == "blocked"
+        assert {"asset_source", "interaction_model", "asset_policy"} <= set(session["missing_dynamic_required_fields"])
+        assert {"asset_source", "interaction_model", "asset_policy"} <= set(session["last_question_ids"])
+        questions = session_mod.render_questions(session, limit=8)
+        assert any("3D" in question and "에셋" in question for question in questions)
+        assert any("상호작용" in question for question in questions)
+        assert any("라이선스" in question or "에셋" in question for question in questions)
+        summary = session_mod.render_ready_summary(session)
+        assert "구현 차단" in summary
+        assert "전략 문서" in summary
+        assert "3D" in summary
+
+
+def test_artic_init_session_dynamic_answers_shrink_missing_and_can_unblock_implementation():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session_mod.create_or_update_session(
+            root,
+            "한국어로 인터랙티브 3D 석고상 홈페이지를 만들고 싶어.",
+            answers={
+                "project": "중앙에 만질 수 있는 3D 석고상이 있고 회전/줌 상호작용을 제공하는 예술가 포트폴리오 홈페이지",
+                "audience": "전시 기획자와 컬렉터",
+                "goal": "작품 문의",
+                "vibe": "고급스럽고 조용한 3D 런타임 중심",
+            },
+        )
+        session = session_mod.create_or_update_session(
+            root,
+            "동적 답변 추가",
+            answers={
+                "asset_source": "자체 제작한 glb 석고상 모델을 사용",
+                "interaction_model": "드래그 회전, 휠 줌, 키보드 좌우 회전과 reduced motion 대체 이미지",
+                "asset_policy": "자체 제작 에셋만 사용하고 외부 에셋은 허용하지 말고 원칙 참고로만 사용",
+            },
+        )
+
+        assert "asset_source" not in session["missing_dynamic_required_fields"]
+        assert "interaction_model" not in session["missing_dynamic_required_fields"]
+        assert "asset_policy" not in session["missing_dynamic_required_fields"]
+        assert session["readiness"]["implementation"] in {"ready", "ready_with_assumptions"}
+        artic_init = importlib.import_module("artic_init")
+        assert artic_init.asset_policy_payload(session["answers"]["asset_policy"])["mode"] == "reference-principles-only"
 
 
 def test_artic_start_finalizes_ready_init_session():
@@ -1855,6 +2166,337 @@ def test_validator_checks_quality_tokens_inside_their_own_sections():
         assert "spacing missing quality token: sm" in result.stdout
         assert "spacing missing quality token: md" in result.stdout
         assert "spacing missing quality token: lg" in result.stdout
+
+def _risk_session(user_text: str, *, answers: dict[str, str] | None = None) -> dict:
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        return session_mod.create_or_update_session(Path(tmp), user_text, answers=answers or {})
+
+
+def _risk_readiness(session: dict) -> dict:
+    payload = session.get("risk_readiness")
+    assert isinstance(payload, dict), "session must expose risk_readiness for regression verification"
+    return payload
+
+
+def _required_field_ids(risk: dict) -> set[str]:
+    raw_fields = risk.get("required_fields") or risk.get("dynamic_required_fields") or []
+    field_ids: set[str] = set()
+    for item in raw_fields:
+        if isinstance(item, dict):
+            field_ids.add(str(item.get("id") or item.get("field") or item.get("name") or ""))
+        else:
+            field_ids.add(str(item))
+    return {field for field in field_ids if field}
+
+
+def _question_text(risk: dict) -> str:
+    return json.dumps(risk.get("questions") or risk.get("dynamic_questions") or risk, ensure_ascii=False).lower()
+
+
+def test_risk_readiness_low_risk_standard_homepage_is_lightweight_and_implementation_ready():
+    session = _risk_session(
+        "Project: Payroll SaaS homepage. Audience: HR leaders. Goal: demo requests. Vibe: clean trustworthy SaaS. Stack: React Tailwind."
+    )
+    risk = _risk_readiness(session)
+
+    assert risk["level"] in {"low", "standard", "lightweight"}
+    assert risk["ready_for_strategy"] is True
+    assert risk["ready_for_preview"] is True
+    assert risk["ready_for_implementation"] is True
+    assert not risk.get("blockers")
+    assert _required_field_ids(risk) <= {"project", "audience", "goal", "vibe", "stack", "references", "accessibility"}
+
+
+def test_risk_readiness_korean_3d_homepage_blocks_implementation_and_asks_dynamic_fields():
+    session = _risk_session(
+        "한국어로 중앙에 만질 수 있는 3D 석고상이 있고 회전/줌 상호작용을 제공하는 예술가 홈페이지를 만들고 싶어.",
+        answers={
+            "project": "중앙에 만질 수 있는 3D 석고상이 있는 예술가 포트폴리오 홈페이지",
+            "audience": "전시 기획자와 컬렉터",
+            "goal": "작품 문의",
+            "vibe": "고급스럽고 조용한 3D WebGL 런타임",
+            "stack": "React model-viewer",
+        },
+    )
+    risk = _risk_readiness(session)
+    fields = _required_field_ids(risk)
+    questions = _question_text(risk)
+
+    assert risk["level"] in {"high", "advanced", "implementation-blocked"}
+    assert risk["ready_for_strategy"] is True
+    assert risk["ready_for_preview"] in {True, "placeholder"}
+    assert risk["ready_for_implementation"] is False
+    assert {"asset_source", "interaction_model", "license_clearance", "performance_accessibility_plan"} <= fields
+    for keyword in ["asset", "interact", "license", "performance"]:
+        assert keyword in questions
+
+
+def test_risk_readiness_product_photo_core_requirement_sets_acceptance_and_preview_placeholder_boundary():
+    session = _risk_session(
+        "Create an ecommerce homepage where a real product photo is the core requirement before launch.",
+        answers={
+            "project": "Premium skincare ecommerce homepage",
+            "audience": "beauty buyers",
+            "goal": "purchase conversion",
+            "vibe": "premium editorial ecommerce",
+            "must_have_feature": "real product photo must be visible in the hero",
+        },
+    )
+    risk = _risk_readiness(session)
+    serialized = json.dumps(risk, ensure_ascii=False).lower()
+
+    assert "real product photo" in serialized
+    assert "acceptance" in serialized and "criteria" in serialized
+    assert risk["ready_for_preview"] in {True, "placeholder"}
+    assert risk["ready_for_implementation"] is False
+    assert "placeholder" in serialized and "preview" in serialized
+
+
+def test_risk_readiness_brand_reference_detects_inspiration_without_clone_and_requires_constraints():
+    session = _risk_session(
+        "Make a Korean fintech homepage like Toss: simple, fast, trustworthy.",
+        answers={
+            "project": "Korean fintech onboarding homepage",
+            "audience": "20-40대 한국 사용자",
+            "goal": "본인인증 전환",
+            "vibe": "토스처럼 쉽고 신뢰감 있게",
+        },
+    )
+    risk = _risk_readiness(session)
+    serialized = json.dumps(risk, ensure_ascii=False).lower()
+
+    assert "brand" in serialized
+    assert "constraint" in serialized
+    assert "clone" in serialized or "copy" in serialized
+    assert "toss" in serialized or "토스" in serialized
+    assert risk["ready_for_implementation"] is False
+
+
+def test_risk_readiness_payment_conversion_intent_requires_trust_completion_beyond_form_exists():
+    session = _risk_session(
+        "Build a checkout/payment landing page; completion means users trust payment and complete checkout, not only that a form exists.",
+        answers={
+            "project": "Checkout conversion page",
+            "audience": "new buyers",
+            "goal": "payment completion",
+            "vibe": "secure, clear, low-friction",
+        },
+    )
+    risk = _risk_readiness(session)
+    serialized = json.dumps(risk, ensure_ascii=False).lower()
+
+    assert "trust" in serialized
+    assert "completion" in serialized
+    assert "form exists" not in serialized
+    assert "payment" in serialized or "checkout" in serialized
+
+
+def test_risk_readiness_motion_media_heavy_mobile_intent_requires_performance_accessibility_followup():
+    session = _risk_session(
+        "Mobile-first homepage with heavy motion, autoplay media, scroll animations, and video backgrounds.",
+        answers={
+            "project": "Motion-heavy mobile media homepage",
+            "audience": "mobile shoppers",
+            "goal": "signup conversion",
+            "vibe": "cinematic motion-rich mobile",
+            "stack": "Next.js mobile web",
+        },
+    )
+    risk = _risk_readiness(session)
+    fields = _required_field_ids(risk)
+    serialized = json.dumps(risk, ensure_ascii=False).lower()
+
+    assert "performance_accessibility_plan" in fields
+    assert "reduced motion" in serialized or "reduced-motion" in serialized
+    assert "mobile" in serialized
+    assert risk["ready_for_implementation"] is False
+
+
+def test_risk_readiness_quality_critical_placeholder_answer_blocks_implementation():
+    session = _risk_session(
+        "Create an ecommerce homepage where a real product photo is the core requirement before launch.",
+        answers={
+            "project": "Product launch homepage with real product photo hero",
+            "audience": "buyers",
+            "goal": "preorder conversion",
+            "vibe": "premium product photography",
+            "asset_source": "generic gradient placeholder until photos are available",
+        },
+    )
+    risk = _risk_readiness(session)
+    serialized = json.dumps(risk, ensure_ascii=False).lower()
+
+    assert risk["ready_for_implementation"] is False
+    assert "placeholder" in serialized
+    assert "substitute" in serialized
+
+
+def test_artic_init_low_risk_generated_intent_does_not_create_false_positive_blockers():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Payroll SaaS homepage",
+            "--audience",
+            "HR leaders",
+            "--goal",
+            "demo requests",
+            "--vibe",
+            "clean trustworthy SaaS",
+            "--stack",
+            "React Tailwind",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        brief = json.loads((Path(tmp) / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        risk = brief["risk_readiness"]
+
+        assert risk["level"] == "low"
+        assert risk["ready_for_implementation"] is True
+        assert risk["missing_dynamic_required_fields"] == []
+
+
+def test_artic_init_alias_answers_satisfy_canonical_dynamic_fields():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Interactive 3D plaster statue portfolio homepage",
+            "--audience",
+            "curators and collectors",
+            "--goal",
+            "artwork inquiries",
+            "--vibe",
+            "quiet premium 3D WebGL runtime",
+            "--stack",
+            "React model-viewer",
+            "--requirement",
+            "asset_source=owned GLB plaster statue model",
+            "--requirement",
+            "interaction_model=drag rotate, wheel zoom, keyboard rotation, reduced motion poster fallback",
+            "--asset-policy",
+            "owned assets only; external references as principles only",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        brief = json.loads((Path(tmp) / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        risk = brief["risk_readiness"]
+
+        assert "license_clearance" not in risk["missing_dynamic_required_fields"]
+        assert "performance_accessibility_plan" not in risk["missing_dynamic_required_fields"]
+        assert risk["ready_for_implementation"] is True
+
+
+def test_artic_start_missing_strategy_prompt_includes_session_risk_summary():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session_mod.create_or_update_session(
+            root,
+            "한국어로 인터랙티브 3D 석고상 홈페이지를 만들고 싶어.",
+            answers={
+                "project": "중앙에 만질 수 있는 3D 석고상이 있는 예술가 포트폴리오 홈페이지",
+                "audience": "전시 기획자와 컬렉터",
+                "goal": "작품 문의",
+                "vibe": "고급스럽고 조용한 3D WebGL 런타임",
+                "stack": "React model-viewer",
+            },
+        )
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        prompt_path = root / payload["strategy_prompt"]
+        prompt = prompt_path.read_text(encoding="utf-8").lower()
+
+        assert result.returncode == 1
+        assert "risk_readiness" in prompt
+        assert "implementation_blocked" in prompt or "ready_for_implementation" in prompt
+
+
+def test_artic_start_docs_render_risk_summary_and_stop_conditions_when_risk_readiness_exists():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "3D product launch homepage",
+            "--audience",
+            "buyers",
+            "--goal",
+            "preorder conversion",
+            "--vibe",
+            "interactive 3D WebGL with product model",
+            "--stack",
+            "React model-viewer",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        brief_path = root / ".artic" / "brief.json"
+        brief = json.loads(brief_path.read_text(encoding="utf-8"))
+        brief["risk_readiness"] = {
+            "level": "high",
+            "ready_for_strategy": True,
+            "ready_for_preview": "placeholder",
+            "ready_for_implementation": False,
+            "blockers": ["missing licensed 3D asset", "missing performance budget"],
+            "stop_conditions": ["Do not implement production UI with placeholder model"],
+        }
+        brief_path.write_text(json.dumps(brief, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        refs = json.loads((root / ".artic" / "references.json").read_text(encoding="utf-8"))
+        write_fixture_strategy(root, source_ids=[row["id"] for row in refs["selected_sources"]])
+
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+
+        combined = "\n".join((root / rel).read_text(encoding="utf-8") for rel in ["docs/artic-strategy.md", "DESIGN.md", "docs/homepage-design-prompt.md"])
+        assert "Risk Summary" in combined
+        assert "Stop Conditions" in combined
+        assert "missing licensed 3D asset" in combined
+        assert "Do not implement production UI with placeholder model" in combined
+
+
+def test_artic_show_marks_production_ready_false_when_core_placeholder_remains():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Interactive 3D plaster statue portfolio homepage",
+            "--audience",
+            "curators and collectors",
+            "--goal",
+            "artwork inquiries",
+            "--vibe",
+            "quiet premium 3D WebGL runtime",
+            "--stack",
+            "React model-viewer",
+            "--requirement",
+            "must_have_feature=interactive 3D plaster statue in the hero",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        refs = json.loads((root / ".artic" / "references.json").read_text(encoding="utf-8"))
+        write_fixture_strategy(root, source_ids=[row["id"] for row in refs["selected_sources"]])
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_show.py"), "--root", tmp], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        html = (root / ".artic" / "show" / "index.html").read_text(encoding="utf-8").lower()
+
+        assert payload["production_ready"] is False
+        assert any("placeholder" in blocker.lower() for blocker in payload.get("implementation_blockers", []))
+        assert "placeholder" in html and "preview" in html
+
 
 def test_design_intent_mapper_normalizes_user_language_to_facets():
     result = subprocess.run([

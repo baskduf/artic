@@ -8,7 +8,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def write_fixture_strategy(root: Path, source_ids: list[str] | None = None, north_star: str | None = None) -> dict:
     """Write a minimal valid strategy-first contract fixture for @artic start."""
-    source_ids = ["voltagent-awesome-design-md", "shadcn-ui", "material-design"] if source_ids is None else source_ids
+    if source_ids is None:
+        references_path = root / ".artic" / "references.json"
+        if references_path.exists():
+            references = json.loads(references_path.read_text(encoding="utf-8"))
+            selected = references.get("selected_sources", []) if isinstance(references, dict) else []
+            source_ids = [str(row["id"]) for row in selected if isinstance(row, dict) and row.get("id")][:3]
+        else:
+            source_ids = ["google-design-md", "voltagent-awesome-design-md", "material-design"]
     north_star = north_star or "Make the product feel like a calm command center for proof-rich decisions."
     reference_roles = [
         {
