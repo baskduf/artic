@@ -1,0 +1,121 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing stable tag to release, e.g. v0.1.0'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}-${{ inputs.tag || '' }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: build and publish release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Resolve and validate release ref
+        id: ref
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_TAG: ${{ inputs.tag }}
+          PUSH_TAG: ${{ github.ref_name }}
+          PUSH_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            TAG="$DISPATCH_TAG"
+            REF="refs/tags/$DISPATCH_TAG"
+          else
+            TAG="$PUSH_TAG"
+            REF="$PUSH_REF"
+          fi
+          case "$TAG" in
+            v[0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "Invalid release tag: $TAG" >&2; exit 1 ;;
+          esac
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Release tag must be stable semver, got: $TAG" >&2
+            exit 1
+          fi
+          printf 'tag=%s\n' "$TAG" >> "$GITHUB_OUTPUT"
+          printf 'ref=%s\n' "$REF" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tag
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.ref.outputs.ref }}
+          fetch-depth: 0
+
+      - name: Verify tag points at HEAD
+        env:
+          RELEASE_TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "$RELEASE_TAG^{commit}")"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install build tools
+        run: python -m pip install --upgrade pip build pytest pyyaml
+
+      - name: Verify version matches tag
+        env:
+          RELEASE_TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os, pathlib, re, tomllib
+          tag = os.environ['RELEASE_TAG']
+          pyproject = tomllib.loads(pathlib.Path('pyproject.toml').read_text())
+          version = pyproject['project']['version']
+          expected = f'v{version}'
+          if tag != expected:
+              raise SystemExit(f'tag {tag} does not match pyproject version {expected}')
+          if not re.fullmatch(r'v\d+\.\d+\.\d+', tag):
+              raise SystemExit(f'tag {tag} is not a stable semver release tag')
+          PY
+
+      - name: Run release verification
+        run: |
+          set -euo pipefail
+          python -m py_compile skills/artic/scripts/*.py tests/*.py
+          python -m pytest -q
+          python skills/artic/scripts/scaffold_artic_files.py --root /tmp/artic-release-smoke
+          python skills/artic/scripts/validate_artic_outputs.py --root /tmp/artic-release-smoke
+          npx -y @google/design.md lint /tmp/artic-release-smoke/DESIGN.md
+
+      - name: Build release assets
+        env:
+          RELEASE_TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python -m build --sdist --wheel
+          tar -czf "dist/artic-skill-${RELEASE_TAG}.tar.gz" skills plugins .claude-plugin .agents README.md README.ko.md README.ja.md README.zh-CN.md README.zh-TW.md LICENSE
+          (cd dist && shasum -a 256 * > SHA256SUMS.txt)
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release create "$RELEASE_TAG" dist/* \
+            --repo '${{ github.repository }}' \
+            --title "Artic $RELEASE_TAG" \
+            --generate-notes \
+            --verify-tag

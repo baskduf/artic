@@ -4,8 +4,11 @@ version = "0.1.0"
 description = "Reference-driven AI-native design docs for homepage generation"
 readme = "README.md"
 requires-python = ">=3.9"
-license = {text = "MIT"}
+license = "MIT"
 authors = [{name = "baskduf"}]
+
+[tool.setuptools]
+py-modules = []
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
