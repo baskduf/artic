@@ -146,11 +146,13 @@ Skip it for:
 | Goal | Command |
 | --- | --- |
 | Start the design interview | `@artic init` |
-| Run a fast interview | `@artic init quick` |
+| Run the fast interview | `@artic init quick` |
 | Compile docs | `@artic start` |
 | Review implementation | `@artic review the homepage against DESIGN.md` |
 | Check installed/latest version | `@artic version` |
 | Print safe update commands | `@artic update` |
+
+`@artic init` follows the user's language. For example, `한국어로 Artic init 진행해줘. AI 회의록 서비스 랜딩을 만들고 싶어.` starts a Korean interview, stores `ko-KR` in `.artic/brief.json.language`, and keeps machine-readable terms such as `DESIGN.md`, `AI-native`, and `Artic` intact.
 
 ## Output Policy
 

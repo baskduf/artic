@@ -51,10 +51,19 @@ Purpose: run the design intake interview and create a structured brief.
 Required behavior:
 1. Inspect existing docs if available: `DESIGN.md`, `docs/design-rules.md`, `docs/artic-brief.md`, `README.md`, and project docs under `docs/`.
 2. Ask a compact interview unless the user already supplied enough context.
-3. Capture answers into `.artic/brief.json` and `docs/artic-brief.md`.
-4. Normalize answers into searchable facets.
-5. Search the Artic source catalog and select 3-5 candidate references.
-6. Save `.artic/references.json` and `.artic/state.json`.
+3. Detect the user's language from explicit locale or the first message, then continue the interview in that language unless the user asks otherwise.
+4. Ask only for missing information; do not repeat fields already supplied.
+5. Persist partial conversational state in `.artic/init-session.json` when answers are incomplete.
+6. Capture finalized answers into `.artic/brief.json` and `docs/artic-brief.md`.
+7. Normalize answers into searchable facets.
+8. Search the Artic source catalog and select 3-5 candidate references.
+9. Save `.artic/references.json` and `.artic/state.json`.
+
+Language behavior:
+- Store language intent under `.artic/brief.json.language`, `.artic/state.json.language`, and generated docs using `<!-- artic-language: <locale> -->`.
+- Preserve machine-readable terms such as `DESIGN.md`, `AI-native`, `Artic`, source names, and design token keys.
+- Localize user-facing interview questions and prose according to the language contract.
+- Validate localized reference safety with the invariant `<!-- artic-policy: reference-safety-v1 -->` marker, not exact English copy.
 
 Default interview questions:
 1. What product/service is this homepage for?

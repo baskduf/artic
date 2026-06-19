@@ -20,6 +20,7 @@ REQUIRED_COMPONENT_TOKENS = ("button-primary", "button-secondary", "card", "form
 REQUIRED_QA_TERMS = ("Visual hierarchy", "Brand coherence", "Conversion clarity", "Mobile quality", "Accessibility", "Reference safety")
 POLICY_FRAGMENT = "extract reusable principles only"
 POLICY_MARKER = "<!-- artic-policy: reference-safety-v1 -->"
+LANGUAGE_MARKER_PREFIX = "<!-- artic-language:"
 
 
 def has_reference_safety(text: str) -> bool:
@@ -64,6 +65,7 @@ def section_has_token(frontmatter: str, section: str, token: str) -> bool:
 
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
+    brief_locale = "en-US"
     for rel in REQUIRED_FILES:
         if not (root / rel).exists():
             errors.append(f"ERROR: missing required file: {rel}")
@@ -86,6 +88,16 @@ def validate(root: Path) -> list[str]:
                 for key in ("locale", "output_language", "tone", "preserve_terms", "bilingual_terms"):
                     if key not in language:
                         errors.append(f"ERROR: brief language missing key: {key}")
+                brief_locale = str(language.get("locale") or "")
+                if not brief_locale:
+                    errors.append("ERROR: brief language.locale is required")
+                if not str(language.get("output_language") or ""):
+                    errors.append("ERROR: brief language.output_language is required")
+                preserve_terms = language.get("preserve_terms", [])
+                if isinstance(preserve_terms, list):
+                    for term in ("DESIGN.md", "Artic"):
+                        if term not in preserve_terms:
+                            errors.append(f"ERROR: brief language.preserve_terms missing required term: {term}")
             elif "language" in brief:
                 errors.append("ERROR: brief language must be an object")
             facets = brief.get("style", {}).get("search_facets", [])
@@ -195,6 +207,8 @@ def validate(root: Path) -> list[str]:
             errors.append("ERROR: DESIGN.md missing reference safety phrase")
         if design.count(POLICY_MARKER) > 1:
             errors.append("ERROR: DESIGN.md has duplicate reference safety policy markers")
+        if brief_locale and brief_locale != "en-US" and f"<!-- artic-language: {brief_locale} -->" not in design:
+            errors.append(f"ERROR: localized outputs missing language marker: {brief_locale} in DESIGN.md")
 
     combined_docs = ""
     for rel in ("docs/design-rules.md", "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md"):
@@ -204,6 +218,8 @@ def validate(root: Path) -> list[str]:
             combined_docs += "\n" + text
             if not has_reference_safety(text):
                 errors.append(f"ERROR: {rel} missing reference safety phrase")
+            if brief_locale and brief_locale != "en-US" and f"<!-- artic-language: {brief_locale} -->" not in text:
+                errors.append(f"ERROR: localized outputs missing language marker: {brief_locale} in {rel}")
     checklist = root / "docs" / "design-qa-checklist.md"
     if checklist.exists():
         text = checklist.read_text(encoding="utf-8")
