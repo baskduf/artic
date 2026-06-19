@@ -133,12 +133,18 @@ def headings(path: Path):
 
 
 def test_readme_hero_image_is_synced():
-    image_re = re.compile(r'<img width="300" height="300" alt=" -7" src="https://github.com/user-attachments/assets/[^"]+" />')
+    image_re = re.compile(r'<img width="220" alt="Artic logo" src="assets/artic-logo\.png" />')
     expected = image_re.search((ROOT / "README.md").read_text(encoding="utf-8"))
     assert expected, "README.md missing synced hero image"
     for rel in README_FILES[1:]:
         found = image_re.search((ROOT / rel).read_text(encoding="utf-8"))
         assert found and found.group(0) == expected.group(0), rel
+
+
+def test_readme_logo_asset_exists():
+    logo = ROOT / "assets" / "artic-logo.png"
+    assert logo.is_file(), "README logo asset is missing"
+    assert logo.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"), "README logo asset must be a PNG"
 
 
 def test_readmes_do_not_render_badges():

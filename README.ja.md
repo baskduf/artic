@@ -1,5 +1,5 @@
 <div align="center">
-<img width="300" height="300" alt=" -7" src="https://github.com/user-attachments/assets/d624d91c-6ae8-4c44-89d2-0a9058377e43" />
+<img width="220" alt="Artic logo" src="assets/artic-logo.png" />
 
   <h1>Artic</h1>
 
