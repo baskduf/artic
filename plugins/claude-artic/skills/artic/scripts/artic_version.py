@@ -11,13 +11,14 @@ from pathlib import Path
 from typing import Any
 
 VERSION_FILES = {
-    "pyproject": "pyproject.toml",
-    "skill": "skills/artic/SKILL.md",
-    "claude_marketplace": ".claude-plugin/marketplace.json",
-    "codex_marketplace": ".agents/plugins/marketplace.json",
-    "claude_plugin": "plugins/claude-artic/.claude-plugin/plugin.json",
-    "codex_plugin": "plugins/codex-artic/.codex-plugin/plugin.json",
+    "pyproject": ["pyproject.toml"],
+    "skill": ["skills/artic/SKILL.md", "SKILL.md"],
+    "claude_marketplace": [".claude-plugin/marketplace.json"],
+    "codex_marketplace": [".agents/plugins/marketplace.json"],
+    "claude_plugin": ["plugins/claude-artic/.claude-plugin/plugin.json", ".claude-plugin/plugin.json"],
+    "codex_plugin": ["plugins/codex-artic/.codex-plugin/plugin.json", ".codex-plugin/plugin.json"],
 }
+VERSION_PRIORITY = ["pyproject", "skill", "claude_plugin", "codex_plugin", "claude_marketplace", "codex_marketplace"]
 
 
 def read_text(path: Path) -> str:
@@ -40,9 +41,9 @@ def read_json_version(path: Path) -> str | None:
 
 def collect_installed_versions(root: Path) -> dict[str, str | None]:
     versions: dict[str, str | None] = {}
-    for key, rel in VERSION_FILES.items():
-        path = root / rel
-        if not path.exists():
+    for key, rels in VERSION_FILES.items():
+        path = next((root / rel for rel in rels if (root / rel).exists()), None)
+        if path is None:
             versions[key] = None
         elif key == "pyproject":
             versions[key] = read_pyproject_version(path)
@@ -53,14 +54,22 @@ def collect_installed_versions(root: Path) -> dict[str, str | None]:
     return versions
 
 
+def installed_version(versions: dict[str, str | None]) -> str | None:
+    for key in VERSION_PRIORITY:
+        version = versions.get(key)
+        if version is not None:
+            return version
+    return None
+
+
 def version_mismatches(versions: dict[str, str | None]) -> list[dict[str, str | None]]:
-    expected = versions.get("pyproject")
+    expected = installed_version(versions)
     if expected is None:
-        return [{"name": "pyproject", "version": None, "expected": None}]
+        return [{"name": "installed", "version": None, "expected": None}]
     return [
         {"name": name, "version": version, "expected": expected}
         for name, version in versions.items()
-        if version != expected
+        if version is not None and version != expected
     ]
 
 
@@ -106,6 +115,7 @@ def status_for(installed: str | None, latest: str | None, mismatches: list[dict[
 
 def collect_version_info(root: Path, repo: str = "baskduf/artic", no_network: bool = False) -> dict[str, Any]:
     installed = collect_installed_versions(root)
+    current_version = installed_version(installed)
     mismatches = version_mismatches(installed)
     latest: dict[str, Any] | None = None
     latest_error: str | None = None
@@ -117,10 +127,11 @@ def collect_version_info(root: Path, repo: str = "baskduf/artic", no_network: bo
     latest_version = latest.get("tag_name") if latest else None
     return {
         "repo": repo,
+        "installed_version": current_version,
         "installed": installed,
         "latest": latest,
         "latest_error": latest_error,
-        "status": status_for(installed.get("pyproject"), latest_version, mismatches, no_network, latest_error),
+        "status": status_for(current_version, latest_version, mismatches, no_network, latest_error),
         "version_mismatches": mismatches,
     }
 

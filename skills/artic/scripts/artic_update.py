@@ -12,7 +12,7 @@ def command_suffix(latest_tag: str | None) -> str:
 
 
 def render_update_guidance(payload: dict, apply: bool = False) -> str:
-    installed = payload["installed"].get("pyproject") or "unknown"
+    installed = payload.get("installed_version") or "unknown"
     latest = payload.get("latest") or {}
     latest_tag = latest.get("tag_name")
     suffix = command_suffix(latest_tag)

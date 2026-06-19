@@ -563,6 +563,43 @@ def test_update_command_is_dry_run_by_default_without_network():
     assert "/plugin marketplace add baskduf/artic" in result.stdout
 
 
+def test_version_command_supports_installed_plugin_roots_without_network():
+    for plugin_root, expected_key in [
+        (ROOT / "plugins" / "claude-artic", "claude_plugin"),
+        (ROOT / "plugins" / "codex-artic", "codex_plugin"),
+    ]:
+        script = plugin_root / "skills" / "artic" / "scripts" / "artic_version.py"
+        result = subprocess.run([
+            sys.executable,
+            str(script),
+            "--root",
+            str(plugin_root),
+            "--no-network",
+            "--json",
+        ], capture_output=True, text=True)
+        assert result.returncode == 0, result.stderr or result.stdout
+        payload = json.loads(result.stdout)
+        assert payload["installed"]["skill"] == "0.1.0"
+        assert payload["installed"][expected_key] == "0.1.0"
+        assert payload["status"] == "latest-unchecked"
+        assert payload["version_mismatches"] == []
+
+
+def test_update_command_supports_installed_plugin_roots_without_network():
+    script = ROOT / "plugins" / "claude-artic" / "skills" / "artic" / "scripts" / "artic_update.py"
+    result = subprocess.run([
+        sys.executable,
+        str(script),
+        "--root",
+        str(ROOT / "plugins" / "claude-artic"),
+        "--no-network",
+    ], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr or result.stdout
+    assert "Current: 0.1.0" in result.stdout
+    assert "Blocked:" not in result.stdout
+    assert "No files were modified" in result.stdout
+
+
 def test_skill_docs_expose_version_and_update_commands():
     for rel in [
         "skills/artic/SKILL.md",
