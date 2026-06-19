@@ -80,7 +80,7 @@ def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
         ],
     }
     brief = {
-        "artic_version": "0.2.0",
+        "artic_version": "0.3.0",
         "project": {
             "name": project_name,
             "type": "homepage",
@@ -119,7 +119,7 @@ def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
         ],
         "synthesis": "Clean SaaS hierarchy with token discipline and mobile-first accessibility.",
     }
-    state = {"artic_version": "0.2.0", "last_generated_at": now, "status": "scaffolded", "language": language, "intent_path": ".artic/intent.json"}
+    state = {"artic_version": "0.3.0", "last_generated_at": now, "status": "scaffolded", "language": language, "intent_path": ".artic/intent.json"}
     write(root / ".artic" / "intent.json", json.dumps(intent, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "brief.json", json.dumps(brief, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "references.json", json.dumps(references, indent=2, ensure_ascii=False) + "\n")

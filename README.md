@@ -74,7 +74,7 @@ codex plugin marketplace add baskduf/artic
 Pin a released version when you want a stable install:
 
 ```bash
-codex plugin marketplace add baskduf/artic@<tag>
+codex plugin marketplace add baskduf/artic@v0.3.0
 ```
 
 Install `codex-artic` from the plugin browser:
