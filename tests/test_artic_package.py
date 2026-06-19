@@ -127,6 +127,66 @@ def test_artic_init_generates_brief_and_reference_search_outputs():
         assert "Reference candidates" in (Path(tmp) / "docs" / "artic-brief.md").read_text(encoding="utf-8")
 
 
+def test_artic_start_generates_and_validates_docs_from_init_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Korean AI Meeting Assistant",
+            "--audience",
+            "startup operators and sales teams",
+            "--goal",
+            "demo requests",
+            "--vibe",
+            "clean trustworthy mobile-first saas",
+            "--references",
+            "Linear clarity, Shopify Polaris trust, Material token discipline",
+            "--stack",
+            "React Tailwind",
+            "--limit",
+            "4",
+        ], check=True)
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_start.py"),
+            "--root",
+            tmp,
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        assert payload["validated"] is True
+        assert payload["generated_files"] == [
+            "DESIGN.md",
+            "docs/design-rules.md",
+            "docs/design-qa-checklist.md",
+            "docs/homepage-design-prompt.md",
+        ]
+        root = Path(tmp)
+        for rel in payload["generated_files"]:
+            assert (root / rel).exists(), rel
+        assert "Korean AI Meeting Assistant" in (root / "DESIGN.md").read_text(encoding="utf-8")
+        assert "Reference Synthesis" in (root / "docs" / "design-rules.md").read_text(encoding="utf-8")
+        state = json.loads((root / ".artic" / "state.json").read_text(encoding="utf-8"))
+        assert state["status"] == "generated"
+
+
+def test_artic_start_no_validate_skips_validator_but_writes_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_start.py"),
+            "--root",
+            tmp,
+            "--no-validate",
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        assert payload["validated"] is False
+        assert (Path(tmp) / "DESIGN.md").exists()
+
+
 def test_artic_init_persists_llm_native_language_contract():
     with tempfile.TemporaryDirectory() as tmp:
         result = subprocess.run([
@@ -488,6 +548,7 @@ def test_marketplace_plugin_layout_smoke():
         "references/fixtures/voltagent-saas.design.md",
         "scripts/search_reference_catalog.py",
         "scripts/artic_init.py",
+        "scripts/artic_start.py",
         "scripts/artic_version.py",
         "scripts/artic_update.py",
         "scripts/synthesize_reference_notes.py",
@@ -600,13 +661,15 @@ def test_update_command_supports_installed_plugin_roots_without_network():
     assert "No files were modified" in result.stdout
 
 
-def test_skill_docs_expose_version_and_update_commands():
+def test_skill_docs_expose_version_update_and_start_commands():
     for rel in [
         "skills/artic/SKILL.md",
         "plugins/claude-artic/skills/artic/SKILL.md",
         "plugins/codex-artic/skills/artic/SKILL.md",
     ]:
         text = (ROOT / rel).read_text(encoding="utf-8")
+        assert "@artic start" in text, rel
+        assert "artic_start.py --root <project-root>" in text, rel
         assert "@artic version" in text, rel
         assert "@artic update" in text, rel
 
@@ -672,6 +735,7 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (payload / "skills/artic/references").mkdir(parents=True)
         (payload / "skills/artic/references/source-catalog.json").write_text("[]", encoding="utf-8")
         (payload / "skills/artic/scripts/artic_init.py").write_text("", encoding="utf-8")
+        (payload / "skills/artic/scripts/artic_start.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/artic_version.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/artic_update.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/search_reference_catalog.py").write_text("", encoding="utf-8")
@@ -695,6 +759,7 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (clean_payload / "skills/artic/references").mkdir(parents=True)
         (clean_payload / "skills/artic/references/source-catalog.json").write_text("[]", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/artic_init.py").write_text("", encoding="utf-8")
+        (clean_payload / "skills/artic/scripts/artic_start.py").write_text("", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/search_reference_catalog.py").write_text("", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/synthesize_reference_notes.py").write_text("", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/validate_artic_outputs.py").write_text("", encoding="utf-8")
