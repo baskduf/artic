@@ -858,8 +858,8 @@ def test_artic_init_persists_llm_native_language_contract():
             "bilingual_terms": False,
         }
         brief_doc = (Path(tmp) / "docs" / "artic-brief.md").read_text(encoding="utf-8")
-        assert "Language: ko-KR / Korean" in brief_doc
-        assert "Preserve terms: DESIGN.md, AI-native" in brief_doc
+        assert "언어: ko-KR / Korean" in brief_doc
+        assert "보존 용어: DESIGN.md, AI-native" in brief_doc
         assert "<!-- artic-policy: reference-safety-v1 -->" in brief_doc
         assert "참고 정책:" in brief_doc
         assert "Reference policy:" not in brief_doc
@@ -1033,6 +1033,101 @@ def test_artic_start_preserves_korean_language_contract():
             assert "Locale: ko-KR" in text, rel
             assert "<!-- artic-policy: reference-safety-v1 -->" in text, rel
             assert "참고 정책:" in text, rel
+
+
+def test_artic_init_asks_asset_permission_and_start_preserves_custom_answers():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session = session_mod.create_or_update_session(
+            root,
+            "한국어로 인터랙티브 3D 석고상 홈페이지를 만들고 싶어.",
+            answers={
+                "project": "중앙에 만질 수 있는 3D 석고상이 있고 회전/줌 상호작용을 제공하는 예술가 포트폴리오 홈페이지",
+                "audience": "전시 기획자와 컬렉터",
+                "goal": "작품 문의",
+                "vibe": "고급스럽고 조용한 3D 런타임 중심",
+                "stack": "React model-viewer",
+                "must_have_feature": "중앙의 만질 수 있는 3D 석고상",
+                "brand_constraints": "무채색, 갤러리 같은 여백",
+            },
+        )
+        assert any("에셋" in question for question in session_mod.render_optional_questions(session))
+        session = session_mod.create_or_update_session(
+            root,
+            "에셋 정책 답변 추가",
+            answers={"asset_policy": "허용 시 CC0/CC-BY 공개 3D 에셋만 사용하고 출처를 남긴다"},
+        )
+
+        session_mod.finalize_session(root, limit=4)
+
+        brief = json.loads((root / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        assert brief["project"]["name"] == "3D 석고상"
+        assert "중앙에 만질 수 있는 3D 석고상" in brief["project"]["description"]
+        assert brief["requirements"]["must_have_feature"] == "중앙의 만질 수 있는 3D 석고상"
+        assert brief["constraints"]["brand_constraints"] == "무채색, 갤러리 같은 여백"
+        assert brief["asset_policy"]["mode"] == "licensed-public-assets-allowed"
+        brief_doc = (root / "docs" / "artic-brief.md").read_text(encoding="utf-8")
+        assert "에셋 사용 정책" in brief_doc
+        assert "외부 레퍼런스는 원칙/패턴 참고용" in brief_doc
+
+
+def test_artic_asset_policy_negative_answers_keep_reference_only_boundary():
+    artic_init = importlib.import_module("artic_init")
+    negative_answers = [
+        "do not allow external assets; references only",
+        "not allowed, reference principles only",
+        "외부 에셋은 허용하지 말고 원칙 참고로만 사용",
+    ]
+    for answer in negative_answers:
+        payload = artic_init.asset_policy_payload(answer)
+        assert payload["mode"] == "reference-principles-only", answer
+
+
+def test_artic_start_and_show_localize_korean_3d_runtime_preview():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "중앙에 만질 수 있는 3D 석고상이 있고 회전/줌 상호작용을 제공하는 예술가 포트폴리오 홈페이지",
+            "--audience",
+            "전시 기획자와 컬렉터",
+            "--goal",
+            "작품 문의",
+            "--vibe",
+            "고급스럽고 조용한 3D WebGL 런타임",
+            "--stack",
+            "React model-viewer",
+            "--locale",
+            "ko-KR",
+            "--requirement",
+            "must_have_feature=중앙의 만질 수 있는 3D 석고상",
+            "--constraint",
+            "brand_constraints=무채색, 갤러리 같은 여백",
+            "--asset-policy",
+            "허용 시 CC0/CC-BY 공개 3D 에셋만 사용하고 출처를 남긴다",
+            "--limit",
+            "4",
+        ], check=True)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_show.py"), "--root", tmp], check=True, capture_output=True, text=True)
+
+        brief = json.loads((root / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        assert brief["project"]["name"] == "3D 석고상"
+        design = (root / "DESIGN.md").read_text(encoding="utf-8")
+        assert "is a homepage direction for" not in design
+        assert "홈페이지 방향입니다" in design
+        html = (root / ".artic" / "show" / "index.html").read_text(encoding="utf-8")
+        assert '<html lang="ko-KR">' in html
+        assert "3D 모델 자리표시자" in html
+        assert "model-viewer" in html
+        assert "interaction-zone" in html
+        assert "homepage direction" not in html
+        assert "This static preview" not in html
 
 
 def test_validator_accepts_localized_policy_copy_when_invariant_marker_exists():

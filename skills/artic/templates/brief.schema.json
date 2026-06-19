@@ -14,6 +14,9 @@
       "required": ["desired_impression", "selected_preset", "likes", "dislikes", "fixed_assets", "search_facets"]
     },
     "references": {"type": "array"},
+    "requirements": {"type": "object"},
+    "constraints": {"type": "object"},
+    "asset_policy": {"type": "object"},
     "implementation": {"type": "object"},
     "language": {
       "type": "object",

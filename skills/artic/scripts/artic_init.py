@@ -75,6 +75,72 @@ def make_query(project: str, audience: str, goal: str, vibe: str, references: st
     return " ".join(part for part in [project, audience, goal, vibe, references, stack] if part).strip()
 
 
+def parse_key_values(values: list[str]) -> dict[str, str]:
+    parsed: dict[str, str] = {}
+    for item in values or []:
+        text = str(item).strip()
+        if not text:
+            continue
+        if "=" in text:
+            key, value = text.split("=", 1)
+        else:
+            key, value = f"item_{len(parsed) + 1}", text
+        key = key.strip()
+        value = value.strip()
+        if key and value:
+            parsed[key] = value
+    return parsed
+
+
+def normalize_project(project: str) -> dict:
+    description = project.strip()
+    name = description
+    lowered = description.lower()
+    if ("3d" in lowered or "3D" in description) and "석고상" in description:
+        name = "3D 석고상"
+    elif len(description) > 48 or len(description.split()) > 6:
+        name = " ".join(description.split()[:6]).strip()
+        if len(name) > 36:
+            name = name[:36].rstrip()
+    return {"name": name or "Artic Project", "description": description or "Project-specific Artic homepage design system."}
+
+
+def asset_policy_payload(asset_policy: str) -> dict:
+    text = asset_policy.strip()
+    lowered = text.lower()
+    denial_phrases = (
+        "do not allow",
+        "don't allow",
+        "not allow",
+        "not allowed",
+        "disallow",
+        "forbid",
+        "forbidden",
+        "references only",
+        "reference principles only",
+        "principles only",
+        "허용하지",
+        "허용 안",
+        "사용하지",
+        "쓰지",
+        "원칙 참고로만",
+        "참고로만",
+    )
+    affirmative_tokens = ("허용", "allow", "allowed", "cc0", "cc-by", "public", "공개", "소유")
+    denied = bool(text) and any(phrase in lowered or phrase in text for phrase in denial_phrases)
+    allowed = bool(text) and not denied and any(token in lowered or token in text for token in affirmative_tokens)
+    mode = "licensed-public-assets-allowed" if allowed else "reference-principles-only"
+    if not text:
+        text = "External references are principles/patterns only unless the user explicitly allows owned or clearly licensed public assets."
+    return {
+        "mode": mode,
+        "user_answer": text,
+        "reference_boundary": "External references inform reusable principles, interaction patterns, runtime constraints, and accessibility guidance; they are not copied as assets.",
+        "asset_boundary": "External GLB/images/models may be used only when user-owned or license-verifiable public assets are allowed; record source URL, license, and attribution in docs.",
+        "allowed_licenses": ["CC0", "CC-BY", "MIT", "Apache-2.0", "public-domain"],
+    }
+
+
 def query_from_intent(intent: dict) -> str:
     catalog_query = str(intent.get("catalog_query") or "").strip()
     if catalog_query:
@@ -170,6 +236,10 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
     rows, role_assignments = select_role_grounded_sources(intent, catalog_path, args.limit)
     selected_sources = [selected_source_payload(row) for row in rows]
     facets = list(intent.get("search_facets") or normalize_facets(args.project, args.audience, args.goal, args.vibe, args.references, args.stack))
+    normalized_project = normalize_project(args.project)
+    requirements = parse_key_values(getattr(args, "requirement", []))
+    constraints = parse_key_values(getattr(args, "constraint", []))
+    policy = asset_policy_payload(str(getattr(args, "asset_policy", "")))
     source_plan = [
         {
             "source_id": src["id"],
@@ -184,9 +254,9 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
     brief = {
         "artic_version": "0.3.0",
         "project": {
-            "name": args.project,
+            "name": normalized_project["name"],
             "type": "homepage",
-            "description": args.project,
+            "description": normalized_project["description"],
             "target_users": [args.audience],
             "primary_goal": args.goal,
         },
@@ -201,6 +271,9 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
             "search_facets": facets,
         },
         "references": [ref.strip() for ref in args.references.split(",") if ref.strip()],
+        "requirements": requirements,
+        "constraints": constraints,
+        "asset_policy": policy,
         "implementation": {"stack": args.stack or "unspecified", "mobile_first": "mobile" in args.vibe.lower(), "accessibility": args.accessibility},
         "language": lang,
         "copy_policy": "artic-policy: reference-safety-v1",
@@ -224,9 +297,61 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
     )
     preserved = ", ".join(lang["preserve_terms"])
     policy_copy = POLICY_COPY_BY_LOCALE.get(lang["locale"], POLICY_COPY)
-    brief_doc = f"""# Artic Brief
+    if lang["locale"].startswith("ko"):
+        custom_lines = ["## 보존된 요구사항/제약", ""]
+        for key, value in requirements.items():
+            custom_lines.append(f"- 요구사항 `{key}`: {value}")
+        for key, value in constraints.items():
+            custom_lines.append(f"- 제약 `{key}`: {value}")
+        if len(custom_lines) == 2:
+            custom_lines.append("- 없음")
+        asset_lines = [
+            "## 에셋 사용 정책",
+            "",
+            f"- 모드: {policy['mode']}",
+            f"- 사용자 답변: {policy['user_answer']}",
+            "- 외부 레퍼런스는 원칙/패턴 참고용입니다. 레이아웃, 상호작용 원칙, 접근성/성능 제약만 추출합니다.",
+            "- 외부 에셋은 사용자가 허용한 경우에만 소유 에셋 또는 CC0/CC-BY 등 라이선스 확인 가능한 공개 에셋을 사용하고 출처/라이선스를 문서에 남깁니다.",
+        ]
+        brief_doc = f"""# Artic Brief
 
-Project: {args.project}
+프로젝트명: {normalized_project['name']}
+설명: {normalized_project['description']}
+타깃: {args.audience}
+주요 목표: {args.goal}
+무드: {args.vibe}
+스택: {args.stack or 'unspecified'}
+언어: {lang['locale']} / {lang['output_language']}
+톤: {lang['tone']}
+보존 용어: {preserved}
+
+## Design north star
+
+{intent.get('design_north_star', '')}
+
+## Reference candidates
+
+{candidate_lines}
+
+{chr(10).join(custom_lines)}
+
+{chr(10).join(asset_lines)}
+
+{POLICY_MARKER}
+{policy_copy}
+"""
+    else:
+        custom_lines = ["## Preserved Requirements / Constraints", ""]
+        for key, value in requirements.items():
+            custom_lines.append(f"- Requirement `{key}`: {value}")
+        for key, value in constraints.items():
+            custom_lines.append(f"- Constraint `{key}`: {value}")
+        if len(custom_lines) == 2:
+            custom_lines.append("- None")
+        brief_doc = f"""# Artic Brief
+
+Project: {normalized_project['name']}
+Description: {normalized_project['description']}
 Audience: {args.audience}
 Primary goal: {args.goal}
 Vibe: {args.vibe}
@@ -242,6 +367,15 @@ Preserve terms: {preserved}
 ## Reference candidates
 
 {candidate_lines}
+
+{chr(10).join(custom_lines)}
+
+## Asset usage policy
+
+- Mode: {policy['mode']}
+- User answer: {policy['user_answer']}
+- External references are principle/pattern inputs only; extract interaction, layout, accessibility, and performance guidance, not assets.
+- External assets may be used only when user-owned or license-verifiable public assets are allowed; record source URL, license, and attribution in docs.
 
 {POLICY_MARKER}
 {policy_copy}
@@ -269,6 +403,9 @@ def main() -> int:
     parser.add_argument("--references", default="")
     parser.add_argument("--stack", default="unspecified")
     parser.add_argument("--accessibility", default="WCAG AA")
+    parser.add_argument("--requirement", action="append", default=[], help="Preserve a custom requirement as key=value or plain text")
+    parser.add_argument("--constraint", action="append", default=[], help="Preserve a custom constraint as key=value or plain text")
+    parser.add_argument("--asset-policy", default="", help="User answer for owned/licensed external asset usage")
     parser.add_argument("--locale", default="en-US")
     parser.add_argument("--tone", default="clear, professional, product-focused")
     parser.add_argument("--preserve-term", action="append", default=[])
