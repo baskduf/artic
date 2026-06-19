@@ -82,11 +82,14 @@ def test_readmes_document_version_and_update_commands():
             assert phrase in text, (rel, phrase)
 
 
-def test_readmes_document_init_start_lifecycle_boundary():
+def test_readmes_document_init_start_show_lifecycle_boundary():
     required_phrases = [
         ".artic/init-session.json",
+        ".artic/show/index.html",
         "@artic init",
         "@artic start",
+        "@artic show",
+        "python3 skills/artic/scripts/artic_show.py --root .",
     ]
     for rel in README_FILES:
         text = (ROOT / rel).read_text(encoding="utf-8")
@@ -185,6 +188,25 @@ def test_weighted_catalog_search_routes_distinct_design_intents():
             query,
             "--limit",
             "3",
+        ], check=True, capture_output=True, text=True)
+        ids = {row["id"] for row in json.loads(result.stdout)}
+        assert ids & expected_any, (query, ids)
+
+
+def test_weighted_catalog_search_routes_3d_resource_intents():
+    cases = [
+        ("3d webgl interactive product hero react", {"threejs-examples", "react-three-fiber-examples", "model-viewer"}),
+        ("safe cc0 3d icon asset landing", {"poly-haven", "kenney-assets", "3dicons"}),
+        ("webgl performance accessibility reduced motion 3d", {"mdn-webgl-best-practices", "web-dev-motion-accessibility", "model-viewer-loading"}),
+    ]
+    for query, expected_any in cases:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/search_reference_catalog.py"),
+            "--query",
+            query,
+            "--limit",
+            "5",
         ], check=True, capture_output=True, text=True)
         ids = {row["id"] for row in json.loads(result.stdout)}
         assert ids & expected_any, (query, ids)
