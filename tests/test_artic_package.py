@@ -1,9 +1,17 @@
 from __future__ import annotations
-import functools, json, re, subprocess, sys, tarfile, tempfile, threading, zipfile
+import functools, importlib, json, re, subprocess, sys, tarfile, tempfile, threading, urllib.error, zipfile
+from email.message import Message
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS_DIR = ROOT / "skills" / "artic" / "scripts"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+artic_update = importlib.import_module("artic_update")
+artic_version = importlib.import_module("artic_version")
+
 README_FILES = ["README.md", "README.ko.md", "README.ja.md", "README.zh-CN.md", "README.zh-TW.md"]
 
 def test_json_manifests_parse():
@@ -42,6 +50,54 @@ def test_readmes_have_language_nav():
         for target in README_FILES:
             if target != rel:
                 assert target in text or (target == "README.md" and "English" in text), rel
+
+
+def test_artic_version_no_network_marks_latest_unchecked():
+    payload = artic_version.collect_version_info(ROOT, no_network=True)
+    assert payload["latest_state"] == "unchecked"
+    assert payload["latest_error"] is None
+    assert payload["status"] == "latest-unchecked"
+    assert "unchecked (--no-network)" in artic_version.render_text(payload)
+
+
+def test_artic_version_404_marks_latest_not_found(monkeypatch):
+    def raise_404(repo: str, timeout: float = 10.0) -> dict:
+        raise urllib.error.HTTPError("https://api.github.com/repos/example/missing/releases/latest", 404, "Not Found", Message(), None)
+
+    monkeypatch.setattr(artic_version, "fetch_latest_release", raise_404)
+    payload = artic_version.collect_version_info(ROOT, repo="example/missing")
+    assert payload["latest_state"] == "not_found"
+    assert payload["latest_error"] is None
+    assert payload["latest"] is None
+    assert payload["status"] == "latest-not-found"
+    assert "not found: no GitHub latest release" in artic_version.render_text(payload)
+
+
+def test_artic_version_network_failure_marks_latest_unavailable(monkeypatch):
+    def raise_network_failure(repo: str, timeout: float = 10.0) -> dict:
+        raise urllib.error.URLError("offline")
+
+    monkeypatch.setattr(artic_version, "fetch_latest_release", raise_network_failure)
+    payload = artic_version.collect_version_info(ROOT, repo="example/repo")
+    assert payload["latest_state"] == "unavailable"
+    assert payload["latest_error"]
+    assert payload["status"] == "latest-unavailable"
+    assert "unavailable:" in artic_version.render_text(payload)
+
+
+def test_artic_update_guidance_without_latest_omits_version_pin():
+    payload = {
+        "installed_version": "0.1.0",
+        "latest": None,
+        "latest_state": "not_found",
+        "status": "latest-not-found",
+        "version_mismatches": [],
+    }
+    text = artic_update.render_update_guidance(payload)
+    assert "Latest: not found (no GitHub latest release)" in text
+    assert "marketplace commands below intentionally omit a version pin" in text
+    assert "baskduf/artic@<latest-tag>" not in text
+    assert "codex plugin marketplace add baskduf/artic\n" in text
 
 def test_scaffold_and_validate_smoke():
     with tempfile.TemporaryDirectory() as tmp:
@@ -125,6 +181,66 @@ def test_artic_init_generates_brief_and_reference_search_outputs():
         assert all({"id", "name", "score", "reason", "extraction_targets"} <= set(row) for row in references["selected_sources"])
         assert state["status"] == "initialized"
         assert "Reference candidates" in (Path(tmp) / "docs" / "artic-brief.md").read_text(encoding="utf-8")
+
+
+def test_artic_start_generates_and_validates_docs_from_init_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Korean AI Meeting Assistant",
+            "--audience",
+            "startup operators and sales teams",
+            "--goal",
+            "demo requests",
+            "--vibe",
+            "clean trustworthy mobile-first saas",
+            "--references",
+            "Linear clarity, Shopify Polaris trust, Material token discipline",
+            "--stack",
+            "React Tailwind",
+            "--limit",
+            "4",
+        ], check=True)
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_start.py"),
+            "--root",
+            tmp,
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        assert payload["validated"] is True
+        assert payload["generated_files"] == [
+            "DESIGN.md",
+            "docs/design-rules.md",
+            "docs/design-qa-checklist.md",
+            "docs/homepage-design-prompt.md",
+        ]
+        root = Path(tmp)
+        for rel in payload["generated_files"]:
+            assert (root / rel).exists(), rel
+        assert "Korean AI Meeting Assistant" in (root / "DESIGN.md").read_text(encoding="utf-8")
+        assert "Reference Synthesis" in (root / "docs" / "design-rules.md").read_text(encoding="utf-8")
+        state = json.loads((root / ".artic" / "state.json").read_text(encoding="utf-8"))
+        assert state["status"] == "generated"
+
+
+def test_artic_start_no_validate_skips_validator_but_writes_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_start.py"),
+            "--root",
+            tmp,
+            "--no-validate",
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        assert payload["validated"] is False
+        assert (Path(tmp) / "DESIGN.md").exists()
 
 
 def test_artic_init_persists_llm_native_language_contract():
@@ -293,6 +409,16 @@ def test_catalog_search_can_use_semantic_intent_mapping():
 
 
 
+def markdown_section(text: str, heading: str) -> str:
+    marker = f"### {heading}"
+    start = text.index(marker)
+    next_heading = text.find("\n### ", start + len(marker))
+    next_major = text.find("\n## ", start + len(marker))
+    candidates = [idx for idx in (next_heading, next_major) if idx != -1]
+    end = min(candidates) if candidates else len(text)
+    return text[start:end]
+
+
 def test_reference_synthesis_smoke_uses_local_fixture_corpus():
     with tempfile.TemporaryDirectory() as tmp:
         output = Path(tmp) / "reference-synthesis.md"
@@ -318,6 +444,69 @@ def test_reference_synthesis_smoke_uses_local_fixture_corpus():
         for heading in ["### Color Roles", "### Typography", "### Layout Rhythm", "### CTA Behavior", "### Accessibility", "## Pattern Attribution", "## Forbidden Copy Elements"]:
             assert heading in synthesis
         assert set(payload["pattern_categories"]) >= {"color_roles", "typography", "layout_rhythm", "cta_behavior", "accessibility"}
+
+
+def test_reference_synthesis_keeps_safety_warnings_out_of_visual_categories():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        fixtures = root / "fixtures"
+        fixtures.mkdir()
+        (fixtures / "pollution-source.design.md").write_text("""---
+source_id: pollution-source
+source_name: Pollution Source
+license: MIT
+tags: [saas, ai-product, developer-tool]
+---
+
+# Pollution Regression Fixture
+
+## Reusable Patterns
+- Treat brand-inspired examples as pattern references only; never copy exact layouts, names, copy, or palettes.
+- Use calm surface colors, clear borders, and contrast-safe accents.
+- Preserve readable body copy with a distinct heading hierarchy.
+
+## Components
+- Feature cards should expose one primary action and one quiet secondary action.
+
+## Accessibility
+- Ensure keyboard focus states and semantic button/link distinctions.
+""", encoding="utf-8")
+        catalog = root / "catalog.json"
+        catalog.write_text(json.dumps([{
+            "id": "pollution-source",
+            "name": "Pollution Source",
+            "type": "design-fixture",
+            "license": "MIT",
+            "tags": ["saas", "ai-product", "developer-tool"],
+            "strengths": ["saas developer visual patterns"],
+            "use_for": ["reference synthesis"],
+        }]), encoding="utf-8")
+        output = root / "reference-synthesis.md"
+
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/synthesize_reference_notes.py"),
+            "--query",
+            "ai product developer saas",
+            "--catalog",
+            str(catalog),
+            "--fixtures-dir",
+            str(fixtures),
+            "--limit",
+            "1",
+            "--output",
+            str(output),
+        ], check=True, capture_output=True, text=True)
+
+        synthesis = output.read_text(encoding="utf-8")
+        warning = "Treat brand-inspired examples as pattern references only; never copy exact layouts, names, copy, or palettes."
+        assert warning not in markdown_section(synthesis, "Color Roles")
+        assert warning not in markdown_section(synthesis, "Typography")
+        assert warning not in markdown_section(synthesis, "Layout Rhythm")
+        assert "## Reference Safety Notes" in synthesis
+        assert warning in synthesis
+        assert "Use calm surface colors" in markdown_section(synthesis, "Color Roles")
+        assert "Preserve readable body copy" in markdown_section(synthesis, "Typography")
 
 
 
@@ -488,6 +677,7 @@ def test_marketplace_plugin_layout_smoke():
         "references/fixtures/voltagent-saas.design.md",
         "scripts/search_reference_catalog.py",
         "scripts/artic_init.py",
+        "scripts/artic_start.py",
         "scripts/artic_version.py",
         "scripts/artic_update.py",
         "scripts/synthesize_reference_notes.py",
@@ -600,13 +790,15 @@ def test_update_command_supports_installed_plugin_roots_without_network():
     assert "No files were modified" in result.stdout
 
 
-def test_skill_docs_expose_version_and_update_commands():
+def test_skill_docs_expose_version_update_and_start_commands():
     for rel in [
         "skills/artic/SKILL.md",
         "plugins/claude-artic/skills/artic/SKILL.md",
         "plugins/codex-artic/skills/artic/SKILL.md",
     ]:
         text = (ROOT / rel).read_text(encoding="utf-8")
+        assert "@artic start" in text, rel
+        assert "artic_start.py --root <project-root>" in text, rel
         assert "@artic version" in text, rel
         assert "@artic update" in text, rel
 
@@ -672,6 +864,7 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (payload / "skills/artic/references").mkdir(parents=True)
         (payload / "skills/artic/references/source-catalog.json").write_text("[]", encoding="utf-8")
         (payload / "skills/artic/scripts/artic_init.py").write_text("", encoding="utf-8")
+        (payload / "skills/artic/scripts/artic_start.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/artic_version.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/artic_update.py").write_text("", encoding="utf-8")
         (payload / "skills/artic/scripts/search_reference_catalog.py").write_text("", encoding="utf-8")
@@ -695,6 +888,7 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (clean_payload / "skills/artic/references").mkdir(parents=True)
         (clean_payload / "skills/artic/references/source-catalog.json").write_text("[]", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/artic_init.py").write_text("", encoding="utf-8")
+        (clean_payload / "skills/artic/scripts/artic_start.py").write_text("", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/search_reference_catalog.py").write_text("", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/synthesize_reference_notes.py").write_text("", encoding="utf-8")
         (clean_payload / "skills/artic/scripts/validate_artic_outputs.py").write_text("", encoding="utf-8")

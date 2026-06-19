@@ -63,16 +63,16 @@ Use Artic to create AI-native design docs before building this homepage.
 
 ### Codex marketplace
 
-添加稳定版 marketplace：
-
-```bash
-codex plugin marketplace add baskduf/artic@v0.1.0
-```
-
-或跟踪最新的 `main`：
+从仓库当前默认分支添加 marketplace：
 
 ```bash
 codex plugin marketplace add baskduf/artic
+```
+
+如果存在 GitHub Release，可以改为固定明确标签：
+
+```bash
+codex plugin marketplace add baskduf/artic@<tag>
 ```
 
 Then open the plugin browser and install `codex-artic`:

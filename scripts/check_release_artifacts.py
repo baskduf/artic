@@ -13,6 +13,7 @@ REQUIRED_PLUGIN_FILES = [
     "skills/artic/SKILL.md",
     "skills/artic/references/source-catalog.json",
     "skills/artic/scripts/artic_init.py",
+    "skills/artic/scripts/artic_start.py",
     "skills/artic/scripts/artic_version.py",
     "skills/artic/scripts/artic_update.py",
     "skills/artic/scripts/search_reference_catalog.py",
