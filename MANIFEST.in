@@ -3,6 +3,7 @@ recursive-include plugins *
 recursive-include .claude-plugin *
 recursive-include .agents *
 recursive-include examples *
+recursive-include assets *
 include scripts/*.py
 include README.md README.ko.md README.ja.md README.zh-CN.md README.zh-TW.md LICENSE CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md
 include .github/workflows/*.yml
