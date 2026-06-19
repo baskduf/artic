@@ -353,6 +353,16 @@ def test_catalog_search_can_use_semantic_intent_mapping():
 
 
 
+def markdown_section(text: str, heading: str) -> str:
+    marker = f"### {heading}"
+    start = text.index(marker)
+    next_heading = text.find("\n### ", start + len(marker))
+    next_major = text.find("\n## ", start + len(marker))
+    candidates = [idx for idx in (next_heading, next_major) if idx != -1]
+    end = min(candidates) if candidates else len(text)
+    return text[start:end]
+
+
 def test_reference_synthesis_smoke_uses_local_fixture_corpus():
     with tempfile.TemporaryDirectory() as tmp:
         output = Path(tmp) / "reference-synthesis.md"
@@ -378,6 +388,69 @@ def test_reference_synthesis_smoke_uses_local_fixture_corpus():
         for heading in ["### Color Roles", "### Typography", "### Layout Rhythm", "### CTA Behavior", "### Accessibility", "## Pattern Attribution", "## Forbidden Copy Elements"]:
             assert heading in synthesis
         assert set(payload["pattern_categories"]) >= {"color_roles", "typography", "layout_rhythm", "cta_behavior", "accessibility"}
+
+
+def test_reference_synthesis_keeps_safety_warnings_out_of_visual_categories():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        fixtures = root / "fixtures"
+        fixtures.mkdir()
+        (fixtures / "pollution-source.design.md").write_text("""---
+source_id: pollution-source
+source_name: Pollution Source
+license: MIT
+tags: [saas, ai-product, developer-tool]
+---
+
+# Pollution Regression Fixture
+
+## Reusable Patterns
+- Treat brand-inspired examples as pattern references only; never copy exact layouts, names, copy, or palettes.
+- Use calm surface colors, clear borders, and contrast-safe accents.
+- Preserve readable body copy with a distinct heading hierarchy.
+
+## Components
+- Feature cards should expose one primary action and one quiet secondary action.
+
+## Accessibility
+- Ensure keyboard focus states and semantic button/link distinctions.
+""", encoding="utf-8")
+        catalog = root / "catalog.json"
+        catalog.write_text(json.dumps([{
+            "id": "pollution-source",
+            "name": "Pollution Source",
+            "type": "design-fixture",
+            "license": "MIT",
+            "tags": ["saas", "ai-product", "developer-tool"],
+            "strengths": ["saas developer visual patterns"],
+            "use_for": ["reference synthesis"],
+        }]), encoding="utf-8")
+        output = root / "reference-synthesis.md"
+
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/synthesize_reference_notes.py"),
+            "--query",
+            "ai product developer saas",
+            "--catalog",
+            str(catalog),
+            "--fixtures-dir",
+            str(fixtures),
+            "--limit",
+            "1",
+            "--output",
+            str(output),
+        ], check=True, capture_output=True, text=True)
+
+        synthesis = output.read_text(encoding="utf-8")
+        warning = "Treat brand-inspired examples as pattern references only; never copy exact layouts, names, copy, or palettes."
+        assert warning not in markdown_section(synthesis, "Color Roles")
+        assert warning not in markdown_section(synthesis, "Typography")
+        assert warning not in markdown_section(synthesis, "Layout Rhythm")
+        assert "## Reference Safety Notes" in synthesis
+        assert warning in synthesis
+        assert "Use calm surface colors" in markdown_section(synthesis, "Color Roles")
+        assert "Preserve readable body copy" in markdown_section(synthesis, "Typography")
 
 
 
