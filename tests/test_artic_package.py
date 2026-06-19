@@ -223,6 +223,61 @@ def test_weighted_catalog_search_routes_3d_resource_intents():
         assert ids & expected_any, (query, ids)
 
 
+def test_artic_init_semantic_intent_selects_3d_runtime_and_safety_sources():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "3D product configurator landing",
+            "--audience",
+            "shoppers comparing hardware options",
+            "--goal",
+            "purchase conversion",
+            "--vibe",
+            "interactive WebGL 3D hero with reduced motion fallback",
+            "--stack",
+            "React three.js model-viewer",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        selected_ids = {row["id"] for row in payload["selected_sources"]}
+
+    assert selected_ids & {"threejs-examples", "react-three-fiber-examples", "model-viewer"}, selected_ids
+    assert selected_ids & {"mdn-webgl-best-practices", "web-dev-motion-accessibility", "model-viewer-loading"}, selected_ids
+
+
+def test_artic_init_does_not_route_plain_2d_canvas_to_3d_sources():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Collaborative canvas whiteboard",
+            "--audience",
+            "remote teams",
+            "--goal",
+            "signup",
+            "--vibe",
+            "clean realtime drawing canvas",
+            "--stack",
+            "React",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        selected_ids = {row["id"] for row in payload["selected_sources"]}
+        style_facets = set(payload["intent"]["style_facets"])
+
+    assert "3d-webgl" not in style_facets
+    assert not selected_ids & {"model-viewer", "threejs-examples", "react-three-fiber-examples"}, selected_ids
+
+
 def test_artic_init_generates_brief_and_reference_search_outputs():
     with tempfile.TemporaryDirectory() as tmp:
         result = subprocess.run([

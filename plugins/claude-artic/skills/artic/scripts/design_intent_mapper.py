@@ -24,6 +24,7 @@ FACET_RULES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
     ("korean-mobile-native", ("한국 앱", "한국앱", "한국 서비스", "한국어", "국내", "모바일앱"), ("pretendard-typography", "thumb-friendly-cta", "local-auth-payment-expectations", "polite-plain-korean")),
     ("ai-product", ("ai", "llm", "agent", "에이아이", "인공지능", "자동화"), ("abstract-visuals", "capability-led-sections", "responsible-ai-copy")),
     ("mobile-first", ("mobile", "모바일", "앱", "app", "ios", "android"), ("thumb-friendly", "single-column-first", "compact-navigation")),
+    ("3d-webgl", ("3d", "webgl", "three.js", "threejs", "react three fiber", "r3f", "gltf", "glb", "model-viewer", "product configurator", "3d hero", "webxr", "shader"), ("3d-hero", "webgl-performance", "poster-fallback", "reduced-motion", "asset-license-check")),
     ("minimal", ("minimal", "simple", "clean", "미니멀", "깔끔", "단순"), ("limited-palette", "low-ornament", "clear-spacing")),
 )
 
@@ -84,6 +85,10 @@ RULE_LIBRARY: dict[str, dict[str, str]] = {
     "mobile-first": {
         "layout": "Single-column first, thumb-friendly CTA placement, short sections.",
         "components": "Large tap targets and compact navigation.",
+    },
+    "3d-webgl": {
+        "visuals": "Use 3D only where it clarifies the product; provide static poster, loading, and reduced-motion fallbacks.",
+        "performance": "Set mobile GPU, asset-size, lazy-loading, and context-loss guardrails before choosing custom WebGL effects.",
     },
     "korean-fintech": {
         "content": "Use plain Korean copy, explicit next actions, and reassuring feedback around sensitive financial or identity steps.",
@@ -156,7 +161,22 @@ def design_north_star(project: str, audience: str, goal: str, facets: list[str])
 
 
 def reference_roles(facets: list[str], stack: str) -> list[dict[str, Any]]:
-    roles: list[dict[str, Any]] = [
+    roles: list[dict[str, Any]] = []
+    stack_lower = stack.lower()
+    if "3d-webgl" in facets or contains_any(stack_lower, ("three", "r3f", "webgl", "model-viewer", "gltf", "glb")):
+        roles.extend([
+            {
+                "role": "3d_runtime",
+                "source_ids": ["model-viewer", "threejs-examples", "react-three-fiber-examples", "drei"],
+                "selection_reason": "Ground 3D sections in practical runtime, loading, interaction, and progressive-enhancement patterns.",
+            },
+            {
+                "role": "3d_safety_and_performance",
+                "source_ids": ["web-dev-motion-accessibility", "mdn-webgl-best-practices", "model-viewer-loading", "gltf-validator", "gltf-transform"],
+                "selection_reason": "Require reduced motion, static posters, lazy loading, validation, and mobile WebGL performance guardrails.",
+            },
+        ])
+    roles.extend([
         {
             "role": "trust_and_conversion",
             "source_ids": ["shopify-polaris", "wcag-quickref", "w3c-wai-designing-accessibility"],
@@ -172,7 +192,7 @@ def reference_roles(facets: list[str], stack: str) -> list[dict[str, Any]]:
             "source_ids": ["tailwind-css", "open-props", "dtcg-design-tokens", "style-dictionary"],
             "selection_reason": "Translate design intent into reusable color, spacing, radius, and typography tokens.",
         },
-    ]
+    ])
     if "mobile-first" in facets:
         roles.append({
             "role": "mobile_confidence",
