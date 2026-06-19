@@ -152,13 +152,16 @@ Artic 被调用后，Agent 会：
 | 检查已安装/最新版本 | `@artic version` |
 | 输出安全更新命令 | `@artic update` |
 
+`@artic init` 只把会话式 draft 状态保存到 `.artic/init-session.json`。即使必填信息已经完整，也不会自动生成文档；只有用户明确运行 `@artic start` 后才会开始生成。
+
 ## Output Policy
 
 Artic writes durable files instead of dumping long design prose into chat:
 
 ```text
-.artic/brief.json
-.artic/references.json
+.artic/init-session.json   # draft interview state from @artic init
+.artic/brief.json          # finalized by @artic start
+.artic/references.json     # finalized by @artic start
 .artic/state.json
 docs/artic-brief.md
 DESIGN.md

@@ -80,6 +80,15 @@ Default interview questions:
 
 Fast path: if user says `@artic init quick`, ask only product, audience, goal, vibe, and references.
 
+Hard lifecycle boundary:
+- `@artic init` and normal user replies are draft collection only.
+- They may only create or update `.artic/init-session.json`.
+- They must not run `artic_init.py`, `artic_start.py`, or `scaffold_artic_files.py`.
+- `ready` means “summarize and wait for explicit `@artic start`,” not “compile now.”
+- Missing questions should be asked in the user's language.
+
+For implementation details and regression-test shape for the init/start boundary, see `references/init-start-lifecycle-boundary.md`.
+
 ### `@artic start`
 
 Purpose: compile the Artic brief into AI-native design docs.
@@ -92,7 +101,7 @@ python3 <artic-skill>/scripts/artic_start.py --root <project-root>
 ```
 
 Required behavior:
-1. If `.artic/init-session.json` exists and `.artic/brief.json`/`.artic/references.json` are not finalized yet, read the session first.
+1. If `.artic/init-session.json` exists, read it first; its status is authoritative even when older `.artic/brief.json`/`.artic/references.json` files already exist.
 2. If the session is still collecting, stop and ask the remaining init questions instead of generating files.
 3. If the session is ready, compile it into `.artic/brief.json`, `.artic/references.json`, `.artic/state.json`, and `docs/artic-brief.md` before generating design docs.
 4. Read `.artic/brief.json`, `.artic/references.json`, and existing project docs.
@@ -102,6 +111,8 @@ Required behavior:
 8. Generate `DESIGN.md`, `docs/design-rules.md`, `docs/design-qa-checklist.md`, and `docs/homepage-design-prompt.md`.
 9. Validate with `scripts/validate_artic_outputs.py` when available.
 10. If Node is available, optionally run `npx -y @google/design.md lint DESIGN.md`.
+
+Lifecycle transition rule: `@artic start` is the only transition that may finalize a ready init session. If `.artic/init-session.json` is `collecting`, stop and ask the remaining questions; if it is `ready`, finalize it and then generate docs.
 
 ### `@artic review` MVP-light
 

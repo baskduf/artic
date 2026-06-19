@@ -154,6 +154,8 @@ Skip it for:
 
 `@artic init` follows the user's language. For example, `한국어로 Artic init 진행해줘. AI 회의록 서비스 랜딩을 만들고 싶어.` starts a Korean interview, stores `ko-KR` in `.artic/init-session.json.language`, asks for missing fields, and does not generate design artifacts until `@artic start`.
 
+`@artic init` only saves draft interview state. Even when the required fields are complete, document generation starts only after the user explicitly runs `@artic start`.
+
 ## Output Policy
 
 Artic writes durable files instead of dumping long design prose into chat:

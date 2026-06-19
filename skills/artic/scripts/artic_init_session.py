@@ -152,6 +152,41 @@ def render_questions(session: dict[str, Any], limit: int = 4) -> list[str]:
     return questions
 
 
+def render_ready_summary(session: dict[str, Any]) -> str:
+    raw_language = session.get("language")
+    language: dict[str, Any] = raw_language if isinstance(raw_language, dict) else {}
+    raw_answers = session.get("answers")
+    answers: dict[str, Any] = raw_answers if isinstance(raw_answers, dict) else {}
+    locale = str(language.get("locale") or "en-US")
+    if locale.startswith("ko"):
+        lines = [
+            "필수 정보는 충분히 모였습니다.",
+            "",
+            "현재 수집된 핵심:",
+            f"- 제품: {answers.get('project', '')}",
+            f"- 타깃: {answers.get('audience', '')}",
+            f"- 목표: {answers.get('goal', '')}",
+            f"- 무드: {answers.get('vibe', '')}",
+            "",
+            "더 다듬고 싶으면 레퍼런스, 피해야 할 스타일, 브랜드 제약을 추가로 알려주세요.",
+            "문서 생성을 시작하려면 `@artic start`를 실행하세요.",
+        ]
+    else:
+        lines = [
+            "The required Artic intake is ready.",
+            "",
+            "Captured answers:",
+            f"- Project: {answers.get('project', '')}",
+            f"- Audience: {answers.get('audience', '')}",
+            f"- Goal: {answers.get('goal', '')}",
+            f"- Vibe: {answers.get('vibe', '')}",
+            "",
+            "Add references, avoided styles, or brand constraints if you want to refine the brief.",
+            "To generate Artic design docs, run `@artic start`.",
+        ]
+    return "\n".join(lines)
+
+
 def is_ready(session: dict[str, Any]) -> bool:
     return not session.get("missing")
 
@@ -203,6 +238,8 @@ def main() -> int:
         else:
             session = create_or_update_session(Path(args.root), args.text, explicit_locale=args.locale)
             payload = {**session, "questions": render_questions(session)}
+            if is_ready(session):
+                payload["ready_summary"] = render_ready_summary(session)
     except ValueError as exc:
         print(json.dumps({"error": str(exc)}, ensure_ascii=False))
         return 1
