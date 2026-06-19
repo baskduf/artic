@@ -63,6 +63,14 @@ Use Artic to create AI-native design docs before building this homepage.
 
 ### Codex marketplace
 
+添加稳定版 marketplace：
+
+```bash
+codex plugin marketplace add baskduf/artic@v0.1.0
+```
+
+或跟踪最新的 `main`：
+
 ```bash
 codex plugin marketplace add baskduf/artic
 ```
