@@ -755,6 +755,52 @@ def test_catalog_search_can_use_semantic_intent_mapping():
     assert payload["results"][0]["score"] > 0
 
 
+def test_design_intent_mapper_brand_safes_korean_brand_phrases():
+    result = subprocess.run([
+        sys.executable,
+        str(ROOT / "skills/artic/scripts/design_intent_mapper.py"),
+        "--project",
+        "한국 핀테크 모바일 앱",
+        "--audience",
+        "20-40대 한국 사용자",
+        "--goal",
+        "본인인증 전환",
+        "--vibe",
+        "토스처럼 쉽고 신뢰감 있게, 한국 앱스럽게",
+    ], check=True, capture_output=True, text=True)
+    intent = json.loads(result.stdout)
+    assert "korean-fintech" in intent["style_facets"]
+    assert "korean-mobile-native" in intent["style_facets"]
+    assert "trust" in intent["style_facets"]
+    assert "brand-clone" in intent["avoid_facets"]
+    for principle in ["low-friction-fintech", "plain-korean-copy", "trustworthy-feedback", "pretendard-typography"]:
+        assert principle in intent["design_principles"]
+    assert any(role["role"] == "korean_market_fit" for role in intent["reference_roles"])
+    serialized = json.dumps(intent, ensure_ascii=False).lower()
+    for forbidden in ["toss_blue", "toss-logo", "kakao_yellow", "naver_green"]:
+        assert forbidden not in serialized
+
+
+def test_catalog_search_routes_korean_market_queries_to_korean_sources():
+    result = subprocess.run([
+        sys.executable,
+        str(ROOT / "skills/artic/scripts/search_reference_catalog.py"),
+        "--query",
+        "korean mobile fintech trust onboarding privacy consent social login pretendard",
+        "--limit",
+        "10",
+    ], check=True, capture_output=True, text=True)
+    ids = {row["id"] for row in json.loads(result.stdout)}
+    assert ids & {
+        "daangn-seed-design",
+        "pretendard-typeface",
+        "kakao-login-design-guide",
+        "naver-login-button-guide",
+        "kwcag-22-korean-web-accessibility",
+        "korean-privacy-consent-guide",
+    }
+
+
 
 def markdown_section(text: str, heading: str) -> str:
     marker = f"### {heading}"

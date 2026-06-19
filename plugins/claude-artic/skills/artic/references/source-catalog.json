@@ -4280,5 +4280,308 @@
       "no-interactive-components"
     ],
     "application_guidance": "Use this to give Artic component specs a reliable behavior and accessibility layer; combine Ark's headless contracts with a separate visual source for tokens, tone, and layout."
+  },
+  {
+    "id": "daangn-seed-design",
+    "name": "SEED Design System by Daangn/Karrot",
+    "type": "oss-korean-mobile-design-system",
+    "url": "https://seed-design.io/",
+    "license": "Apache-2.0 repository",
+    "live_sources": [
+      {
+        "url": "https://seed-design.io/",
+        "kind": "html",
+        "license": "Public docs"
+      },
+      {
+        "url": "https://github.com/daangn/seed-design",
+        "kind": "repository",
+        "license": "Apache-2.0"
+      }
+    ],
+    "tags": ["korea", "mobile", "consumer-app", "design-system", "tokens", "local-service", "marketplace"],
+    "strengths": ["Korean mobile consumer-product design language", "open tokens and component packages", "friendly local-service interaction patterns"],
+    "use_for": ["Korean mobile-native UX", "friendly local marketplace tone", "consumer service components", "tokenized mobile design"],
+    "product_fit": ["korean-market", "mobile-app", "consumer-service", "marketplace", "community", "startup"],
+    "visual_traits": ["friendly", "warm", "mobile-native", "rounded", "practical", "local"],
+    "page_patterns": ["home-feed", "list-detail", "bottom-sheet", "app-bar", "action-button", "chip", "feedback-state"],
+    "implementation_fit": ["react", "css", "tokens", "figma", "mobile", "web"],
+    "extraction_targets": ["mobile-component-anatomy", "action-button-patterns", "bottom-sheet-usage", "color-roles", "radius-spacing", "friendly-empty-states"],
+    "avoid_when": ["daangn-brand-clone", "exact-local-marketplace-flow", "brand-color-copy", "enterprise-dashboard"],
+    "application_guidance": "Use this to translate 'Korean app-like' or friendly local-service intent into mobile-native structure, warm but practical components, and tokenized hierarchy; keep Daangn/Karrot brand colors, copy, icons, and domain flows separate."
+  },
+  {
+    "id": "ko-design-md-korean-catalog",
+    "name": "ko-design-md Korean Design Systems Catalog",
+    "type": "korean-design-md-catalog",
+    "url": "https://github.com/CaesiumY/ko-design-md",
+    "license": "MIT code; CC BY 4.0 catalog content; original brand assets remain with owners",
+    "live_sources": [
+      {
+        "url": "https://github.com/CaesiumY/ko-design-md",
+        "kind": "repository",
+        "license": "MIT and CC BY 4.0"
+      },
+      {
+        "url": "https://getdesign.kr/",
+        "kind": "html",
+        "license": "Public catalog"
+      }
+    ],
+    "tags": ["korea", "design-md", "catalog", "semantic-mapping", "brand-safe", "design-systems"],
+    "strengths": ["structured Korean design-system observations", "Design.md-friendly schema", "explicit brand-safety framing"],
+    "use_for": ["Korean reference discovery", "semantic design intent mapping", "brand-safe abstraction", "design-md comparison"],
+    "product_fit": ["korean-market", "ai-native-docs", "design-system", "startup", "brand-positioning"],
+    "visual_traits": ["comparative", "structured", "token-aware", "brand-observational", "AI-readable"],
+    "page_patterns": ["design-md-entry", "catalog-card", "preview", "token-summary", "component-summary"],
+    "implementation_fit": ["markdown", "design-md", "catalog", "llm-ingestion", "semantic-search"],
+    "extraction_targets": ["korean-brand-descriptors", "frontmatter-schema", "visual-token-observations", "component-vocabulary", "safety-notes"],
+    "avoid_when": ["canonical-source-required", "asset-copying", "brand-clone", "unverified-secondary-source"],
+    "application_guidance": "Use this as a Korean design-intelligence index and semantic mapping aid; verify important entries against canonical sources and extract generic facets rather than brand assets, copy, exact palettes, or product flows."
+  },
+  {
+    "id": "pretendard-typeface",
+    "name": "Pretendard Typeface",
+    "type": "oss-korean-ui-typeface",
+    "url": "https://github.com/orioncactus/pretendard",
+    "license": "SIL Open Font License 1.1",
+    "live_sources": [
+      {
+        "url": "https://github.com/orioncactus/pretendard",
+        "kind": "repository",
+        "license": "OFL-1.1"
+      }
+    ],
+    "tags": ["korea", "typography", "hangul", "font", "ui", "mobile", "webfont"],
+    "strengths": ["modern Korean UI typography", "system-like Hangul readability", "variable and webfont distribution"],
+    "use_for": ["Korean UI typography", "Hangul readability", "mobile app typography", "neutral SaaS type stack"],
+    "product_fit": ["korean-market", "mobile-app", "saas", "fintech", "commerce", "public-service"],
+    "visual_traits": ["clean", "neutral", "readable", "modern", "system-like", "dense-but-clear"],
+    "page_patterns": ["body-copy", "labels", "captions", "numeric-ui", "forms", "lists"],
+    "implementation_fit": ["css", "webfont", "variable-font", "npm", "cdn", "figma"],
+    "extraction_targets": ["font-family-stack", "weight-scale", "line-height-guidance", "hangul-label-spacing", "dynamic-subsetting"],
+    "avoid_when": ["brand-owned-typeface-required", "editorial-serif-direction", "non-korean-content-only"],
+    "application_guidance": "Use this as the default Korean UI typography reference when users ask for a Korean-app feel; pair it with relaxed Hangul line-height, clear label spacing, and project-specific type scale choices."
+  },
+  {
+    "id": "samsung-one-ui-guidelines",
+    "name": "Samsung One UI Design Guidelines",
+    "type": "mobile-os-design-guidelines",
+    "url": "https://developer.samsung.com/one-ui",
+    "license": "Public Samsung developer guidance; brand assets governed by Samsung terms",
+    "live_sources": [
+      {
+        "url": "https://developer.samsung.com/one-ui",
+        "kind": "html",
+        "license": "Public docs"
+      }
+    ],
+    "tags": ["korea", "android", "mobile", "one-ui", "galaxy", "large-screen", "accessibility"],
+    "strengths": ["Korean Android/Galaxy user familiarity", "thumb-friendly mobile layout principles", "large-screen and foldable adaptation"],
+    "use_for": ["Android-native familiarity", "mobile-first layout", "foldable and large-screen guidance", "comfortable touch targets"],
+    "product_fit": ["korean-market", "android-app", "mobile-web", "consumer-app", "fintech", "commerce"],
+    "visual_traits": ["comfortable", "layered", "calm", "device-native", "adaptive", "touch-friendly"],
+    "page_patterns": ["settings-list", "list-detail", "bottom-navigation", "split-pane", "foldable-layout", "large-screen-adaptation"],
+    "implementation_fit": ["mobile-guidelines", "android", "responsive", "accessibility", "interaction-rules"],
+    "extraction_targets": ["thumb-reachability", "large-screen-layout", "foldable-adaptation", "mobile-motion", "accessibility-posture"],
+    "avoid_when": ["samsung-ui-clone", "galaxy-exclusive-claims", "brand-asset-copy", "desktop-first-saas"],
+    "application_guidance": "Use this to make Korean mobile experiences feel familiar to Galaxy/Android users through reachability, adaptive layout, and mobile interaction rules; do not make outputs look like Samsung system UI."
+  },
+  {
+    "id": "cpk-ui-react-native",
+    "name": "CPK UI by Cross Platform Korea",
+    "type": "oss-korean-react-native-ui-library",
+    "url": "https://github.com/crossplatformkorea/cpk-ui",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://github.com/crossplatformkorea/cpk-ui",
+        "kind": "repository",
+        "license": "MIT"
+      },
+      {
+        "url": "https://ui.crossplatformkorea.com/",
+        "kind": "html",
+        "license": "Public docs"
+      }
+    ],
+    "tags": ["korea", "react-native", "expo", "mobile", "ui-library", "theme", "cross-platform"],
+    "strengths": ["Korean community mobile UI defaults", "React Native and Expo implementation focus", "theme and accessibility-oriented component primitives"],
+    "use_for": ["Korean mobile MVPs", "React Native implementation", "cross-platform theming", "Expo app defaults"],
+    "product_fit": ["korean-market", "mobile-app", "startup", "prototype", "react-native", "expo"],
+    "visual_traits": ["neutral", "lightweight", "developer-friendly", "mobile-native", "themeable"],
+    "page_patterns": ["button", "input", "card", "list", "provider-theme", "dark-light-mode"],
+    "implementation_fit": ["react-native", "expo", "typescript", "storybook", "theme", "accessibility"],
+    "extraction_targets": ["theme-object-shape", "component-api", "font-defaults", "accessibility-props", "responsive-layout"],
+    "avoid_when": ["enterprise-depth-required", "web-only-project", "brand-visual-source"],
+    "application_guidance": "Use this when Artic needs practical Korean mobile implementation defaults for React Native or Expo; treat it as cross-platform UI scaffolding, not as a finished brand direction."
+  },
+  {
+    "id": "kakao-login-design-guide",
+    "name": "Kakao Login Design Guide",
+    "type": "korean-social-login-brand-guideline",
+    "url": "https://developers.kakao.com/docs/en/kakaologin/design-guide",
+    "license": "Kakao Developers terms; official assets for Kakao Login use only",
+    "live_sources": [
+      {
+        "url": "https://developers.kakao.com/docs/en/kakaologin/design-guide",
+        "kind": "html",
+        "license": "Kakao Developers terms"
+      }
+    ],
+    "tags": ["korea", "kakao", "social-login", "oauth", "signup", "brand-compliance", "onboarding"],
+    "strengths": ["official Kakao Login button rules", "clear provider identity and label guidance", "Korean social-login convention"],
+    "use_for": ["Korean social login", "provider button compliance", "signup/login clarity", "auth CTA stacks"],
+    "product_fit": ["korean-market", "consumer-service", "commerce", "mobile-app", "signup", "onboarding"],
+    "visual_traits": ["official", "recognizable", "friendly", "low-friction", "provider-specific"],
+    "page_patterns": ["login-page", "signup-page", "social-login-stack", "oauth-entry", "account-linking"],
+    "implementation_fit": ["provider-button", "brand-guideline", "auth-flow", "mobile-web", "compliance-checklist"],
+    "extraction_targets": ["button-anatomy", "label-rules", "symbol-rules", "color-constraints", "provider-button-hierarchy"],
+    "avoid_when": ["no-kakao-login", "generic-yellow-cta", "kakao-brand-clone", "asset-modification"],
+    "application_guidance": "Use this only for actual Kakao Login entry points: preserve official provider identity, size, label, and action clarity while keeping the rest of the product's brand system original."
+  },
+  {
+    "id": "kakao-sync-signup-design-guide",
+    "name": "Kakao Sync Signup Design Guide",
+    "type": "korean-social-signup-brand-guideline",
+    "url": "https://developers.kakao.com/docs/en/kakaosync/design-guide",
+    "license": "Kakao Developers terms; official assets for Kakao Sync use only",
+    "live_sources": [
+      {
+        "url": "https://developers.kakao.com/docs/en/kakaosync/design-guide",
+        "kind": "html",
+        "license": "Kakao Developers terms"
+      }
+    ],
+    "tags": ["korea", "kakao-sync", "signup", "easy-signup", "consent", "onboarding", "conversion"],
+    "strengths": ["official Kakao easy-signup button guidance", "login vs start/signup distinction", "Korean low-friction onboarding pattern"],
+    "use_for": ["Korean easy signup", "start CTA clarity", "consent-aware onboarding", "social signup conversion"],
+    "product_fit": ["korean-market", "commerce", "consumer-service", "mobile-app", "signup", "membership"],
+    "visual_traits": ["friendly", "official", "fast-entry", "recognizable", "conversion-oriented"],
+    "page_patterns": ["start-with-kakao", "signup-cta", "consent-flow", "event-to-signup", "membership-onboarding"],
+    "implementation_fit": ["provider-button", "signup-flow", "consent-copy", "mobile-web", "brand-compliance"],
+    "extraction_targets": ["start-label-rules", "signup-context", "consent-separation", "button-usage", "social-onboarding-friction"],
+    "avoid_when": ["no-kakao-sync", "hidden-consent", "forced-channel-add", "kakao-brand-clone"],
+    "application_guidance": "Use this to distinguish Korean social signup from simple login: explain what starting with Kakao means, separate consent steps clearly, and avoid turning Kakao identity into generic brand decoration."
+  },
+  {
+    "id": "naver-login-button-guide",
+    "name": "NAVER Login Button Guide",
+    "type": "korean-social-login-brand-guideline",
+    "url": "https://developers.naver.com/docs/login/bi/bi.md",
+    "license": "NAVER Developers terms; official assets for NAVER Login use only",
+    "live_sources": [
+      {
+        "url": "https://developers.naver.com/docs/login/bi/bi.md",
+        "kind": "markdown",
+        "license": "NAVER Developers terms"
+      }
+    ],
+    "tags": ["korea", "naver", "social-login", "oauth", "provider-button", "signup", "brand-compliance"],
+    "strengths": ["official NAVER Login button rules", "Korean provider identity and sizing conventions", "social-login stack guidance"],
+    "use_for": ["Korean social login", "provider button stack", "account linking", "signup/login clarity"],
+    "product_fit": ["korean-market", "commerce", "content-service", "mobile-app", "signup", "onboarding"],
+    "visual_traits": ["official", "stable", "recognizable", "utility-first", "provider-specific"],
+    "page_patterns": ["social-login-stack", "signup-page", "account-linking", "auth-provider-list", "login-modal"],
+    "implementation_fit": ["provider-button", "brand-guideline", "auth-flow", "mobile-web", "compliance-checklist"],
+    "extraction_targets": ["button-color-rules", "logo-size", "label-spacing", "button-variants", "provider-stack-consistency"],
+    "avoid_when": ["no-naver-login", "generic-green-cta", "naver-brand-clone", "logo-modification"],
+    "application_guidance": "Use this only for actual NAVER Login entry points; keep provider buttons equally legible and accessible, and never reuse NAVER green or logos as generic product branding."
+  },
+  {
+    "id": "kwcag-22-korean-web-accessibility",
+    "name": "Korean Web Content Accessibility Guidelines 2.2",
+    "type": "korean-accessibility-standard",
+    "url": "https://a11ykr.github.io/kwcag22/",
+    "license": "Public standard mirror; verify official standard terms for redistribution",
+    "live_sources": [
+      {
+        "url": "https://a11ykr.github.io/kwcag22/",
+        "kind": "html",
+        "license": "Public standard mirror"
+      }
+    ],
+    "tags": ["korea", "accessibility", "kwcag", "public-service", "forms", "compliance", "trust"],
+    "strengths": ["Korean accessibility criteria", "form and authentication quality guardrails", "public/financial service trust baseline"],
+    "use_for": ["Korean accessibility", "form validation", "auth/payment QA", "public-service quality", "trust UX"],
+    "product_fit": ["korean-market", "public-service", "fintech", "commerce", "onboarding", "forms"],
+    "visual_traits": ["clear", "accessible", "predictable", "high-contrast", "error-recoverable"],
+    "page_patterns": ["login", "identity-verification", "consent-form", "payment", "application-flow", "error-message"],
+    "implementation_fit": ["accessibility-checklist", "validation", "forms", "keyboard", "labels", "contrast"],
+    "extraction_targets": ["keyboard-access", "focus-visibility", "contrast", "input-error-recovery", "labels-and-names", "time-limit-guidance"],
+    "avoid_when": ["visual-style-source", "legal-compliance-claim", "non-korean-accessibility-only"],
+    "application_guidance": "Use this as a Korean quality bar for trust-heavy pages: make forms, login, verification, consent, and payment flows keyboard-accessible, clearly labeled, contrast-safe, and recoverable."
+  },
+  {
+    "id": "korean-privacy-consent-guide",
+    "name": "Korean Privacy Consent Guide",
+    "type": "korean-privacy-consent-guideline",
+    "url": "https://www.privacy.go.kr/front/bbs/bbsView.do?bbsNo=BBSMSTR_000000000049&bbscttNo=13156",
+    "license": "Korean public privacy guidance; verify portal reuse terms",
+    "live_sources": [
+      {
+        "url": "https://www.privacy.go.kr/front/bbs/bbsView.do?bbsNo=BBSMSTR_000000000049&bbscttNo=13156",
+        "kind": "html",
+        "license": "Public privacy guidance"
+      }
+    ],
+    "tags": ["korea", "privacy", "consent", "signup", "forms", "trust", "personal-information"],
+    "strengths": ["Korean consent UX structure", "required vs optional consent separation", "privacy-minimization trust guidance"],
+    "use_for": ["signup consent", "privacy form clarity", "marketing consent", "personal-information trust", "Korean onboarding"],
+    "product_fit": ["korean-market", "fintech", "commerce", "membership", "public-service", "onboarding"],
+    "visual_traits": ["transparent", "structured", "trustworthy", "plain-language", "choice-preserving"],
+    "page_patterns": ["signup-consent", "terms-agreement", "marketing-opt-in", "privacy-table", "required-optional-separation"],
+    "implementation_fit": ["form-copy", "consent-checklist", "privacy-notice", "validation", "onboarding"],
+    "extraction_targets": ["required-optional-consent", "collection-purpose", "retention-period", "refusal-notice", "separate-consent"],
+    "avoid_when": ["legal-advice-substitute", "dark-pattern-consent", "forced-optional-consent", "policy-copying"],
+    "application_guidance": "Use this to make Korean signup and consent screens transparent: separate required, optional, marketing, and third-party consent, explain purpose and retention, and avoid visually coercing optional choices."
+  },
+  {
+    "id": "korean-privacy-policy-writing-guide-2025",
+    "name": "Korean Privacy Policy Writing Guide 2025",
+    "type": "korean-privacy-policy-guideline",
+    "url": "https://www.privacy.go.kr/front/bbs/bbsView.do?bbsNo=BBSMSTR_000000000049&bbscttNo=20806",
+    "license": "Korean public privacy guidance; verify portal reuse terms",
+    "live_sources": [
+      {
+        "url": "https://www.privacy.go.kr/front/bbs/bbsView.do?bbsNo=BBSMSTR_000000000049&bbscttNo=20806",
+        "kind": "html",
+        "license": "Public privacy guidance"
+      }
+    ],
+    "tags": ["korea", "privacy-policy", "footer", "trust", "transparency", "personal-information", "legal-content"],
+    "strengths": ["Korean privacy policy information architecture", "transparency and footer trust guidance", "user-rights disclosure structure"],
+    "use_for": ["privacy-policy IA", "footer trust links", "signup details", "account settings", "transparency copy"],
+    "product_fit": ["korean-market", "saas", "fintech", "commerce", "membership", "public-service"],
+    "visual_traits": ["transparent", "organized", "official", "readable", "trust-building"],
+    "page_patterns": ["footer-trust-link", "privacy-policy-page", "account-rights", "consent-detail", "inquiry-page"],
+    "implementation_fit": ["content-structure", "footer", "legal-placeholder", "policy-page", "trust-checklist"],
+    "extraction_targets": ["policy-sections", "disclosure-location", "plain-language", "rights-exercise", "processor-third-party-structure"],
+    "avoid_when": ["legal-advice-substitute", "copying-another-policy", "claiming-compliance", "single-static-footer-only"],
+    "application_guidance": "Use this to make Korean privacy trust visible: place policy links predictably, structure policy pages around user rights and data purposes, and keep legal placeholders clearly marked for review."
+  },
+  {
+    "id": "alipay-plus-mpp-ux-guidelines",
+    "name": "Alipay+ Mobile Payment Partner UX Guidelines",
+    "type": "asia-payment-ux-guideline",
+    "url": "https://docs.alipayplus.com/alipayplus/alipayplus/uxg_mpp",
+    "license": "Public Alipay+ partner docs; brand assets governed by Alipay+ terms",
+    "live_sources": [
+      {
+        "url": "https://docs.alipayplus.com/alipayplus/alipayplus/uxg_mpp",
+        "kind": "html",
+        "license": "Public partner docs"
+      }
+    ],
+    "tags": ["asia", "payment", "wallet", "fintech", "checkout", "transaction", "mobile"],
+    "strengths": ["Asia wallet/payment journey structure", "mandatory vs optional payment elements", "transaction result and detail hierarchy"],
+    "use_for": ["payment result pages", "transaction details", "wallet checkout", "fintech trust hierarchy", "merchant payment UX"],
+    "product_fit": ["fintech", "commerce", "korean-market", "asia-market", "wallet", "checkout"],
+    "visual_traits": ["trustworthy", "transaction-focused", "status-clear", "brand-aware", "action-oriented"],
+    "page_patterns": ["payment-result", "transaction-detail", "payment-code", "wallet-handoff", "merchant-checkout"],
+    "implementation_fit": ["payment-flow", "status-pages", "transaction-ui", "checkout", "mobile-wallet"],
+    "extraction_targets": ["amount-merchant-status-hierarchy", "mandatory-optional-elements", "payment-result-states", "transaction-detail-access", "next-action-clarity"],
+    "avoid_when": ["alipay-brand-copy", "non-payment-product", "platform-specific-rules-as-global", "unlicensed-brand-assets"],
+    "application_guidance": "Use this as an Asia payment comparator for Korean fintech and commerce: generalize amount, merchant, status, next action, and transaction detail hierarchy without copying Alipay+ branding or partner-only requirements."
   }
 ]

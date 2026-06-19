@@ -19,6 +19,9 @@ FACET_RULES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
     ("playful-brand", ("playful", "fun", "cute", "귀엽", "장난", "친근", "friendly"), ("warm-accent", "rounded-shapes", "light-motion")),
     ("editorial-landing", ("editorial", "magazine", "story", "스토리", "콘텐츠", "글", "읽"), ("strong-type-scale", "longform-rhythm", "image-led-sections")),
     ("korean-startup", ("korean", "한국", "토스", "toss", "당근", "리멤버", "라인"), ("mobile-first", "friendly-trust", "clear-benefit-copy")),
+    ("korean-fintech", ("토스", "toss", "금융", "핀테크", "본인인증", "인증", "결제", "송금"), ("low-friction-fintech", "plain-korean-copy", "trustworthy-feedback", "single-primary-action")),
+    ("korean-social-onboarding", ("카카오", "kakao", "네이버", "naver", "간편로그인", "간편가입", "소셜로그인", "로그인"), ("friendly-social-onboarding", "provider-identity-clarity", "low-barrier-entry")),
+    ("korean-mobile-native", ("한국 앱", "한국앱", "한국 서비스", "한국어", "국내", "모바일앱"), ("pretendard-typography", "thumb-friendly-cta", "local-auth-payment-expectations", "polite-plain-korean")),
     ("ai-product", ("ai", "llm", "agent", "에이아이", "인공지능", "자동화"), ("abstract-visuals", "capability-led-sections", "responsible-ai-copy")),
     ("mobile-first", ("mobile", "모바일", "앱", "app", "ios", "android"), ("thumb-friendly", "single-column-first", "compact-navigation")),
     ("minimal", ("minimal", "simple", "clean", "미니멀", "깔끔", "단순"), ("limited-palette", "low-ornament", "clear-spacing")),
@@ -30,6 +33,7 @@ AVOID_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("flashy-neon", ("neon", "flashy", "과한", "번쩍", "cyberpunk")),
     ("busy-layout", ("busy", "복잡", "clutter", "정보 과다")),
     ("cold-minimal", ("cold", "차갑", "무미건조")),
+    ("brand-clone", ("토스", "toss", "카카오", "kakao", "네이버", "naver", "카카오뱅크", "kakaobank", "배민", "baemin")),
 )
 
 PRESET_PRIORITY = (
@@ -80,6 +84,18 @@ RULE_LIBRARY: dict[str, dict[str, str]] = {
     "mobile-first": {
         "layout": "Single-column first, thumb-friendly CTA placement, short sections.",
         "components": "Large tap targets and compact navigation.",
+    },
+    "korean-fintech": {
+        "content": "Use plain Korean copy, explicit next actions, and reassuring feedback around sensitive financial or identity steps.",
+        "layout": "Keep one dominant action per step, with clear confirmation, retry, and recovery states.",
+    },
+    "korean-social-onboarding": {
+        "components": "Treat Kakao, Naver, and other provider buttons as official provider actions with equal sizing and clear labels, not as decorative brand styles.",
+        "content": "Separate login, signup, consent, and account-linking intent in the surrounding copy.",
+    },
+    "korean-mobile-native": {
+        "typography": "Prefer Hangul-readable UI typography such as Pretendard/system Korean sans with relaxed line-height and label spacing.",
+        "components": "Use familiar Korean mobile patterns such as thumb-friendly CTAs, bottom sheets, compact lists, and local auth/payment expectations.",
     },
     "minimal": {
         "color": "Limited palette and restrained surfaces.",
@@ -163,6 +179,12 @@ def reference_roles(facets: list[str], stack: str) -> list[dict[str, Any]]:
             "source_ids": ["apple-hig", "meliwat-awesome-ios-design-md", "material-design"],
             "selection_reason": "Preserve mobile-first hierarchy, thumb-friendly actions, and restrained motion.",
         })
+    if any(facet in facets for facet in ("korean-startup", "korean-fintech", "korean-social-onboarding", "korean-mobile-native")):
+        roles.append({
+            "role": "korean_market_fit",
+            "source_ids": ["krds-korea-design-system", "line-design-system", "daangn-seed-design", "pretendard-typeface", "kwcag-22-korean-web-accessibility"],
+            "selection_reason": "Map Korean market language into mobile-native typography, local trust cues, social-login clarity, and accessibility without copying protected brand assets.",
+        })
     if "developer-tool" in facets or "react" in stack.lower() or "tailwind" in stack.lower():
         roles.append({
             "role": "implementation_clarity",
@@ -199,6 +221,9 @@ def map_design_intent(
         if contains_any(avoid_text, triggers):
             add_unique(avoid_facets, (facet,))
 
+    if contains_any(combined, ("토스", "toss", "카카오", "kakao", "네이버", "naver", "카카오뱅크", "kakaobank", "배민", "baemin")):
+        add_unique(avoid_facets, ("brand-clone",))
+
     if "trust" not in style_facets and contains_any(goal + " " + audience, ("signup", "sales", "구매", "전환", "conversion")):
         add_unique(style_facets, ("trust",))
         add_unique(search_facets, ("trust",))
@@ -234,7 +259,7 @@ def map_design_intent(
         "llm_contract": {
             "role": "Map user language to this schema, not to final pass/fail scoring.",
             "must_preserve": ["style_facets", "avoid_facets", "design_rules", "catalog_query"],
-            "must_not": ["copy protected brand assets", "choose exact layouts as clone targets"],
+            "must_not": ["copy protected brand assets", "choose exact layouts as clone targets", "turn Korean brand names into required colors, logos, copy, or product flows"],
         },
     }
 
