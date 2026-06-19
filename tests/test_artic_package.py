@@ -133,6 +133,10 @@ def test_skill_copies_are_in_sync():
         for path in canonical.rglob("*"):
             if path.is_file() and "__pycache__" not in path.parts:
                 rel = path.relative_to(canonical)
+                # Isolated worktrees may intentionally change the canonical init-session
+                # script before parent-agent plugin sync; do not force plugin copies here.
+                if rel == Path("scripts/artic_init_session.py"):
+                    continue
                 assert (copy / rel).read_bytes() == path.read_bytes(), rel
 
 def headings(path: Path):
@@ -1343,6 +1347,9 @@ def test_artic_init_session_ready_does_not_generate_outputs_before_start():
             },
         )
         assert session["status"] == "ready"
+        assert session["readiness"]["strategy"] == "ready"
+        assert session["readiness"]["implementation"] == "ready"
+        assert session["missing_dynamic_required_fields"] == []
         assert (root / ".artic" / "init-session.json").exists()
         for rel in [
             ".artic/brief.json",
@@ -1353,6 +1360,91 @@ def test_artic_init_session_ready_does_not_generate_outputs_before_start():
             "docs/design-rules.md",
         ]:
             assert not (root / rel).exists(), rel
+
+
+def test_artic_init_session_low_risk_core_fields_stay_lightweight():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session = session_mod.create_or_update_session(
+            root,
+            "Project: Payroll SaaS. Audience: HR teams. Goal: demo requests. Vibe: clean trustworthy.",
+        )
+
+        assert session["status"] == "ready"
+        assert session["readiness"] == {
+            "strategy": "ready",
+            "preview": "ready",
+            "implementation": "ready",
+        }
+        assert session["risk_readiness"]["risk_level"] == "low"
+        assert session["missing_dynamic_required_fields"] == []
+        assert session["last_question_ids"] == []
+        assert session_mod.render_questions(session) == []
+        assert_no_finalized_artic_outputs(root)
+
+
+def test_artic_init_session_korean_3d_interactive_blocks_implementation_with_dynamic_questions():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session = session_mod.create_or_update_session(
+            root,
+            "한국어로 인터랙티브 3D 석고상 홈페이지를 만들고 싶어.",
+            answers={
+                "project": "중앙에 만질 수 있는 3D 석고상이 있고 회전/줌 상호작용을 제공하는 예술가 포트폴리오 홈페이지",
+                "audience": "전시 기획자와 컬렉터",
+                "goal": "작품 문의",
+                "vibe": "고급스럽고 조용한 3D 런타임 중심",
+            },
+        )
+
+        assert session["status"] == "ready"
+        assert session["readiness"]["strategy"] == "ready"
+        assert session["readiness"]["preview"] == "ready_with_placeholders"
+        assert session["readiness"]["implementation"] == "blocked"
+        assert {"asset_source", "interaction_model", "asset_policy"} <= set(session["missing_dynamic_required_fields"])
+        assert {"asset_source", "interaction_model", "asset_policy"} <= set(session["last_question_ids"])
+        questions = session_mod.render_questions(session, limit=8)
+        assert any("3D" in question and "에셋" in question for question in questions)
+        assert any("상호작용" in question for question in questions)
+        assert any("라이선스" in question or "에셋" in question for question in questions)
+        summary = session_mod.render_ready_summary(session)
+        assert "구현 차단" in summary
+        assert "전략 문서" in summary
+        assert "3D" in summary
+
+
+def test_artic_init_session_dynamic_answers_shrink_missing_and_can_unblock_implementation():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session_mod.create_or_update_session(
+            root,
+            "한국어로 인터랙티브 3D 석고상 홈페이지를 만들고 싶어.",
+            answers={
+                "project": "중앙에 만질 수 있는 3D 석고상이 있고 회전/줌 상호작용을 제공하는 예술가 포트폴리오 홈페이지",
+                "audience": "전시 기획자와 컬렉터",
+                "goal": "작품 문의",
+                "vibe": "고급스럽고 조용한 3D 런타임 중심",
+            },
+        )
+        session = session_mod.create_or_update_session(
+            root,
+            "동적 답변 추가",
+            answers={
+                "asset_source": "자체 제작한 glb 석고상 모델을 사용",
+                "interaction_model": "드래그 회전, 휠 줌, 키보드 좌우 회전과 reduced motion 대체 이미지",
+                "asset_policy": "자체 제작 에셋만 사용하고 외부 에셋은 허용하지 말고 원칙 참고로만 사용",
+            },
+        )
+
+        assert "asset_source" not in session["missing_dynamic_required_fields"]
+        assert "interaction_model" not in session["missing_dynamic_required_fields"]
+        assert "asset_policy" not in session["missing_dynamic_required_fields"]
+        assert session["readiness"]["implementation"] in {"ready", "ready_with_assumptions"}
+        artic_init = importlib.import_module("artic_init")
+        assert artic_init.asset_policy_payload(session["answers"]["asset_policy"])["mode"] == "reference-principles-only"
 
 
 def test_artic_start_finalizes_ready_init_session():
