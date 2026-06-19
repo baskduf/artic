@@ -183,7 +183,7 @@ def test_ci_and_release_workflows_are_hardened():
     assert "actions/checkout@v5" in ci
     assert "actions/setup-python@v6" in ci
     assert "actions/upload-artifact@v4" in ci
-    assert "rhysd/actionlint@v1" in ci
+    assert "actionlint_1.7.12_linux_amd64.tar.gz" in ci
     assert "permissions:" in release
     assert "contents: write" in release
     assert "Resolve and validate release ref" in release
