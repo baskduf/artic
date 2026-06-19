@@ -95,12 +95,23 @@ def fetch_latest_release(repo: str, timeout: float = 10.0) -> dict[str, Any]:
     }
 
 
-def status_for(installed: str | None, latest: str | None, mismatches: list[dict[str, str | None]], no_network: bool, latest_error: str | None) -> str:
+def status_for(
+    installed: str | None,
+    latest: str | None,
+    mismatches: list[dict[str, str | None]],
+    no_network: bool,
+    latest_error: str | None,
+    latest_not_found: bool = False,
+) -> str:
     if mismatches:
         return "version-mismatch"
     if no_network:
         return "latest-unchecked"
-    if latest_error or latest is None:
+    if latest_not_found:
+        return "latest-not-found"
+    if latest_error:
+        return "latest-unavailable"
+    if latest is None:
         return "latest-unavailable"
     current_tuple = semver_tuple(installed)
     latest_tuple = semver_tuple(latest)
@@ -119,11 +130,22 @@ def collect_version_info(root: Path, repo: str = "baskduf/artic", no_network: bo
     mismatches = version_mismatches(installed)
     latest: dict[str, Any] | None = None
     latest_error: str | None = None
+    latest_not_found = False
+    latest_state = "unchecked" if no_network else "unknown"
     if not no_network:
         try:
             latest = fetch_latest_release(repo)
+            latest_state = "found"
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                latest_not_found = True
+                latest_state = "not_found"
+            else:
+                latest_error = f"HTTP {exc.code}: {exc.reason}"
+                latest_state = "unavailable"
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
             latest_error = str(exc)
+            latest_state = "unavailable"
     latest_version = latest.get("tag_name") if latest else None
     return {
         "repo": repo,
@@ -131,7 +153,8 @@ def collect_version_info(root: Path, repo: str = "baskduf/artic", no_network: bo
         "installed": installed,
         "latest": latest,
         "latest_error": latest_error,
-        "status": status_for(current_version, latest_version, mismatches, no_network, latest_error),
+        "latest_state": latest_state,
+        "status": status_for(current_version, latest_version, mismatches, no_network, latest_error, latest_not_found),
         "version_mismatches": mismatches,
     }
 
@@ -142,8 +165,11 @@ def render_text(payload: dict[str, Any]) -> str:
         lines.append(f"- {name}: {version or 'missing'}")
     lines.append("")
     latest = payload.get("latest")
+    latest_state = payload.get("latest_state")
     if latest:
         lines.extend(["Latest:", f"- GitHub release: {latest.get('tag_name') or 'unknown'}", f"- URL: {latest.get('html_url') or 'unknown'}"])
+    elif latest_state == "not_found":
+        lines.extend(["Latest:", "- not found: no GitHub latest release is published for this repository"])
     elif payload.get("latest_error"):
         lines.extend(["Latest:", f"- unavailable: {payload['latest_error']}"])
     else:

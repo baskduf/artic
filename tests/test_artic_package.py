@@ -1,9 +1,17 @@
 from __future__ import annotations
-import functools, json, re, subprocess, sys, tarfile, tempfile, threading, zipfile
+import functools, importlib, json, re, subprocess, sys, tarfile, tempfile, threading, urllib.error, zipfile
+from email.message import Message
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS_DIR = ROOT / "skills" / "artic" / "scripts"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+artic_update = importlib.import_module("artic_update")
+artic_version = importlib.import_module("artic_version")
+
 README_FILES = ["README.md", "README.ko.md", "README.ja.md", "README.zh-CN.md", "README.zh-TW.md"]
 
 def test_json_manifests_parse():
@@ -42,6 +50,54 @@ def test_readmes_have_language_nav():
         for target in README_FILES:
             if target != rel:
                 assert target in text or (target == "README.md" and "English" in text), rel
+
+
+def test_artic_version_no_network_marks_latest_unchecked():
+    payload = artic_version.collect_version_info(ROOT, no_network=True)
+    assert payload["latest_state"] == "unchecked"
+    assert payload["latest_error"] is None
+    assert payload["status"] == "latest-unchecked"
+    assert "unchecked (--no-network)" in artic_version.render_text(payload)
+
+
+def test_artic_version_404_marks_latest_not_found(monkeypatch):
+    def raise_404(repo: str, timeout: float = 10.0) -> dict:
+        raise urllib.error.HTTPError("https://api.github.com/repos/example/missing/releases/latest", 404, "Not Found", Message(), None)
+
+    monkeypatch.setattr(artic_version, "fetch_latest_release", raise_404)
+    payload = artic_version.collect_version_info(ROOT, repo="example/missing")
+    assert payload["latest_state"] == "not_found"
+    assert payload["latest_error"] is None
+    assert payload["latest"] is None
+    assert payload["status"] == "latest-not-found"
+    assert "not found: no GitHub latest release" in artic_version.render_text(payload)
+
+
+def test_artic_version_network_failure_marks_latest_unavailable(monkeypatch):
+    def raise_network_failure(repo: str, timeout: float = 10.0) -> dict:
+        raise urllib.error.URLError("offline")
+
+    monkeypatch.setattr(artic_version, "fetch_latest_release", raise_network_failure)
+    payload = artic_version.collect_version_info(ROOT, repo="example/repo")
+    assert payload["latest_state"] == "unavailable"
+    assert payload["latest_error"]
+    assert payload["status"] == "latest-unavailable"
+    assert "unavailable:" in artic_version.render_text(payload)
+
+
+def test_artic_update_guidance_without_latest_omits_version_pin():
+    payload = {
+        "installed_version": "0.1.0",
+        "latest": None,
+        "latest_state": "not_found",
+        "status": "latest-not-found",
+        "version_mismatches": [],
+    }
+    text = artic_update.render_update_guidance(payload)
+    assert "Latest: not found (no GitHub latest release)" in text
+    assert "marketplace commands below intentionally omit a version pin" in text
+    assert "baskduf/artic@<latest-tag>" not in text
+    assert "codex plugin marketplace add baskduf/artic\n" in text
 
 def test_scaffold_and_validate_smoke():
     with tempfile.TemporaryDirectory() as tmp:
