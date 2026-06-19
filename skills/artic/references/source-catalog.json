@@ -1,14 +1,749 @@
 [
-  {"id":"google-design-md","name":"Google DESIGN.md","type":"official-spec","url":"https://github.com/google-labs-code/design.md","license":"Apache-2.0","live_sources":[{"url":"https://raw.githubusercontent.com/google-labs-code/design.md/main/README.md","kind":"markdown","license":"Apache-2.0"}],"tags":["design-md","tokens","wcag","ai-native","lint","export"],"strengths":["official format","linting","accessibility","tailwind export","dtcg export"],"use_for":["output contract","validation","token discipline"]},
-  {"id":"voltagent-awesome-design-md","name":"VoltAgent awesome-design-md","type":"design-md-corpus","url":"https://github.com/VoltAgent/awesome-design-md","license":"MIT","fixture":"references/fixtures/voltagent-saas.design.md","live_sources":[{"url":"https://raw.githubusercontent.com/VoltAgent/awesome-design-md/main/README.md","kind":"markdown","license":"MIT"}],"tags":["homepage","saas","ai-product","brand-inspired","developer-tool","landing-page"],"strengths":["large DESIGN.md collection","popular web brands","homepage style patterns"],"use_for":["style candidates","homepage patterns","brand-inspired abstraction"]},
-  {"id":"bergside-awesome-design-skills","name":"awesome-design-skills","type":"skill-registry","url":"https://github.com/bergside/awesome-design-skills","license":"MIT","tags":["skill","design-md","agents","component-rules","quality-gates","accessibility"],"strengths":["SKILL.md plus DESIGN.md pattern","quality gates","agent instructions"],"use_for":["skill packaging","agent behavior","QA rules"]},
-  {"id":"voltagent-awesome-claude-design","name":"awesome-claude-design","type":"design-md-corpus","url":"https://github.com/VoltAgent/awesome-claude-design","license":"MIT","tags":["claude-design","design-md","ui-scaffold","homepage","prototype"],"strengths":["one-shot UI scaffold flow","design package examples"],"use_for":["Claude-compatible flow","scaffold pattern","preview docs"]},
-  {"id":"ndroussi-design-md-for-ai","name":"design-md-for-ai","type":"design-md-corpus","url":"https://github.com/ndroussi/design-md-for-ai","license":"MIT","tags":["brand-inspired","design-md","homepage","consumer","saas","large-corpus"],"strengths":["large secondary corpus","brand-inspired examples"],"use_for":["fallback candidates","cross-check style patterns"]},
-  {"id":"meliwat-awesome-ios-design-md","name":"awesome-ios-design-md","type":"mobile-design-md-corpus","url":"https://github.com/meliwat/awesome-ios-design-md","license":"MIT","tags":["mobile","ios","android","expo","app","motion","haptics"],"strengths":["mobile-first app patterns","platform-specific flavors","motion guidance"],"use_for":["mobile-first landing","native app style","responsive/mobile rules"]},
-  {"id":"material-design","name":"Material Design 3","type":"professional-design-system","url":"https://m3.material.io/","license":"Mixed/docs-public","tags":["tokens","accessibility","mobile","components","system","android"],"strengths":["token hierarchy","accessibility","component behavior","mobile-first system"],"use_for":["token naming","component accessibility","mobile defaults"]},
-  {"id":"shopify-polaris","name":"Shopify Polaris","type":"professional-design-system","url":"https://polaris.shopify.com/","license":"Open-source ecosystem","fixture":"references/fixtures/shopify-polaris-trust.design.md","live_sources":[{"url":"https://raw.githubusercontent.com/Shopify/polaris/main/README.md","kind":"markdown","license":"MIT"}],"tags":["commerce","admin","trust","forms","components","saas"],"strengths":["commerce UX","admin patterns","trustworthy forms","component guidance"],"use_for":["commerce homepage","dashboard/admin product","trust rules"]},
-  {"id":"ibm-carbon","name":"IBM Carbon Design System","type":"professional-design-system","url":"https://carbondesignsystem.com/","license":"Apache-2.0 components","tags":["enterprise","data","dashboard","accessibility","components"],"strengths":["enterprise UI","data-rich layouts","accessibility","structured components"],"use_for":["enterprise SaaS","data/productivity UI","accessibility discipline"]},
-  {"id":"microsoft-fluent","name":"Microsoft Fluent 2","type":"professional-design-system","url":"https://fluent2.microsoft.design/","license":"Open-source ecosystem","tags":["productivity","enterprise","cross-platform","components","accessibility"],"strengths":["productivity apps","cross-platform guidance","enterprise component patterns"],"use_for":["productivity SaaS","enterprise homepage","component behavior"]},
-  {"id":"ant-design","name":"Ant Design","type":"professional-design-system","url":"https://ant.design/","license":"MIT","tags":["enterprise","dashboard","forms","react","components","data"],"strengths":["React enterprise components","forms","tables","dashboard patterns"],"use_for":["enterprise products","admin/dashboard-heavy products"]},
-  {"id":"shadcn-ui","name":"shadcn/ui ecosystem","type":"ui-implementation-ecosystem","url":"https://ui.shadcn.com/","license":"MIT","fixture":"references/fixtures/shadcn-developer.design.md","live_sources":[{"url":"https://raw.githubusercontent.com/shadcn-ui/ui/main/README.md","kind":"markdown","license":"MIT"}],"tags":["react","tailwind","components","developer-tool","saas","modern"],"strengths":["Tailwind-friendly component conventions","modern SaaS UI","developer ergonomics"],"use_for":["React/Tailwind implementation","component defaults","developer-tool aesthetic"]}
+  {
+    "id": "google-design-md",
+    "name": "Google DESIGN.md",
+    "type": "official-spec",
+    "url": "https://github.com/google-labs-code/design.md",
+    "license": "Apache-2.0",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/google-labs-code/design.md/main/README.md",
+        "kind": "markdown",
+        "license": "Apache-2.0"
+      }
+    ],
+    "tags": [
+      "design-md",
+      "tokens",
+      "wcag",
+      "ai-native",
+      "lint",
+      "export"
+    ],
+    "strengths": [
+      "official format",
+      "linting",
+      "accessibility",
+      "tailwind export",
+      "dtcg export"
+    ],
+    "use_for": [
+      "output contract",
+      "validation",
+      "token discipline"
+    ],
+    "product_fit": [
+      "ai-native-docs",
+      "design-system",
+      "developer-tool",
+      "saas"
+    ],
+    "visual_traits": [
+      "systematic",
+      "structured",
+      "accessible",
+      "token-driven"
+    ],
+    "page_patterns": [
+      "design-doc",
+      "token-spec",
+      "quality-gate"
+    ],
+    "implementation_fit": [
+      "tailwind",
+      "dtcg",
+      "design-md",
+      "lint"
+    ],
+    "extraction_targets": [
+      "tokens",
+      "accessibility",
+      "validation",
+      "export"
+    ],
+    "avoid_when": [
+      "visual-inspiration-only",
+      "brand-moodboard"
+    ],
+    "risk_notes": "Specification source, not a visual style source; use for structure and validation rather than page aesthetics."
+  },
+  {
+    "id": "voltagent-awesome-design-md",
+    "name": "VoltAgent awesome-design-md",
+    "type": "design-md-corpus",
+    "url": "https://github.com/VoltAgent/awesome-design-md",
+    "license": "MIT",
+    "fixture": "references/fixtures/voltagent-saas.design.md",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/VoltAgent/awesome-design-md/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "homepage",
+      "saas",
+      "ai-product",
+      "brand-inspired",
+      "developer-tool",
+      "landing-page"
+    ],
+    "strengths": [
+      "large DESIGN.md collection",
+      "popular web brands",
+      "homepage style patterns"
+    ],
+    "use_for": [
+      "style candidates",
+      "homepage patterns",
+      "brand-inspired abstraction"
+    ],
+    "product_fit": [
+      "ai-product",
+      "developer-tool",
+      "saas",
+      "landing-page"
+    ],
+    "visual_traits": [
+      "modern",
+      "premium",
+      "clear",
+      "brand-inspired"
+    ],
+    "page_patterns": [
+      "hero",
+      "social-proof",
+      "features",
+      "cta",
+      "landing-page"
+    ],
+    "implementation_fit": [
+      "design-md",
+      "web",
+      "homepage"
+    ],
+    "extraction_targets": [
+      "layout",
+      "cta",
+      "proof",
+      "visual-hierarchy"
+    ],
+    "avoid_when": [
+      "exact-brand-clone",
+      "regulated-enterprise-dashboard"
+    ],
+    "risk_notes": "High brand-copy temptation; extract abstract homepage structure and hierarchy only."
+  },
+  {
+    "id": "bergside-awesome-design-skills",
+    "name": "awesome-design-skills",
+    "type": "skill-registry",
+    "url": "https://github.com/bergside/awesome-design-skills",
+    "license": "MIT",
+    "tags": [
+      "skill",
+      "design-md",
+      "agents",
+      "component-rules",
+      "quality-gates",
+      "accessibility"
+    ],
+    "strengths": [
+      "SKILL.md plus DESIGN.md pattern",
+      "quality gates",
+      "agent instructions"
+    ],
+    "use_for": [
+      "skill packaging",
+      "agent behavior",
+      "QA rules"
+    ],
+    "product_fit": [
+      "agent-skill",
+      "design-system",
+      "developer-tool"
+    ],
+    "visual_traits": [
+      "systematic",
+      "instructional",
+      "quality-focused"
+    ],
+    "page_patterns": [
+      "qa-checklist",
+      "agent-workflow",
+      "design-doc"
+    ],
+    "implementation_fit": [
+      "skill",
+      "markdown",
+      "design-md"
+    ],
+    "extraction_targets": [
+      "qa",
+      "agent-behavior",
+      "component-rules",
+      "accessibility"
+    ],
+    "avoid_when": [
+      "pure-visual-inspiration",
+      "consumer-emotional-brand"
+    ],
+    "risk_notes": "Use for process and gates, not final visual style."
+  },
+  {
+    "id": "voltagent-awesome-claude-design",
+    "name": "awesome-claude-design",
+    "type": "design-md-corpus",
+    "url": "https://github.com/VoltAgent/awesome-claude-design",
+    "license": "MIT",
+    "tags": [
+      "claude-design",
+      "design-md",
+      "ui-scaffold",
+      "homepage",
+      "prototype"
+    ],
+    "strengths": [
+      "one-shot UI scaffold flow",
+      "design package examples"
+    ],
+    "use_for": [
+      "Claude-compatible flow",
+      "scaffold pattern",
+      "preview docs"
+    ],
+    "product_fit": [
+      "prototype",
+      "homepage",
+      "ai-product",
+      "saas"
+    ],
+    "visual_traits": [
+      "fast",
+      "modern",
+      "scaffold-friendly"
+    ],
+    "page_patterns": [
+      "hero",
+      "prototype",
+      "preview",
+      "landing-page"
+    ],
+    "implementation_fit": [
+      "claude",
+      "design-md",
+      "ui-scaffold"
+    ],
+    "extraction_targets": [
+      "scaffold-flow",
+      "preview-docs",
+      "layout"
+    ],
+    "avoid_when": [
+      "strict-enterprise-system",
+      "production-only-design-system"
+    ],
+    "risk_notes": "Good for fast scaffolds; cross-check against stricter design systems before production."
+  },
+  {
+    "id": "ndroussi-design-md-for-ai",
+    "name": "design-md-for-ai",
+    "type": "design-md-corpus",
+    "url": "https://github.com/ndroussi/design-md-for-ai",
+    "license": "MIT",
+    "tags": [
+      "brand-inspired",
+      "design-md",
+      "homepage",
+      "consumer",
+      "saas",
+      "large-corpus"
+    ],
+    "strengths": [
+      "large secondary corpus",
+      "brand-inspired examples"
+    ],
+    "use_for": [
+      "fallback candidates",
+      "cross-check style patterns"
+    ],
+    "product_fit": [
+      "consumer",
+      "saas",
+      "homepage",
+      "landing-page"
+    ],
+    "visual_traits": [
+      "brand-inspired",
+      "varied",
+      "consumer",
+      "modern"
+    ],
+    "page_patterns": [
+      "hero",
+      "features",
+      "pricing",
+      "landing-page"
+    ],
+    "implementation_fit": [
+      "design-md",
+      "web"
+    ],
+    "extraction_targets": [
+      "style-cross-check",
+      "layout",
+      "typography",
+      "cta"
+    ],
+    "avoid_when": [
+      "low-copy-risk-required",
+      "strict-original-brand"
+    ],
+    "risk_notes": "Secondary corpus; use to cross-check, not to anchor a single brand direction."
+  },
+  {
+    "id": "meliwat-awesome-ios-design-md",
+    "name": "awesome-ios-design-md",
+    "type": "mobile-design-md-corpus",
+    "url": "https://github.com/meliwat/awesome-ios-design-md",
+    "license": "MIT",
+    "tags": [
+      "mobile",
+      "ios",
+      "android",
+      "expo",
+      "app",
+      "motion",
+      "haptics"
+    ],
+    "strengths": [
+      "mobile-first app patterns",
+      "platform-specific flavors",
+      "motion guidance"
+    ],
+    "use_for": [
+      "mobile-first landing",
+      "native app style",
+      "responsive/mobile rules"
+    ],
+    "product_fit": [
+      "mobile-app",
+      "consumer",
+      "app-landing",
+      "mobile-first"
+    ],
+    "visual_traits": [
+      "mobile",
+      "native",
+      "responsive",
+      "motion-rich"
+    ],
+    "page_patterns": [
+      "app-landing",
+      "mobile-hero",
+      "screenshots",
+      "onboarding"
+    ],
+    "implementation_fit": [
+      "ios",
+      "android",
+      "expo",
+      "mobile"
+    ],
+    "extraction_targets": [
+      "responsive",
+      "motion",
+      "haptics",
+      "mobile-layout"
+    ],
+    "avoid_when": [
+      "desktop-enterprise-dashboard",
+      "dense-admin"
+    ],
+    "risk_notes": "Strong mobile guidance; avoid over-applying native patterns to desktop-heavy SaaS."
+  },
+  {
+    "id": "material-design",
+    "name": "Material Design 3",
+    "type": "professional-design-system",
+    "url": "https://m3.material.io/",
+    "license": "Mixed/docs-public",
+    "tags": [
+      "tokens",
+      "accessibility",
+      "mobile",
+      "components",
+      "system",
+      "android"
+    ],
+    "strengths": [
+      "token hierarchy",
+      "accessibility",
+      "component behavior",
+      "mobile-first system"
+    ],
+    "use_for": [
+      "token naming",
+      "component accessibility",
+      "mobile defaults"
+    ],
+    "product_fit": [
+      "mobile-app",
+      "saas",
+      "design-system",
+      "commerce"
+    ],
+    "visual_traits": [
+      "accessible",
+      "systematic",
+      "mobile-first",
+      "componentized"
+    ],
+    "page_patterns": [
+      "forms",
+      "navigation",
+      "components",
+      "responsive"
+    ],
+    "implementation_fit": [
+      "android",
+      "web",
+      "tokens",
+      "components"
+    ],
+    "extraction_targets": [
+      "tokens",
+      "accessibility",
+      "components",
+      "responsive"
+    ],
+    "avoid_when": [
+      "luxury-minimal",
+      "highly-editorial"
+    ],
+    "risk_notes": "Reliable system baseline; may feel generic without project-specific personality."
+  },
+  {
+    "id": "shopify-polaris",
+    "name": "Shopify Polaris",
+    "type": "professional-design-system",
+    "url": "https://polaris.shopify.com/",
+    "license": "Open-source ecosystem",
+    "fixture": "references/fixtures/shopify-polaris-trust.design.md",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/Shopify/polaris/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "commerce",
+      "admin",
+      "trust",
+      "forms",
+      "components",
+      "saas"
+    ],
+    "strengths": [
+      "commerce UX",
+      "admin patterns",
+      "trustworthy forms",
+      "component guidance"
+    ],
+    "use_for": [
+      "commerce homepage",
+      "dashboard/admin product",
+      "trust rules"
+    ],
+    "product_fit": [
+      "commerce",
+      "admin",
+      "saas",
+      "trust-heavy"
+    ],
+    "visual_traits": [
+      "trustworthy",
+      "calm",
+      "clear",
+      "form-focused"
+    ],
+    "page_patterns": [
+      "forms",
+      "trust",
+      "admin",
+      "conversion",
+      "proof"
+    ],
+    "implementation_fit": [
+      "react",
+      "forms",
+      "components",
+      "commerce"
+    ],
+    "extraction_targets": [
+      "forms",
+      "trust",
+      "validation",
+      "cta",
+      "components"
+    ],
+    "avoid_when": [
+      "playful-consumer",
+      "editorial-storytelling"
+    ],
+    "risk_notes": "Excellent for trust and forms; avoid making all marketing pages feel like admin UI."
+  },
+  {
+    "id": "ibm-carbon",
+    "name": "IBM Carbon Design System",
+    "type": "professional-design-system",
+    "url": "https://carbondesignsystem.com/",
+    "license": "Apache-2.0 components",
+    "tags": [
+      "enterprise",
+      "data",
+      "dashboard",
+      "accessibility",
+      "components"
+    ],
+    "strengths": [
+      "enterprise UI",
+      "data-rich layouts",
+      "accessibility",
+      "structured components"
+    ],
+    "use_for": [
+      "enterprise SaaS",
+      "data/productivity UI",
+      "accessibility discipline"
+    ],
+    "product_fit": [
+      "enterprise",
+      "data",
+      "dashboard",
+      "saas"
+    ],
+    "visual_traits": [
+      "structured",
+      "dense",
+      "credible",
+      "accessible"
+    ],
+    "page_patterns": [
+      "dashboard",
+      "data",
+      "forms",
+      "navigation",
+      "enterprise-proof"
+    ],
+    "implementation_fit": [
+      "components",
+      "enterprise",
+      "dashboard"
+    ],
+    "extraction_targets": [
+      "data-layout",
+      "accessibility",
+      "navigation",
+      "components"
+    ],
+    "avoid_when": [
+      "playful-brand",
+      "luxury-consumer",
+      "simple-one-page"
+    ],
+    "risk_notes": "Strong for data/enterprise; can feel too heavy for lightweight consumer homepages."
+  },
+  {
+    "id": "microsoft-fluent",
+    "name": "Microsoft Fluent 2",
+    "type": "professional-design-system",
+    "url": "https://fluent2.microsoft.design/",
+    "license": "Open-source ecosystem",
+    "tags": [
+      "productivity",
+      "enterprise",
+      "cross-platform",
+      "components",
+      "accessibility"
+    ],
+    "strengths": [
+      "productivity apps",
+      "cross-platform guidance",
+      "enterprise component patterns"
+    ],
+    "use_for": [
+      "productivity SaaS",
+      "enterprise homepage",
+      "component behavior"
+    ],
+    "product_fit": [
+      "enterprise",
+      "productivity",
+      "saas",
+      "cross-platform"
+    ],
+    "visual_traits": [
+      "professional",
+      "familiar",
+      "calm",
+      "accessible"
+    ],
+    "page_patterns": [
+      "productivity",
+      "enterprise-proof",
+      "navigation",
+      "forms"
+    ],
+    "implementation_fit": [
+      "cross-platform",
+      "components",
+      "enterprise"
+    ],
+    "extraction_targets": [
+      "component-behavior",
+      "accessibility",
+      "cross-platform",
+      "navigation"
+    ],
+    "avoid_when": [
+      "highly-playful",
+      "luxury-minimal"
+    ],
+    "risk_notes": "Good enterprise familiarity; pair with stronger brand direction to avoid generic productivity UI."
+  },
+  {
+    "id": "ant-design",
+    "name": "Ant Design",
+    "type": "professional-design-system",
+    "url": "https://ant.design/",
+    "license": "MIT",
+    "tags": [
+      "enterprise",
+      "dashboard",
+      "forms",
+      "react",
+      "components",
+      "data"
+    ],
+    "strengths": [
+      "React enterprise components",
+      "forms",
+      "tables",
+      "dashboard patterns"
+    ],
+    "use_for": [
+      "enterprise products",
+      "admin/dashboard-heavy products"
+    ],
+    "product_fit": [
+      "enterprise",
+      "dashboard",
+      "admin",
+      "data"
+    ],
+    "visual_traits": [
+      "dense",
+      "structured",
+      "component-rich",
+      "enterprise"
+    ],
+    "page_patterns": [
+      "dashboard",
+      "tables",
+      "forms",
+      "admin",
+      "data"
+    ],
+    "implementation_fit": [
+      "react",
+      "components",
+      "forms",
+      "tables"
+    ],
+    "extraction_targets": [
+      "forms",
+      "tables",
+      "dashboard",
+      "component-density"
+    ],
+    "avoid_when": [
+      "marketing-only",
+      "playful-consumer",
+      "luxury-minimal"
+    ],
+    "risk_notes": "Strong for admin/dashboard density; too heavy for simple landing pages."
+  },
+  {
+    "id": "shadcn-ui",
+    "name": "shadcn/ui ecosystem",
+    "type": "ui-implementation-ecosystem",
+    "url": "https://ui.shadcn.com/",
+    "license": "MIT",
+    "fixture": "references/fixtures/shadcn-developer.design.md",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/shadcn-ui/ui/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "react",
+      "tailwind",
+      "components",
+      "developer-tool",
+      "saas",
+      "modern"
+    ],
+    "strengths": [
+      "Tailwind-friendly component conventions",
+      "modern SaaS UI",
+      "developer ergonomics"
+    ],
+    "use_for": [
+      "React/Tailwind implementation",
+      "component defaults",
+      "developer-tool aesthetic"
+    ],
+    "product_fit": [
+      "developer-tool",
+      "saas",
+      "ai-product",
+      "web-app"
+    ],
+    "visual_traits": [
+      "modern",
+      "minimal",
+      "developer-friendly",
+      "crisp"
+    ],
+    "page_patterns": [
+      "components",
+      "cards",
+      "developer-hero",
+      "docs",
+      "cta"
+    ],
+    "implementation_fit": [
+      "react",
+      "tailwind",
+      "components",
+      "web"
+    ],
+    "extraction_targets": [
+      "components",
+      "tailwind",
+      "cards",
+      "developer-clarity"
+    ],
+    "avoid_when": [
+      "rich-editorial",
+      "non-react-stack",
+      "highly-illustrated-brand"
+    ],
+    "risk_notes": "Implementation-friendly; avoid default-template sameness by adding project-specific hierarchy and brand tokens."
+  }
 ]

@@ -1,1 +1,31 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Artic Brief","type":"object","required":["artic_version","project","style","references","implementation","copy_policy"],"properties":{"artic_version":{"type":"string"},"project":{"type":"object","required":["name","type","description","target_users","primary_goal"]},"style":{"type":"object","required":["desired_impression","selected_preset","likes","dislikes","fixed_assets","search_facets"]},"references":{"type":"array"},"implementation":{"type":"object"},"copy_policy":{"type":"string"}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Artic Brief",
+  "type": "object",
+  "required": ["artic_version", "project", "style", "references", "implementation", "language", "copy_policy"],
+  "properties": {
+    "artic_version": {"type": "string"},
+    "project": {
+      "type": "object",
+      "required": ["name", "type", "description", "target_users", "primary_goal"]
+    },
+    "style": {
+      "type": "object",
+      "required": ["desired_impression", "selected_preset", "likes", "dislikes", "fixed_assets", "search_facets"]
+    },
+    "references": {"type": "array"},
+    "implementation": {"type": "object"},
+    "language": {
+      "type": "object",
+      "required": ["locale", "output_language", "tone", "preserve_terms", "bilingual_terms"],
+      "properties": {
+        "locale": {"type": "string"},
+        "output_language": {"type": "string"},
+        "tone": {"type": "string"},
+        "preserve_terms": {"type": "array", "items": {"type": "string"}},
+        "bilingual_terms": {"type": "boolean"}
+      }
+    },
+    "copy_policy": {"type": "string"}
+  }
+}

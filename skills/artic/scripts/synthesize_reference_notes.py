@@ -8,6 +8,26 @@ from urllib.request import urlopen
 from search_reference_catalog import search
 
 POLICY = "Reference policy: extract reusable principles only; do not copy logos, trademarks, proprietary illustrations, or exact layouts."
+PATTERN_CATEGORIES = [
+    ("color_roles", "Color Roles", ("color", "palette", "surface", "contrast", "brand")),
+    ("typography", "Typography", ("type", "typography", "h1", "body", "copy", "readable", "hierarchy")),
+    ("layout_rhythm", "Layout Rhythm", ("layout", "section", "spacing", "hero", "row", "strip", "cards", "grid")),
+    ("component_treatment", "Component Treatment", ("component", "button", "card", "form", "badge", "panel", "primitive", "controls")),
+    ("cta_behavior", "CTA Behavior", ("cta", "conversion", "action", "submit", "primary", "secondary", "demo", "waitlist")),
+    ("trust_patterns", "Trust Patterns", ("trust", "proof", "metrics", "validation", "labels", "uncertainty")),
+    ("motion", "Motion", ("motion", "animation", "haptic", "transition")),
+    ("accessibility", "Accessibility", ("accessibility", "focus", "contrast", "semantic", "keyboard", "labels", "error")),
+]
+FALLBACKS = {
+    "color_roles": "- Define semantic color roles for primary action, secondary action, accent, surface, neutral, text, muted text, and borders.",
+    "typography": "- Preserve clear type hierarchy with distinct hero, section heading, body, and support text roles.",
+    "layout_rhythm": "- Use consistent section rhythm and mobile-first stacking before adding desktop density.",
+    "component_treatment": "- Build components from reusable tokens instead of one-off visual styles.",
+    "cta_behavior": "- Keep one dominant primary CTA and make secondary actions visibly quieter.",
+    "trust_patterns": "- Place proof, labels, validation, or metrics near conversion moments to reduce uncertainty.",
+    "motion": "- Use restrained motion only to clarify state, hierarchy, or progression.",
+    "accessibility": "- Preserve WCAG AA contrast, keyboard focus states, semantic buttons/links, and labeled form controls.",
+}
 
 
 def parse_frontmatter(text: str) -> tuple[dict[str, str], str]:
@@ -73,7 +93,7 @@ def fetch_live_sources(rows: list[dict], cache_dir: Path, timeout: int = 10) -> 
     return fetched
 
 
-def extract_bullets(markdown: str, limit: int = 6) -> list[str]:
+def extract_bullets(markdown: str, limit: int = 18) -> list[str]:
     bullets = []
     for line in markdown.splitlines():
         stripped = line.strip()
@@ -82,6 +102,37 @@ def extract_bullets(markdown: str, limit: int = 6) -> list[str]:
         if len(bullets) >= limit:
             break
     return bullets
+
+
+def categorize_bullets(rows: list[dict]) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    categories = {key: [] for key, _, _ in PATTERN_CATEGORIES}
+    attribution: dict[str, list[str]] = {}
+    seen: set[tuple[str, str]] = set()
+    for row in rows:
+        source_id = row["id"]
+        attribution[source_id] = []
+        bullets = extract_bullets(row["fixture"]["body"])
+        for bullet in bullets:
+            normalized = re.sub(r"\W+", " ", bullet.lower()).strip()
+            matched = False
+            for key, _, keywords in PATTERN_CATEGORIES:
+                if any(keyword in normalized for keyword in keywords):
+                    marker = (key, normalized)
+                    if marker not in seen:
+                        categories[key].append(bullet)
+                        seen.add(marker)
+                    matched = True
+            if not matched:
+                key = "layout_rhythm" if any(word in normalized for word in ("hero", "section", "cards", "row")) else "component_treatment"
+                marker = (key, normalized)
+                if marker not in seen:
+                    categories[key].append(bullet)
+                    seen.add(marker)
+            attribution[source_id].append(bullet)
+    for key in categories:
+        if not categories[key]:
+            categories[key].append(FALLBACKS[key])
+    return categories, attribution
 
 
 def make_synthesis(query: str, catalog_path: Path, fixtures_dir: Path, limit: int, *, live_fetch: bool = False, cache_dir: Path | None = None) -> tuple[str, dict]:
@@ -101,23 +152,22 @@ def make_synthesis(query: str, catalog_path: Path, fixtures_dir: Path, limit: in
     if not selected:
         mode = "local or live" if live_fetch else "local"
         raise ValueError(f"no {mode} reference fixtures matched query: {query}")
-    lines = [
-        "# Reference Synthesis",
-        "",
-        "## Selected Sources",
-        "",
-    ]
+
+    categories, attribution = categorize_bullets(selected)
+    lines = ["# Reference Synthesis", "", "## Selected Sources", ""]
     for row in selected:
         source_kind = row["fixture"].get("source", "fixture")
         lines.append(f"- {row['name']} (`{row['id']}`), score {row['score']}: {source_kind} {row['fixture']['path']}")
     lines += ["", "## Extracted Common Patterns", ""]
-    seen = set()
+    for key, title, _ in PATTERN_CATEGORIES:
+        lines += [f"### {title}", ""]
+        for bullet in categories[key][:6]:
+            lines.append(bullet)
+        lines.append("")
+    lines += ["## Pattern Attribution", ""]
     for row in selected:
-        for bullet in extract_bullets(row["fixture"]["body"]):
-            key = re.sub(r"\W+", " ", bullet.lower()).strip()
-            if key and key not in seen:
-                lines.append(bullet)
-                seen.add(key)
+        source_id = row["id"]
+        lines.append(f"- `{source_id}`: " + "; ".join(attribution.get(source_id, [])[:3]))
     lines += [
         "",
         "## Conflicts Resolved",
@@ -128,7 +178,12 @@ def make_synthesis(query: str, catalog_path: Path, fixtures_dir: Path, limit: in
         "",
         "## Final Direction",
         "",
-        f"Use {', '.join(row['name'] for row in selected)} as compatible source patterns for `{query}`. Generate project-specific tokens, components, and QA guidance from these reusable principles only.",
+        f"Use {', '.join(row['name'] for row in selected)} as compatible source patterns for `{query}`. Generate project-specific tokens, components, page composition, QA scoring, and implementation guidance from these reusable principles only.",
+        "",
+        "## Forbidden Copy Elements",
+        "",
+        "- Do not copy logos, trademarks, proprietary illustrations, exact page compositions, exact palettes as identity, or source copywriting.",
+        "- Treat brand-inspired examples as pattern references, not clone targets.",
         "",
         POLICY,
         "",
@@ -139,6 +194,7 @@ def make_synthesis(query: str, catalog_path: Path, fixtures_dir: Path, limit: in
         "fixture_count": len(fixtures),
         "live_fetch_count": len(live_fixtures),
         "cache_dir": str(cache_dir) if cache_dir else None,
+        "pattern_categories": [key for key, _, _ in PATTERN_CATEGORIES],
         "selected_sources": [{"id": row["id"], "name": row["name"], "score": row["score"], "source": row["fixture"].get("source", "fixture")} for row in selected],
     }
     return "\n".join(lines), payload
