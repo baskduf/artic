@@ -121,6 +121,36 @@ def selected_reference_lines(references: dict[str, Any]) -> list[str]:
 
 def synthesize_reference_summary(brief: dict[str, Any], references: dict[str, Any]) -> str:
     query = query_from_inputs(brief, references)
+    reference_lines = selected_reference_lines(references)
+    if reference_lines:
+        init_synthesis = str(references.get("synthesis") or "").strip()
+        lines = ["# Reference Synthesis", "", "## Selected Sources", "", *reference_lines]
+        lines += ["", "## Extracted Compatible Patterns", ""]
+        if init_synthesis:
+            lines.append(init_synthesis)
+        lines.extend(
+            [
+                "- Convert the initialized sources into original token roles, component rules, layout rhythm, accessibility guardrails, and conversion hierarchy.",
+                "- Preserve the selected reference set from `@artic init`; do not swap in unrelated sources during `@artic start`.",
+                "",
+                "## Conflicts Resolved",
+                "",
+                "- Prefer project-specific token roles over any single reference brand identity.",
+                "- Keep the primary conversion path visually dominant while secondary actions remain quieter.",
+                "- Use component/accessibility discipline from the selected systems without copying exact page compositions.",
+                "",
+                "## Final Direction",
+                "",
+                f"Use the initialized Artic reference selection as compatible source patterns for `{query}`. Generate project-specific tokens, components, page composition, QA scoring, and implementation guidance from these reusable principles only.",
+                "",
+                "## Forbidden Copy Elements",
+                "",
+                "- Do not copy logos, trademarks, proprietary illustrations, exact page compositions, exact palettes as identity, or source copywriting.",
+                "- Treat brand-inspired examples as pattern references, not clone targets.",
+            ]
+        )
+        return "\n".join(lines)
+
     try:
         from synthesize_reference_notes import make_synthesis
 
@@ -141,7 +171,6 @@ def synthesize_reference_summary(brief: dict[str, Any], references: dict[str, An
     init_synthesis = str(references.get("synthesis") or "").strip()
     if init_synthesis:
         lines.append(init_synthesis)
-    reference_lines = selected_reference_lines(references)
     if reference_lines:
         lines.extend(["", "Selected references:", *reference_lines])
     return "\n".join(lines)
@@ -217,7 +246,7 @@ def update_state(root: Path, brief: dict[str, Any]) -> None:
             state = {}
     state.update(
         {
-            "artic_version": str(brief.get("artic_version") or state.get("artic_version") or "0.1.0"),
+            "artic_version": str(brief.get("artic_version") or state.get("artic_version") or "0.1.1"),
             "last_generated_at": datetime.now(timezone.utc).isoformat(),
             "status": "generated",
             "language": brief_language(brief),
