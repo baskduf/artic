@@ -9,15 +9,64 @@ from search_reference_catalog import search
 
 POLICY = "Reference policy: extract reusable principles only; do not copy logos, trademarks, proprietary illustrations, or exact layouts."
 PATTERN_CATEGORIES = [
-    ("color_roles", "Color Roles", ("color", "palette", "surface", "contrast", "brand")),
-    ("typography", "Typography", ("type", "typography", "h1", "body", "copy", "readable", "hierarchy")),
-    ("layout_rhythm", "Layout Rhythm", ("layout", "section", "spacing", "hero", "row", "strip", "cards", "grid")),
-    ("component_treatment", "Component Treatment", ("component", "button", "card", "form", "badge", "panel", "primitive", "controls")),
-    ("cta_behavior", "CTA Behavior", ("cta", "conversion", "action", "submit", "primary", "secondary", "demo", "waitlist")),
-    ("trust_patterns", "Trust Patterns", ("trust", "proof", "metrics", "validation", "labels", "uncertainty")),
-    ("motion", "Motion", ("motion", "animation", "haptic", "transition")),
-    ("accessibility", "Accessibility", ("accessibility", "focus", "contrast", "semantic", "keyboard", "labels", "error")),
+    ("color_roles", "Color Roles"),
+    ("typography", "Typography"),
+    ("layout_rhythm", "Layout Rhythm"),
+    ("component_treatment", "Component Treatment"),
+    ("cta_behavior", "CTA Behavior"),
+    ("trust_patterns", "Trust Patterns"),
+    ("motion", "Motion"),
+    ("accessibility", "Accessibility"),
 ]
+CATEGORY_RULES: dict[str, tuple[tuple[str, int], ...]] = {
+    "color_roles": (
+        ("color", 3), ("colors", 3), ("palette", 3), ("palettes", 3), ("surface", 2),
+        ("surfaces", 2), ("border", 1), ("borders", 1), ("contrast", 1), ("neutral", 1),
+    ),
+    "typography": (
+        ("typography", 4), ("type", 2), ("h1", 3), ("h2", 3), ("heading", 2),
+        ("headings", 2), ("body copy", 3), ("readable", 2), ("line length", 2),
+    ),
+    "layout_rhythm": (
+        ("layout", 4), ("layouts", 4), ("section", 2), ("sections", 2), ("spacing", 2),
+        ("hero", 2), ("row", 2), ("strip", 2), ("grid", 2), ("stack", 1), ("density", 1),
+    ),
+    "component_treatment": (
+        ("component", 4), ("components", 4), ("primitive", 3), ("primitives", 3),
+        ("card", 2), ("cards", 2), ("form", 2), ("badge", 2), ("badges", 2),
+        ("panel", 2), ("panels", 2), ("controls", 2), ("variants", 2),
+    ),
+    "cta_behavior": (
+        ("cta", 4), ("conversion", 3), ("action", 2), ("submit", 3), ("primary", 1),
+        ("secondary", 1), ("demo", 2), ("waitlist", 2),
+    ),
+    "trust_patterns": (
+        ("trust", 4), ("trustworthy", 4), ("proof", 3), ("metrics", 3),
+        ("validation", 2), ("uncertainty", 3), ("confidence", 2),
+    ),
+    "motion": (
+        ("motion", 4), ("animation", 3), ("animations", 3), ("haptic", 3),
+        ("haptics", 3), ("transition", 2), ("transitions", 2),
+    ),
+    "accessibility": (
+        ("accessibility", 4), ("focus", 3), ("keyboard", 3), ("semantic", 3),
+        ("semantics", 3), ("labels", 2), ("labeled", 2), ("error", 2), ("contrast", 1),
+    ),
+}
+SECTION_HINTS: dict[str, str] = {
+    "accessibility": "accessibility",
+    "components": "component_treatment",
+    "component": "component_treatment",
+    "reusable patterns": "layout_rhythm",
+    "patterns": "layout_rhythm",
+    "motion": "motion",
+}
+SAFETY_PHRASES = (
+    "do not copy", "never copy", "without copying", "not clone", "clone targets",
+    "brand assets", "brand identity", "brand-inspired", "exact layouts", "exact layout",
+    "exact visuals", "exact palettes", "source copywriting", "proprietary", "trademark",
+    "logos", "logo", "identity", "policy", "forbidden",
+)
 FALLBACKS = {
     "color_roles": "- Define semantic color roles for primary action, secondary action, accent, surface, neutral, text, muted text, and borders.",
     "typography": "- Preserve clear type hierarchy with distinct hero, section heading, body, and support text roles.",
@@ -93,46 +142,85 @@ def fetch_live_sources(rows: list[dict], cache_dir: Path, timeout: int = 10) -> 
     return fetched
 
 
-def extract_bullets(markdown: str, limit: int = 18) -> list[str]:
-    bullets = []
+def extract_bullets(markdown: str, limit: int = 18) -> list[tuple[str, str]]:
+    bullets: list[tuple[str, str]] = []
+    current_heading = ""
     for line in markdown.splitlines():
         stripped = line.strip()
+        if stripped.startswith("##"):
+            current_heading = stripped.lstrip("#").strip().lower()
+            continue
         if stripped.startswith("- "):
-            bullets.append(stripped)
+            bullets.append((stripped, current_heading))
         if len(bullets) >= limit:
             break
     return bullets
 
 
-def categorize_bullets(rows: list[dict]) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
-    categories = {key: [] for key, _, _ in PATTERN_CATEGORIES}
+def normalize_text(text: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", text.lower())).strip()
+
+
+def has_term(normalized: str, term: str) -> bool:
+    return bool(re.search(rf"(?<![a-z0-9]){re.escape(term)}(?![a-z0-9])", normalized))
+
+
+def is_safety_bullet(normalized: str) -> bool:
+    return any(phrase in normalized for phrase in SAFETY_PHRASES)
+
+
+def category_scores(normalized: str, heading: str) -> dict[str, int]:
+    scores: dict[str, int] = {}
+    for key, rules in CATEGORY_RULES.items():
+        score = sum(weight for term, weight in rules if has_term(normalized, term))
+        if score:
+            scores[key] = score
+    hinted = SECTION_HINTS.get(heading)
+    if hinted and hinted in scores:
+        scores[hinted] += 2
+    return scores
+
+
+def choose_category(bullet: str, heading: str) -> str | None:
+    normalized = normalize_text(bullet)
+    if is_safety_bullet(normalized):
+        return None
+    scores = category_scores(normalized, heading)
+    if not scores:
+        return SECTION_HINTS.get(heading, "component_treatment")
+    return max(scores.items(), key=lambda item: (item[1], -next(i for i, (key, _) in enumerate(PATTERN_CATEGORIES) if key == item[0])))[0]
+
+
+def categorize_bullets(rows: list[dict]) -> tuple[dict[str, list[str]], dict[str, list[str]], dict[str, list[str]]]:
+    categories = {key: [] for key, _ in PATTERN_CATEGORIES}
     attribution: dict[str, list[str]] = {}
+    safety_notes: dict[str, list[str]] = {}
     seen: set[tuple[str, str]] = set()
     for row in rows:
         source_id = row["id"]
         attribution[source_id] = []
+        safety_notes[source_id] = []
         bullets = extract_bullets(row["fixture"]["body"])
-        for bullet in bullets:
-            normalized = re.sub(r"\W+", " ", bullet.lower()).strip()
-            matched = False
-            for key, _, keywords in PATTERN_CATEGORIES:
-                if any(keyword in normalized for keyword in keywords):
-                    marker = (key, normalized)
-                    if marker not in seen:
-                        categories[key].append(bullet)
-                        seen.add(marker)
-                    matched = True
-            if not matched:
-                key = "layout_rhythm" if any(word in normalized for word in ("hero", "section", "cards", "row")) else "component_treatment"
-                marker = (key, normalized)
-                if marker not in seen:
-                    categories[key].append(bullet)
-                    seen.add(marker)
+        for bullet, heading in bullets:
+            normalized = normalize_text(bullet)
             attribution[source_id].append(bullet)
+            if is_safety_bullet(normalized):
+                marker = ("reference_safety", normalized)
+                if marker not in seen:
+                    safety_notes[source_id].append(bullet)
+                    seen.add(marker)
+                continue
+            key = choose_category(bullet, heading)
+            if not key:
+                continue
+            marker = (key, normalized)
+            if marker not in seen:
+                categories[key].append(bullet)
+                seen.add(marker)
     for key in categories:
         if not categories[key]:
             categories[key].append(FALLBACKS[key])
-    return categories, attribution
+    return categories, attribution, safety_notes
 
 
 def make_synthesis(query: str, catalog_path: Path, fixtures_dir: Path, limit: int, *, live_fetch: bool = False, cache_dir: Path | None = None) -> tuple[str, dict]:
@@ -153,13 +241,13 @@ def make_synthesis(query: str, catalog_path: Path, fixtures_dir: Path, limit: in
         mode = "local or live" if live_fetch else "local"
         raise ValueError(f"no {mode} reference fixtures matched query: {query}")
 
-    categories, attribution = categorize_bullets(selected)
+    categories, attribution, safety_notes = categorize_bullets(selected)
     lines = ["# Reference Synthesis", "", "## Selected Sources", ""]
     for row in selected:
         source_kind = row["fixture"].get("source", "fixture")
         lines.append(f"- {row['name']} (`{row['id']}`), score {row['score']}: {source_kind} {row['fixture']['path']}")
     lines += ["", "## Extracted Common Patterns", ""]
-    for key, title, _ in PATTERN_CATEGORIES:
+    for key, title in PATTERN_CATEGORIES:
         lines += [f"### {title}", ""]
         for bullet in categories[key][:6]:
             lines.append(bullet)
@@ -184,6 +272,12 @@ def make_synthesis(query: str, catalog_path: Path, fixtures_dir: Path, limit: in
         "",
         "- Do not copy logos, trademarks, proprietary illustrations, exact page compositions, exact palettes as identity, or source copywriting.",
         "- Treat brand-inspired examples as pattern references, not clone targets.",
+    ]
+    selected_safety_notes = [note for notes in safety_notes.values() for note in notes][:6]
+    if selected_safety_notes:
+        lines += ["", "## Reference Safety Notes", ""]
+        lines.extend(selected_safety_notes)
+    lines += [
         "",
         POLICY,
         "",
@@ -194,7 +288,7 @@ def make_synthesis(query: str, catalog_path: Path, fixtures_dir: Path, limit: in
         "fixture_count": len(fixtures),
         "live_fetch_count": len(live_fixtures),
         "cache_dir": str(cache_dir) if cache_dir else None,
-        "pattern_categories": [key for key, _, _ in PATTERN_CATEGORIES],
+        "pattern_categories": [key for key, _ in PATTERN_CATEGORIES],
         "selected_sources": [{"id": row["id"], "name": row["name"], "score": row["score"], "source": row["fixture"].get("source", "fixture")} for row in selected],
     }
     return "\n".join(lines), payload

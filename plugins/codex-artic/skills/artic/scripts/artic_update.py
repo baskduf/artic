@@ -11,6 +11,19 @@ def command_suffix(latest_tag: str | None) -> str:
     return f"@{latest_tag}" if latest_tag else ""
 
 
+def latest_label(payload: dict, latest_tag: str | None) -> str:
+    latest_state = payload.get("latest_state")
+    if latest_tag:
+        return latest_tag
+    if latest_state == "not_found":
+        return "not found (no GitHub latest release)"
+    if latest_state == "unchecked":
+        return "unchecked (--no-network)"
+    if latest_state == "unavailable":
+        return "unavailable (network/API failure)"
+    return "unknown"
+
+
 def render_update_guidance(payload: dict, apply: bool = False) -> str:
     installed = payload.get("installed_version") or "unknown"
     latest = payload.get("latest") or {}
@@ -20,7 +33,7 @@ def render_update_guidance(payload: dict, apply: bool = False) -> str:
         "Artic update",
         "",
         f"Current: {installed}",
-        f"Latest: {latest_tag or 'unchecked/unavailable'}",
+        f"Latest: {latest_label(payload, latest_tag)}",
         f"Status: {payload['status']}",
         "",
     ]
@@ -28,6 +41,13 @@ def render_update_guidance(payload: dict, apply: bool = False) -> str:
         lines.extend([
             "Blocked:",
             "- Installed Artic files have mismatched versions. Fix the package first, then update.",
+            "",
+        ])
+    if not latest_tag:
+        lines.extend([
+            "Latest release note:",
+            "- No release tag was resolved, so marketplace commands below intentionally omit a version pin.",
+            "- If you require a stable release, wait for a GitHub Release or choose an explicit tag.",
             "",
         ])
     lines.extend([
