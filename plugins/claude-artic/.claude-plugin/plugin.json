@@ -1,6 +1,6 @@
 {
   "name": "claude-artic",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Artic design onboarding skill for Claude Code.",
   "skills": [
     {

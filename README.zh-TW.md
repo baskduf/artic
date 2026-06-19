@@ -65,7 +65,7 @@ codex plugin marketplace add baskduf/artic
 需要穩定安裝時固定到發布標籤：
 
 ```bash
-codex plugin marketplace add baskduf/artic@v0.4.0
+codex plugin marketplace add baskduf/artic@v0.4.1
 ```
 
 在外掛瀏覽器中安裝 `codex-artic`：

@@ -130,6 +130,18 @@ def test_json_manifests_parse():
     for rel in [".claude-plugin/marketplace.json", ".agents/plugins/marketplace.json", "plugins/claude-artic/.claude-plugin/plugin.json", "plugins/codex-artic/.codex-plugin/plugin.json", "skills/artic/references/source-catalog.json", "skills/artic/templates/brief.schema.json", "skills/artic/templates/strategy.schema.json"]:
         json.loads((ROOT / rel).read_text())
 
+def test_codex_marketplace_manifest_uses_current_source_schema():
+    manifest = json.loads((ROOT / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8"))
+    plugin = manifest["plugins"][0]
+
+    assert manifest["interface"]["displayName"] == "Artic"
+    assert "display_name" not in manifest
+    assert plugin["name"] == "codex-artic"
+    assert plugin["source"] == {"source": "local", "path": "./plugins/codex-artic"}
+    assert "path" not in plugin
+    assert plugin["policy"] == {"installation": "AVAILABLE", "authentication": "ON_INSTALL"}
+
+
 def test_skill_copies_are_in_sync():
     canonical = ROOT / "skills" / "artic"
     for copy in [ROOT / "plugins" / "claude-artic" / "skills" / "artic", ROOT / "plugins" / "codex-artic" / "skills" / "artic"]:
