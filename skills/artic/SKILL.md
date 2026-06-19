@@ -76,6 +76,13 @@ Fast path: if user says `@artic init quick`, ask only product, audience, goal, v
 
 Purpose: compile the Artic brief into AI-native design docs.
 
+Executable path for agents/hosts that expose shell-backed commands:
+
+```bash
+python3 <artic-skill>/scripts/artic_start.py --root <project-root>
+# use --no-validate only when you intentionally want generation without the Artic validator
+```
+
 Required behavior:
 1. Read `.artic/brief.json`, `.artic/references.json`, and existing project docs.
 2. Search/combine multiple professional/OSS design sources.
