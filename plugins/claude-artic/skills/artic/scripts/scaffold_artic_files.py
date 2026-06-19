@@ -45,6 +45,24 @@ def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
     now = datetime.now(timezone.utc).isoformat()
     language = language_contract(locale)
     policy = policy_block(locale)
+    north_star = f"{project_name} should feel clear, trustworthy, and ready for implementation before it feels decorative."
+    intent = {
+        "schema_version": 1,
+        "mapper": "artic-llm-first-contract-scaffold",
+        "selected_preset": "clean-saas",
+        "design_north_star": north_star,
+        "catalog_query": "homepage clean-saas trust mobile-first wcag",
+        "style_facets": ["b2b-saas", "trust", "mobile-first"],
+        "search_facets": ["homepage", "clean-saas", "trust", "mobile-first", "wcag"],
+        "avoid_facets": ["generic-saas"],
+        "design_principles": ["clear-cta", "explicit-proof", "accessible-contrast"],
+        "design_rules": {"layout": "Use a modular problem-proof-conversion flow.", "content": "Use concrete trust markers near CTAs."},
+        "reference_roles": [
+            {"role": "output_contract", "source_ids": ["google-design-md"], "selection_reason": "Keep generated DESIGN.md structured and machine-readable."},
+            {"role": "homepage_patterns", "source_ids": ["voltagent-awesome-design-md"], "selection_reason": "Use compatible homepage and SaaS reference patterns."},
+            {"role": "token_accessibility", "source_ids": ["material-design"], "selection_reason": "Preserve token and accessibility discipline."},
+        ],
+    }
     brief = {
         "artic_version": "0.1.1",
         "project": {
@@ -57,6 +75,8 @@ def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
         "style": {
             "desired_impression": ["trustworthy", "modern", "clear"],
             "selected_preset": "clean-saas",
+            "design_north_star": north_star,
+            "design_rules": intent["design_rules"],
             "likes": ["clear hierarchy", "premium whitespace"],
             "dislikes": ["generic gradients", "clutter"],
             "fixed_assets": {"colors": [], "fonts": [], "logo": None},
@@ -73,9 +93,18 @@ def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
             {"id": "voltagent-awesome-design-md", "reason": "homepage and SaaS style candidates", "extraction_targets": ["layout", "cta", "proof"]},
             {"id": "material-design", "reason": "token and accessibility discipline", "extraction_targets": ["tokens", "accessibility", "components"]},
         ],
+        "role_assignments": [
+            {**role, "selected_source_ids": [role["source_ids"][0]]} for role in intent["reference_roles"]
+        ],
+        "source_plan": [
+            {"source_id": "google-design-md", "role": "output_contract", "extract": ["tokens", "validation"], "transform": "Use the structure as a machine-readable contract, not as visual style.", "avoid": ["generic prose only"]},
+            {"source_id": "voltagent-awesome-design-md", "role": "homepage_patterns", "extract": ["layout", "cta", "proof"], "transform": "Translate reference patterns into original project-specific page rhythm.", "avoid": ["exact layouts"]},
+            {"source_id": "material-design", "role": "token_accessibility", "extract": ["tokens", "accessibility", "components"], "transform": "Use token and accessibility discipline without copying Material identity.", "avoid": ["brand identity"]},
+        ],
         "synthesis": "Clean SaaS hierarchy with token discipline and mobile-first accessibility.",
     }
-    state = {"artic_version": "0.1.1", "last_generated_at": now, "status": "scaffolded", "language": language}
+    state = {"artic_version": "0.1.1", "last_generated_at": now, "status": "scaffolded", "language": language, "intent_path": ".artic/intent.json"}
+    write(root / ".artic" / "intent.json", json.dumps(intent, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "brief.json", json.dumps(brief, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "references.json", json.dumps(references, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "state.json", json.dumps(state, indent=2, ensure_ascii=False) + "\n")
@@ -176,6 +205,10 @@ components:
 ## Overview
 
 Clean, trustworthy, mobile-first SaaS homepage direction.
+
+## Design North Star
+
+{north_star}
 
 {policy}
 

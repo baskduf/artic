@@ -6,7 +6,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from search_reference_catalog import search, terms
+from design_intent_mapper import map_design_intent
+from search_reference_catalog import load_catalog, search, terms
 
 POLICY_MARKER = "<!-- artic-policy: reference-safety-v1 -->"
 POLICY_COPY = "Reference policy: extract reusable principles only; do not copy logos, trademarks, proprietary illustrations, or exact layouts."
@@ -74,6 +75,66 @@ def make_query(project: str, audience: str, goal: str, vibe: str, references: st
     return " ".join(part for part in [project, audience, goal, vibe, references, stack] if part).strip()
 
 
+def query_from_intent(intent: dict) -> str:
+    catalog_query = str(intent.get("catalog_query") or "").strip()
+    if catalog_query:
+        return catalog_query
+    parts: list[str] = []
+    for key in ("search_facets", "style_facets", "design_principles"):
+        value = intent.get(key)
+        if isinstance(value, str):
+            parts.append(value)
+        elif isinstance(value, list):
+            parts.extend(str(item) for item in value)
+    return " ".join(part for part in parts if part).strip()
+
+
+def select_role_grounded_sources(intent: dict, catalog_path: Path, limit: int) -> tuple[list[dict], list[dict]]:
+    query = query_from_intent(intent)
+    scored = search(query, catalog_path, max(limit, len(load_catalog(catalog_path))))
+    by_id = {row["id"]: row for row in scored}
+    selected: list[dict] = []
+    seen: set[str] = set()
+    role_assignments: list[dict] = []
+
+    for role in intent.get("reference_roles", []):
+        if not isinstance(role, dict):
+            continue
+        picked: list[str] = []
+        for source_id in role.get("source_ids", []):
+            row = by_id.get(source_id)
+            if row and row["id"] not in seen:
+                selected.append(row)
+                seen.add(row["id"])
+                picked.append(row["id"])
+                break
+        if picked:
+            role_assignments.append({**role, "selected_source_ids": picked})
+
+    for row in scored:
+        if len(selected) >= limit:
+            break
+        if row["id"] not in seen:
+            selected.append(row)
+            seen.add(row["id"])
+
+    selected = selected[:limit]
+    selected_ids = {row["id"] for row in selected}
+    role_assignments = [
+        {**role, "selected_source_ids": [source_id for source_id in role.get("selected_source_ids", []) if source_id in selected_ids]}
+        for role in role_assignments
+        if any(source_id in selected_ids for source_id in role.get("selected_source_ids", []))
+    ]
+    return selected, role_assignments
+
+
+def role_for_source(source_id: str, role_assignments: list[dict]) -> str:
+    for role in role_assignments:
+        if source_id in role.get("selected_source_ids", []):
+            return str(role.get("role") or "supporting_reference")
+    return "supporting_reference"
+
+
 def selected_source_payload(row: dict) -> dict:
     reason_parts = []
     for key in ("product_fit", "strengths", "use_for"):
@@ -96,11 +157,29 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
         raise ValueError("limit must be >= 3 for Artic reference selection")
     now = datetime.now(timezone.utc).isoformat()
     lang = language_contract(args.locale, args.tone, args.preserve_term, args.bilingual_terms)
-    query = make_query(args.project, args.audience, args.goal, args.vibe, args.references, args.stack)
     catalog_path = Path(args.catalog)
-    rows = search(query, catalog_path, args.limit)
+    intent = map_design_intent(
+        project=args.project,
+        audience=args.audience,
+        goal=args.goal,
+        vibe=args.vibe,
+        references=args.references,
+        stack=args.stack,
+    )
+    query = query_from_intent(intent) or make_query(args.project, args.audience, args.goal, args.vibe, args.references, args.stack)
+    rows, role_assignments = select_role_grounded_sources(intent, catalog_path, args.limit)
     selected_sources = [selected_source_payload(row) for row in rows]
-    facets = normalize_facets(args.project, args.audience, args.goal, args.vibe, args.references, args.stack)
+    facets = list(intent.get("search_facets") or normalize_facets(args.project, args.audience, args.goal, args.vibe, args.references, args.stack))
+    source_plan = [
+        {
+            "source_id": src["id"],
+            "role": role_for_source(src["id"], role_assignments),
+            "extract": src.get("extraction_targets", []),
+            "transform": f"Translate {src['name']} into project-specific rules for {args.project}; keep the final layout, copy, and visual identity original.",
+            "avoid": src.get("avoid_when", []) or ["exact layouts", "brand identity", "source copywriting"],
+        }
+        for src in selected_sources
+    ]
 
     brief = {
         "artic_version": "0.1.1",
@@ -113,7 +192,9 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
         },
         "style": {
             "desired_impression": [item.strip() for item in args.vibe.replace(",", " ").split() if item.strip()],
-            "selected_preset": infer_preset(args.vibe),
+            "selected_preset": intent.get("selected_preset") or infer_preset(args.vibe),
+            "design_north_star": intent.get("design_north_star", ""),
+            "design_rules": intent.get("design_rules", {}),
             "likes": [],
             "dislikes": [],
             "fixed_assets": {"colors": [], "fonts": [], "logo": None},
@@ -127,10 +208,13 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
     references = {
         "query": query,
         "selected_sources": selected_sources,
+        "role_assignments": role_assignments,
+        "source_plan": source_plan,
         "synthesis": "Use selected sources as compatible patterns; localize prose according to the brief language contract while preserving source names and protected terms.",
     }
-    state = {"artic_version": "0.1.1", "last_generated_at": now, "status": "initialized", "language": lang}
+    state = {"artic_version": "0.1.1", "last_generated_at": now, "status": "initialized", "language": lang, "intent_path": ".artic/intent.json"}
 
+    write(root / ".artic" / "intent.json", json.dumps(intent, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "brief.json", json.dumps(brief, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "references.json", json.dumps(references, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "state.json", json.dumps(state, indent=2, ensure_ascii=False) + "\n")
@@ -151,6 +235,10 @@ Language: {lang['locale']} / {lang['output_language']}
 Tone: {lang['tone']}
 Preserve terms: {preserved}
 
+## Design north star
+
+{intent.get('design_north_star', '')}
+
 ## Reference candidates
 
 {candidate_lines}
@@ -164,6 +252,7 @@ Preserve terms: {preserved}
         "query": query,
         "selected_count": len(selected_sources),
         "selected_sources": selected_sources,
+        "intent": intent,
         "language": lang,
         "root": str(root.resolve()),
     }

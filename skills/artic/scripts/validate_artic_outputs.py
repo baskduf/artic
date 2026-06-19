@@ -4,12 +4,12 @@ import argparse, json, re
 from pathlib import Path
 
 REQUIRED_FILES = [
-    ".artic/brief.json", ".artic/references.json", ".artic/state.json",
+    ".artic/brief.json", ".artic/intent.json", ".artic/references.json", ".artic/state.json",
     "docs/artic-brief.md", "DESIGN.md", "docs/design-rules.md",
     "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md",
 ]
 REQUIRED_DESIGN_SECTIONS = [
-    "## Overview", "## Colors", "## Typography", "## Layout", "## Page Composition",
+    "## Overview", "## Design North Star", "## Colors", "## Typography", "## Layout", "## Page Composition",
     "## Visual Hierarchy", "## Responsive Behavior", "## Elevation & Depth", "## Shapes",
     "## Components", "## Motion", "## Accessibility", "## Anti-Patterns", "## Do's and Don'ts",
 ]
@@ -91,6 +91,27 @@ def validate(root: Path) -> list[str]:
             facets = brief.get("style", {}).get("search_facets", [])
             if brief.get("style") and (not isinstance(facets, list) or len(facets) < 3):
                 errors.append("ERROR: brief style.search_facets must include at least 3 normalized facets")
+            style = brief.get("style", {})
+            if isinstance(style, dict) and not style.get("design_north_star"):
+                errors.append("ERROR: brief style.design_north_star is required for LLM-first Artic output")
+
+    intent_path = root / ".artic" / "intent.json"
+    if intent_path.exists():
+        try:
+            intent = json.loads(intent_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(f"ERROR: invalid .artic/intent.json: {exc}")
+        else:
+            for key in ("mapper", "design_north_star", "reference_roles", "design_rules", "catalog_query"):
+                if key not in intent:
+                    errors.append(f"ERROR: intent missing key: {key}")
+            roles = intent.get("reference_roles", [])
+            if not isinstance(roles, list) or len(roles) < 3:
+                errors.append("ERROR: intent reference_roles must include at least 3 role assignments")
+            for role in roles if isinstance(roles, list) else []:
+                for key in ("role", "source_ids", "selection_reason"):
+                    if key not in role:
+                        errors.append(f"ERROR: intent reference role missing key: {key}")
 
     references_path = root / ".artic" / "references.json"
     if references_path.exists():
@@ -102,10 +123,39 @@ def validate(root: Path) -> list[str]:
             selected = references.get("selected_sources", [])
             if not isinstance(selected, list) or len(selected) < 3:
                 errors.append("ERROR: references selected_sources must include at least 3 candidates")
+            selected_ids = {str(row.get("id")) for row in selected if isinstance(row, dict) and row.get("id")}
             for row in selected:
                 for key in ("id", "reason"):
                     if key not in row:
                         errors.append(f"ERROR: reference candidate missing key: {key}")
+            source_plan = references.get("source_plan", [])
+            if not isinstance(source_plan, list) or len(source_plan) < 3:
+                errors.append("ERROR: references source_plan must include at least 3 source plans")
+            planned_ids = {str(row.get("source_id")) for row in source_plan if isinstance(row, dict) and row.get("source_id")}
+            for row in source_plan if isinstance(source_plan, list) else []:
+                for key in ("source_id", "role", "extract", "transform", "avoid"):
+                    if key not in row:
+                        errors.append(f"ERROR: source plan missing key: {key}")
+                source_id = str(row.get("source_id"))
+                if selected_ids and source_id not in selected_ids:
+                    errors.append(f"ERROR: source plan references unselected source: {source_id}")
+            role_assignments = references.get("role_assignments", [])
+            if not isinstance(role_assignments, list):
+                errors.append("ERROR: references role_assignments must be a list")
+                role_assignments = []
+            for role in role_assignments:
+                if not isinstance(role, dict):
+                    errors.append("ERROR: role assignment must be an object")
+                    continue
+                selected_source_ids = role.get("selected_source_ids", [])
+                if not isinstance(selected_source_ids, list):
+                    errors.append("ERROR: role assignment selected_source_ids must be a list")
+                    selected_source_ids = []
+                for source_id in selected_source_ids:
+                    if selected_ids and source_id not in selected_ids:
+                        errors.append(f"ERROR: role assignment references unselected source: {source_id}")
+                    if planned_ids and source_id not in planned_ids:
+                        errors.append(f"ERROR: role assignment missing source plan: {source_id}")
 
     design_path = root / "DESIGN.md"
     if design_path.exists():
@@ -143,6 +193,8 @@ def validate(root: Path) -> list[str]:
             last_index = max(last_index, idx)
         if not has_reference_safety(design):
             errors.append("ERROR: DESIGN.md missing reference safety phrase")
+        if design.count(POLICY_MARKER) > 1:
+            errors.append("ERROR: DESIGN.md has duplicate reference safety policy markers")
 
     combined_docs = ""
     for rel in ("docs/design-rules.md", "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md"):

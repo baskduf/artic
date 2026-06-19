@@ -7,9 +7,9 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-# Prototype: deterministic semantic normalization that can sit behind an LLM
-# mapper. The public contract is the JSON shape; the implementation can later
-# swap to an LLM that emits the same schema.
+# LLM-first contract with a deterministic fallback implementation.
+# Runtime hosts can replace the fallback with an LLM call as long as they emit
+# this schema. CI keeps the deterministic path so tests stay reproducible.
 
 FACET_RULES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
     ("premium-saas", ("premium", "luxury", "고급", "고급스럽", "세련", "polished", "stripe"), ("generous-whitespace", "restrained-motion", "subtle-depth")),
@@ -126,6 +126,52 @@ def infer_design_rules(facets: list[str], avoid_facets: list[str]) -> dict[str, 
     return rules
 
 
+def design_north_star(project: str, audience: str, goal: str, facets: list[str]) -> str:
+    product = project or "this homepage"
+    users = audience or "the target users"
+    outcome = goal or "the primary conversion goal"
+    if "ai-product" in facets and "trust" in facets:
+        return f"{product} should feel like a calm, trustworthy assistant that helps {users} reach {outcome} without AI hype or visual noise."
+    if "developer-tool" in facets:
+        return f"{product} should feel precise, documentation-ready, and useful before it feels decorative, helping {users} reach {outcome} quickly."
+    if "premium-saas" in facets:
+        return f"{product} should feel polished and restrained, using confidence and clarity to move {users} toward {outcome}."
+    return f"{product} should turn the user's intent into a clear, trustworthy homepage direction for {users}, with every visual choice supporting {outcome}."
+
+
+def reference_roles(facets: list[str], stack: str) -> list[dict[str, Any]]:
+    roles: list[dict[str, Any]] = [
+        {
+            "role": "trust_and_conversion",
+            "source_ids": ["shopify-polaris", "wcag-quickref", "w3c-wai-designing-accessibility"],
+            "selection_reason": "Use trust cues, validation behavior, and accessibility guardrails around conversion moments.",
+        },
+        {
+            "role": "component_restraint",
+            "source_ids": ["shadcn-ui", "radix-ui-primitives", "base-ui", "react-aria"],
+            "selection_reason": "Use quiet, composable primitives instead of decorative one-off UI.",
+        },
+        {
+            "role": "token_discipline",
+            "source_ids": ["tailwind-css", "open-props", "dtcg-design-tokens", "style-dictionary"],
+            "selection_reason": "Translate design intent into reusable color, spacing, radius, and typography tokens.",
+        },
+    ]
+    if "mobile-first" in facets:
+        roles.append({
+            "role": "mobile_confidence",
+            "source_ids": ["apple-hig", "meliwat-awesome-ios-design-md", "material-design"],
+            "selection_reason": "Preserve mobile-first hierarchy, thumb-friendly actions, and restrained motion.",
+        })
+    if "developer-tool" in facets or "react" in stack.lower() or "tailwind" in stack.lower():
+        roles.append({
+            "role": "implementation_clarity",
+            "source_ids": ["github-primer", "atlassian-design-system", "shadcn-ui", "tailwind-css"],
+            "selection_reason": "Keep the generated rules practical for implementation in the project's UI stack.",
+        })
+    return roles
+
+
 def map_design_intent(
     *,
     project: str = "",
@@ -167,15 +213,22 @@ def map_design_intent(
 
     selected_preset = infer_preset(style_facets)
     query = " ".join(search_facets + design_principles)
+    north_star = design_north_star(project, audience, goal, style_facets)
     return {
         "schema_version": 1,
-        "mapper": "artic-design-intent-mapper-prototype",
+        "mapper": "artic-llm-first-contract-deterministic-fallback",
         "selected_preset": selected_preset,
+        "project_archetype": "-".join(style_facets[:3]) or "homepage",
+        "audience_context": audience,
+        "conversion_goal": goal,
+        "emotional_target": design_principles[:6],
         "style_facets": style_facets,
         "search_facets": search_facets,
         "avoid_facets": avoid_facets,
         "design_principles": design_principles,
         "design_rules": infer_design_rules(style_facets, avoid_facets),
+        "design_north_star": north_star,
+        "reference_roles": reference_roles(style_facets, stack),
         "reference_hints": [ref.strip() for ref in re.split(r"[,\n]", references) if ref.strip()],
         "catalog_query": query,
         "llm_contract": {

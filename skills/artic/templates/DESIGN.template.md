@@ -95,6 +95,10 @@ components:
 
 {{OVERVIEW}}
 
+## Design North Star
+
+{{DESIGN_NORTH_STAR}}
+
 <!-- artic-policy: reference-safety-v1 -->
 Reference policy: extract reusable principles only; do not copy logos, trademarks, proprietary illustrations, or exact layouts.
 

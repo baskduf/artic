@@ -119,6 +119,25 @@ def selected_reference_lines(references: dict[str, Any]) -> list[str]:
     return lines
 
 
+def source_plan_lines(references: dict[str, Any]) -> list[str]:
+    plan = references.get("source_plan", [])
+    if not isinstance(plan, list):
+        return []
+    lines: list[str] = []
+    for row in plan:
+        if not isinstance(row, dict):
+            continue
+        source_id = row.get("source_id") or "unknown-source"
+        role = row.get("role") or "supporting_reference"
+        extract = row.get("extract", [])
+        avoid = row.get("avoid", [])
+        extract_text = ", ".join(str(item) for item in extract) if isinstance(extract, list) else str(extract or "")
+        avoid_text = ", ".join(str(item) for item in avoid) if isinstance(avoid, list) else str(avoid or "")
+        transform = row.get("transform") or "Transform this source into original, project-specific design rules."
+        lines.append(f"- `{source_id}` as **{role}**. Extract: {extract_text}. Transform: {transform} Avoid: {avoid_text}.")
+    return lines
+
+
 def synthesize_reference_summary(brief: dict[str, Any], references: dict[str, Any]) -> str:
     query = query_from_inputs(brief, references)
     reference_lines = selected_reference_lines(references)
@@ -132,6 +151,10 @@ def synthesize_reference_summary(brief: dict[str, Any], references: dict[str, An
             [
                 "- Convert the initialized sources into original token roles, component rules, layout rhythm, accessibility guardrails, and conversion hierarchy.",
                 "- Preserve the selected reference set from `@artic init`; do not swap in unrelated sources during `@artic start`.",
+                "",
+                "## Source Application Plan",
+                "",
+                *(source_plan_lines(references) or ["- Treat each selected source as a role-bound reference, not a visual clone target."]),
                 "",
                 "## Conflicts Resolved",
                 "",
@@ -196,11 +219,12 @@ def overview(brief: dict[str, Any], references: dict[str, Any]) -> str:
 
 
 def replace_policy_text(text: str, block: str) -> str:
-    text = text.replace(f"{POLICY_MARKER}\n{POLICY}", block)
+    if f"{POLICY_MARKER}\n{POLICY}" in text:
+        return text.replace(f"{POLICY_MARKER}\n{POLICY}", block)
     return text.replace(POLICY, block)
 
 
-def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]) -> list[str]:
+def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any], intent: dict[str, Any] | None = None) -> list[str]:
     name = project_name(brief)
     description = f"{project_description(brief)} Artic-generated homepage design system."
     ref_summary = synthesize_reference_summary(brief, references)
@@ -210,6 +234,8 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
     design = design.replace("{{PROJECT_NAME}}", yaml_double_quoted(name))
     design = design.replace("{{DESIGN_DESCRIPTION}}", yaml_double_quoted(description))
     design = design.replace("{{OVERVIEW}}", overview(brief, references))
+    north_star = str((intent or {}).get("design_north_star") or brief.get("style", {}).get("design_north_star") or "Every visual choice should support the project's primary conversion goal with original, reference-grounded design judgment.")
+    design = design.replace("{{DESIGN_NORTH_STAR}}", north_star)
     design = replace_policy_text(design, policy)
     write(root / "DESIGN.md", design)
 
@@ -232,6 +258,49 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
 
     update_state(root, brief)
     return GENERATED_FILES
+
+
+def migrate_legacy_intent(root: Path, brief: dict[str, Any], references: dict[str, Any]) -> dict[str, Any]:
+    raw_style = brief.get("style")
+    raw_project = brief.get("project")
+    style: dict[str, Any] = raw_style if isinstance(raw_style, dict) else {}
+    project: dict[str, Any] = raw_project if isinstance(raw_project, dict) else {}
+    selected_sources = references.get("selected_sources", []) if isinstance(references.get("selected_sources"), list) else []
+    role_sources = [str(row.get("id")) for row in selected_sources if isinstance(row, dict) and row.get("id")]
+    search_facets = list(style.get("search_facets", [])) if isinstance(style.get("search_facets"), list) else ["homepage", "trust", "clean-saas"]
+    north_star = str(style.get("design_north_star") or f"{project_name(brief)} should use reference-grounded design judgment while keeping layout, copy, and visual identity original.")
+    intent = {
+        "schema_version": 1,
+        "mapper": "artic-llm-first-contract-legacy-migration",
+        "selected_preset": style.get("selected_preset") or "clean-saas",
+        "project_archetype": "legacy-homepage",
+        "audience_context": ", ".join(str(item) for item in project.get("target_users", []) if item),
+        "conversion_goal": str(project.get("primary_goal") or "primary conversion goal"),
+        "emotional_target": list(style.get("desired_impression", [])) if isinstance(style.get("desired_impression"), list) else [],
+        "style_facets": search_facets,
+        "search_facets": search_facets,
+        "avoid_facets": [],
+        "design_principles": [],
+        "design_rules": style.get("design_rules") if isinstance(style.get("design_rules"), dict) else {},
+        "design_north_star": north_star,
+        "reference_roles": [
+            {
+                "role": f"legacy_reference_{index + 1}",
+                "source_ids": [source_id],
+                "selection_reason": "Migrated from pre-LLM-first selected_sources.",
+            }
+            for index, source_id in enumerate(role_sources)
+        ],
+        "reference_hints": [],
+        "catalog_query": str(references.get("query") or " ".join(search_facets)),
+        "llm_contract": {
+            "role": "Migrated legacy intent; future runs should regenerate this with the LLM-first mapper.",
+            "must_preserve": ["design_north_star", "reference_roles", "catalog_query"],
+            "must_not": ["copy protected brand assets", "choose exact layouts as clone targets"],
+        },
+    }
+    write(root / ".artic" / "intent.json", json.dumps(intent, indent=2, ensure_ascii=False) + "\n")
+    return intent
 
 
 def update_state(root: Path, brief: dict[str, Any]) -> None:
@@ -268,7 +337,8 @@ def validate_outputs(root: Path) -> subprocess.CompletedProcess[str]:
 def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, Any]:
     brief = read_json(root / ".artic" / "brief.json")
     references = read_json(root / ".artic" / "references.json")
-    generated = render_outputs(root, brief, references)
+    intent = read_json(root / ".artic" / "intent.json") if (root / ".artic" / "intent.json").exists() else migrate_legacy_intent(root, brief, references)
+    generated = render_outputs(root, brief, references, intent)
     payload: dict[str, Any] = {
         "root": str(root.resolve()),
         "generated_files": generated,
