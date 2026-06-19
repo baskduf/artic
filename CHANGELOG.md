@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1 - 2026-06-20
+
+### Fixed
+- Updated the Codex marketplace manifest to use the current `plugins[].source` schema required by `codex plugin marketplace add`.
+
 ## 0.4.0 - 2026-06-19
 
 ### Added

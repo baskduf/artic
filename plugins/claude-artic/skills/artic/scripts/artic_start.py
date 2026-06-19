@@ -523,7 +523,7 @@ def update_state(root: Path, brief: dict[str, Any]) -> None:
                 state = loaded
         except json.JSONDecodeError:
             state = {}
-    state.update({"artic_version": str(brief.get("artic_version") or state.get("artic_version") or "0.4.0"), "last_generated_at": datetime.now(timezone.utc).isoformat(), "status": "generated", "language": brief_language(brief), "strategy_path": ".artic/strategy.json"})
+    state.update({"artic_version": str(brief.get("artic_version") or state.get("artic_version") or "0.4.1"), "last_generated_at": datetime.now(timezone.utc).isoformat(), "status": "generated", "language": brief_language(brief), "strategy_path": ".artic/strategy.json"})
     write(state_path, json.dumps(state, indent=2, ensure_ascii=False) + "\n")
 
 
