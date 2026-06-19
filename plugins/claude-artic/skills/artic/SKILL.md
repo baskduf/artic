@@ -286,8 +286,8 @@ Use presets only as search/synthesis starting points:
 ## Validation
 
 ```bash
-python3 ~/.hermes/skills/creative/artic/scripts/validate_artic_outputs.py --root <project-root>
-python3 ~/.hermes/skills/creative/artic/scripts/search_reference_catalog.py --query "ai product developer saas premium" --limit 3
+python3 <artic-skill>/scripts/validate_artic_outputs.py --root <project-root>
+python3 <artic-skill>/scripts/search_reference_catalog.py --query "ai product developer saas premium" --limit 3
 ```
 
 Validation, compilation, and rendering scripts enforce and materialize the contract. They are not a design judgment source; `@artic start` must provide that judgment through `.artic/strategy.json`.

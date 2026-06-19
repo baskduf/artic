@@ -51,18 +51,18 @@ Agent 會在內部處理使用者訪談、把 brief 正規化為搜索 facets、
 也可以用自然語言請求：
 
 ```text
-在建置这个首页之前，用 Artic 创建 AI-native 设计文件。
+在建置這個首頁之前，用 Artic 建立 AI-native 設計文件。
 ```
 
 ### Codex marketplace
 
-从目前預設分支新增 marketplace：
+從目前預設分支新增 marketplace：
 
 ```bash
 codex plugin marketplace add baskduf/artic
 ```
 
-需要稳定安裝时固定到发布标签：
+需要穩定安裝時固定到發布標籤：
 
 ```bash
 codex plugin marketplace add baskduf/artic@v0.3.0
@@ -117,9 +117,9 @@ Artic 被呼叫後，Agent 會：
 
 1. 當首頁/設計請求很模糊時，先暫停而不是直接實作。
 2. 執行 `@artic init` 收集 product、audience、goal、vibe、constraints 和 references。
-3. Search multiple professional/OSS design resources instead of relying on one style.
-4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
-5. Resolve conflicts between references based on the user's project goal.
+3. 搜尋多個專業/OSS 設計資源，而不是依賴單一風格。
+4. 萃取可重用規則：色彩角色、字體層級、間距節奏、元件、動效與可存取性。
+5. 依據使用者的專案目標解決不同參考之間的衝突。
 6. 執行 `@artic start`，讓 public agent workflow 編寫 `.artic/strategy.json`、儲存 `docs/artic-strategy.md`，再執行 compiler 生成 `DESIGN.md` 和輔助文件。
 7. 執行 `@artic show`，基於 strategy artifacts 渲染 `.artic/show/index.html`，作為不會修改應用程式原始碼的安全靜態 preview。
 8. 執行 `@artic review`，把實作與 `.artic/strategy.json`、`docs/artic-strategy.md`、`DESIGN.md` 對比，並驗證生成的設計文件。
@@ -128,10 +128,10 @@ Artic 被呼叫後，Agent 會：
 
 適合用於：
 
-- Homepages, landing pages, product pages, and website redesigns.
-- Projects with weak or missing design docs.
-- AI-native design documentation before coding.
-- Reference-driven design direction without exact brand copying.
+- 首頁、登陸頁、產品頁和網站改版。
+- 設計文件薄弱或缺失的專案。
+- 編碼前的 AI-native 設計文件。
+- 不精確複製品牌的參考驅動設計方向。
 
 不適合用於：
 
@@ -157,7 +157,7 @@ Artic 被呼叫後，Agent 會：
 
 ## Output Policy
 
-Artic writes durable files instead of dumping long design prose into chat:
+Artic 會寫入持久文件，而不是把大段設計說明直接倒進聊天裡：
 
 ```text
 .artic/init-session.json   # draft interview state from @artic init
@@ -194,7 +194,7 @@ python3 -m pip install pytest pyyaml
 python3 -m pytest -q
 ```
 
-CI validates Python scripts, JSON manifests, README translation structure, skill-copy sync, smoke scaffolding, warning-free DESIGN.md lint, and marketplace plugin layout.
+CI 會驗證 Python 腳本、JSON 清單、README 翻譯結構、skill copy 同步、smoke scaffold、無警告 DESIGN.md lint，以及 marketplace plugin layout。
 
 Distribution note: the wheel is metadata-only; marketplace packages, release tarballs, and sdists carry the skill/plugin payload.
 

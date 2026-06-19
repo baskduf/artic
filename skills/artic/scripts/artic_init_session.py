@@ -67,6 +67,30 @@ QUESTION_SPECS: dict[str, dict[str, str]] = {
 }
 
 _STYLE_HINT_RE = re.compile(r"토스|신뢰|고급|깔끔|스타트업|모바일|saas|premium|trust|clean|mobile|startup", re.IGNORECASE)
+_LABELED_ANSWER_RE = re.compile(
+    r"(?:^|[.;\n]\s*)(project|product|service|audience|target user|target users|goal|conversion goal|vibe|impression|style|stack|tech stack|references?|avoid|accessibility|asset policy)\s*:\s*(.*?)(?=(?:[.;\n]\s*)(?:project|product|service|audience|target user|target users|goal|conversion goal|vibe|impression|style|stack|tech stack|references?|avoid|accessibility|asset policy)\s*:|$)",
+    re.IGNORECASE | re.DOTALL,
+)
+_LABELED_FIELD_MAP = {
+    "project": "project",
+    "product": "project",
+    "service": "project",
+    "audience": "audience",
+    "target user": "audience",
+    "target users": "audience",
+    "goal": "goal",
+    "conversion goal": "goal",
+    "vibe": "vibe",
+    "impression": "vibe",
+    "style": "vibe",
+    "stack": "stack",
+    "tech stack": "stack",
+    "reference": "references",
+    "references": "references",
+    "avoid": "avoid",
+    "accessibility": "accessibility",
+    "asset policy": "asset_policy",
+}
 
 
 def write(path: Path, content: str) -> None:
@@ -97,16 +121,22 @@ def write_session(root: Path, session: dict[str, Any]) -> None:
 
 def extract_answers_from_text(text: str) -> dict[str, str]:
     answers: dict[str, str] = {}
+    for match in _LABELED_ANSWER_RE.finditer(text):
+        raw_key = match.group(1).lower().strip()
+        field = _LABELED_FIELD_MAP.get(raw_key)
+        value = match.group(2).strip(" .;\n\t")
+        if field and value:
+            answers[field] = value
     lowered = text.lower()
     if "ai 회의록" in lowered or "회의록" in text:
-        answers["project"] = "AI 회의록 서비스"
+        answers.setdefault("project", "AI 회의록 서비스")
     if "데모" in text:
-        answers["goal"] = "데모 요청"
+        answers.setdefault("goal", "데모 요청")
     elif "가입" in text:
-        answers["goal"] = "가입"
+        answers.setdefault("goal", "가입")
     elif "문의" in text:
-        answers["goal"] = "문의"
-    if _STYLE_HINT_RE.search(text):
+        answers.setdefault("goal", "문의")
+    if _STYLE_HINT_RE.search(text) and "vibe" not in answers:
         answers["vibe"] = text.strip()
     return answers
 
@@ -206,7 +236,8 @@ def render_ready_summary(session: dict[str, Any]) -> str:
             f"- 목표: {answers.get('goal', '')}",
             f"- 무드: {answers.get('vibe', '')}",
             "",
-            "더 다듬고 싶으면 레퍼런스, 피해야 할 스타일, 브랜드 제약을 추가로 알려주세요.",
+            "더 다듬고 싶으면 레퍼런스, 피해야 할 스타일, 브랜드/에셋 제약을 추가로 알려주세요.",
+            "에셋 사용을 명시적으로 허용하지 않으면 외부 소스는 원칙 참고로만 사용합니다.",
             "문서 생성을 시작하려면 `@artic start`를 실행하세요.",
         ]
     else:
@@ -219,7 +250,8 @@ def render_ready_summary(session: dict[str, Any]) -> str:
             f"- Goal: {answers.get('goal', '')}",
             f"- Vibe: {answers.get('vibe', '')}",
             "",
-            "Add references, avoided styles, or brand constraints if you want to refine the brief.",
+            "Add references, avoided styles, brand constraints, or asset policy if you want to refine the brief.",
+            "If you do not explicitly allow asset usage, external sources stay reference-principles only.",
             "To generate Artic design docs, run `@artic start`.",
         ]
     return "\n".join(lines)

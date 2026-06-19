@@ -117,9 +117,9 @@ Artic が呼び出されると、エージェントは次を行います:
 
 1. ホームページ/デザイン依頼が曖昧な場合、実装前に立ち止まります。
 2. `@artic init` で product、audience、goal、vibe、constraints、references を収集します。
-3. Search multiple professional/OSS design resources instead of relying on one style.
-4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
-5. Resolve conflicts between references based on the user's project goal.
+3. 1つのスタイルに頼らず、複数のプロフェッショナル/OSSデザインリソースを検索します。
+4. 色の役割、タイプ階層、余白リズム、コンポーネント、モーション、アクセシビリティなど、再利用可能なルールを抽出します。
+5. ユーザーのプロジェクト目標に基づいて、レファレンス間の衝突を解決します。
 6. `@artic start` で public agent workflow が `.artic/strategy.json` を作成し、`docs/artic-strategy.md` を保存してから compiler を実行し、`DESIGN.md` と補助文書を生成します。
 7. `@artic show` で strategy artifacts に基づく安全な静的 preview `.artic/show/index.html` をレンダリングし、アプリのソースファイルは変更しません。
 8. `@artic review` で実装を `.artic/strategy.json`、`docs/artic-strategy.md`、`DESIGN.md` と比較し、生成されたデザイン文書を検証します。
@@ -128,10 +128,10 @@ Artic が呼び出されると、エージェントは次を行います:
 
 使う場面:
 
-- Homepages, landing pages, product pages, and website redesigns.
-- Projects with weak or missing design docs.
-- AI-native design documentation before coding.
-- Reference-driven design direction without exact brand copying.
+- ホームページ、ランディングページ、プロダクトページ、Webサイトリデザイン。
+- デザインドキュメントが弱い、または存在しないプロジェクト。
+- 実装前に作るAI-nativeなデザインドキュメント。
+- ブランドを正確にコピーしない、レファレンス駆動のデザインディレクション。
 
 使わない場面:
 
@@ -157,7 +157,7 @@ Artic が呼び出されると、エージェントは次を行います:
 
 ## Output Policy
 
-Artic writes durable files instead of dumping long design prose into chat:
+Artic は長いデザイン説明をチャットに流すのではなく、永続的なファイルを書き出します:
 
 ```text
 .artic/init-session.json   # draft interview state from @artic init
@@ -194,7 +194,7 @@ python3 -m pip install pytest pyyaml
 python3 -m pytest -q
 ```
 
-CI validates Python scripts, JSON manifests, README translation structure, skill-copy sync, smoke scaffolding, warning-free DESIGN.md lint, and marketplace plugin layout.
+CI は Python スクリプト、JSON マニフェスト、README 翻訳構造、skill copy 同期、smoke scaffold、警告なしの DESIGN.md lint、marketplace plugin layout を検証します。
 
 Distribution note: the wheel is metadata-only; marketplace packages, release tarballs, and sdists carry the skill/plugin payload.
 

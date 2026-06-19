@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -268,6 +270,24 @@ def validate_runtime_inputs(intent: dict[str, Any], references: dict[str, Any]) 
     return errors
 
 
+def validate_strategy_sources(strategy: dict[str, Any], references: dict[str, Any]) -> list[str]:
+    selected = references.get("selected_sources", [])
+    if not isinstance(selected, list):
+        return ["ERROR: references selected_sources must be a list before validating strategy sources"]
+    allowed_ids = {str(row.get("id")) for row in selected if isinstance(row, dict) and row.get("id")}
+    if not allowed_ids:
+        return ["ERROR: references selected_sources must include source ids before validating strategy sources"]
+    errors: list[str] = []
+    roles = strategy.get("reference_roles", [])
+    for index, role in enumerate(roles if isinstance(roles, list) else [], start=1):
+        if not isinstance(role, dict):
+            continue
+        source_id = str(role.get("source_id") or "").strip()
+        if source_id and source_id not in allowed_ids:
+            errors.append(f"ERROR: strategy reference_roles[{index}].source_id references unselected source: {source_id}")
+    return errors
+
+
 def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any], strategy: dict[str, Any], intent: dict[str, Any] | None = None) -> list[str]:
     name = project_name(brief)
     description = f"{project_description(brief, strategy)} Artic-generated homepage design system."
@@ -390,26 +410,73 @@ def write_strategy_prompt(root: Path, brief: dict[str, Any], references: dict[st
     return path
 
 
+def stage_ready_session(root: Path) -> tuple[Path, dict[str, Any], dict[str, Any], dict[str, Any], tempfile.TemporaryDirectory[str]]:
+    from artic_init_session import finalize_session
+
+    tempdir = tempfile.TemporaryDirectory(prefix="artic-start-")
+    staged_root = Path(tempdir.name)
+    (staged_root / ".artic").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(root / ".artic" / "init-session.json", staged_root / ".artic" / "init-session.json")
+    finalize_session(staged_root)
+    brief = read_json(staged_root / ".artic" / "brief.json")
+    references = read_json(staged_root / ".artic" / "references.json")
+    intent = read_json(staged_root / ".artic" / "intent.json") if (staged_root / ".artic" / "intent.json").exists() else migrate_legacy_intent(staged_root, brief, references)
+    return staged_root, brief, references, intent, tempdir
+
+
+def commit_staged_ready_session(root: Path, staged_root: Path) -> None:
+    for rel in [
+        ".artic/brief.json",
+        ".artic/references.json",
+        ".artic/intent.json",
+        ".artic/state.json",
+        "docs/artic-brief.md",
+        ".artic/init-session.json",
+    ]:
+        source = staged_root / rel
+        if source.exists():
+            destination = root / rel
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
+
+
 def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, Any]:
     session_path = root / ".artic" / "init-session.json"
     brief_path = root / ".artic" / "brief.json"
     references_path = root / ".artic" / "references.json"
+    strategy_path = root / ".artic" / "strategy.json"
+    staged_root: Path | None = None
+    staged_tempdir: tempfile.TemporaryDirectory[str] | None = None
     if session_path.exists():
-        from artic_init_session import finalize_session, is_ready, read_session, render_questions
+        from artic_init_session import is_ready, read_session, render_questions
         session = read_session(root)
         status = str(session.get("status") or "")
         if status == "collecting" or not is_ready(session):
             missing = ", ".join(str(item) for item in session.get("missing", []))
             questions = " | ".join(render_questions(session))
             raise ValueError("cannot run @artic start before init is ready" + (f": missing {missing}" if missing else "") + (f". Next questions: {questions}" if questions else ""))
+        if not strategy_path.exists() and (status == "ready" or not brief_path.exists() or not references_path.exists()):
+            answers = session.get("answers") if isinstance(session.get("answers"), dict) else {}
+            prompt_brief = {"answers": answers, "language": session.get("language", {})}
+            prompt_references = {"selected_sources": [], "source_plan": [], "note": "@artic start requires the agent-authored strategy before finalizing init outputs."}
+            prompt_path = write_strategy_prompt(root, prompt_brief, prompt_references, None)
+            raise ValueError(json.dumps({
+                "error": "missing_strategy",
+                "message": "Public Artic agent must create .artic/strategy.json before runtime generation.",
+                "strategy_prompt": str(prompt_path.relative_to(root)),
+                "generated_files": [str(prompt_path.relative_to(root))],
+            }, ensure_ascii=False))
         if status == "ready" or not brief_path.exists() or not references_path.exists():
-            finalize_session(root)
+            staged_root, brief, references, intent, staged_tempdir = stage_ready_session(root)
+        else:
+            brief = read_json(brief_path)
+            references = read_json(references_path)
+            intent = read_json(root / ".artic" / "intent.json") if (root / ".artic" / "intent.json").exists() else migrate_legacy_intent(root, brief, references)
+    else:
+        brief = read_json(brief_path)
+        references = read_json(references_path)
+        intent = read_json(root / ".artic" / "intent.json") if (root / ".artic" / "intent.json").exists() else migrate_legacy_intent(root, brief, references)
 
-    brief = read_json(brief_path)
-    references = read_json(references_path)
-    intent = read_json(root / ".artic" / "intent.json") if (root / ".artic" / "intent.json").exists() else migrate_legacy_intent(root, brief, references)
-
-    strategy_path = root / ".artic" / "strategy.json"
     if not strategy_path.exists():
         prompt_path = write_strategy_prompt(root, brief, references, intent)
         raise ValueError(json.dumps({
@@ -426,6 +493,11 @@ def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, 
     input_errors = validate_runtime_inputs(intent, references)
     if input_errors:
         raise ValueError(json.dumps({"error": "invalid_runtime_inputs", "errors": input_errors}, ensure_ascii=False))
+    strategy_source_errors = validate_strategy_sources(strategy, references)
+    if strategy_source_errors:
+        raise ValueError(json.dumps({"error": "invalid_strategy_sources", "errors": strategy_source_errors}, ensure_ascii=False))
+    if staged_root is not None:
+        commit_staged_ready_session(root, staged_root)
 
     generated = render_outputs(root, brief, references, strategy, intent)
     payload: dict[str, Any] = {
