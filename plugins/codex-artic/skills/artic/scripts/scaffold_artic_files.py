@@ -41,10 +41,26 @@ def language_contract(locale: str) -> dict:
     }
 
 
+def language_block(language: dict) -> str:
+    locale = language.get("locale", "en-US")
+    preserve = ", ".join(str(item) for item in language.get("preserve_terms", []))
+    return "\n".join([
+        f"<!-- artic-language: {locale} -->",
+        "## Language Contract",
+        "",
+        f"- Locale: {locale}",
+        f"- Output language: {language.get('output_language', 'English')}",
+        f"- Tone: {language.get('tone', 'clear, professional, product-focused')}",
+        f"- Preserve terms: {preserve or 'DESIGN.md, AI-native, Artic'}",
+        f"- Bilingual terms: {bool(language.get('bilingual_terms', False))}",
+    ])
+
+
 def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
     now = datetime.now(timezone.utc).isoformat()
     language = language_contract(locale)
     policy = policy_block(locale)
+    language_info = language_block(language)
     north_star = f"{project_name} should feel clear, trustworthy, and ready for implementation before it feels decorative."
     intent = {
         "schema_version": 1,
@@ -206,6 +222,8 @@ components:
 
 Clean, trustworthy, mobile-first SaaS homepage direction.
 
+{language_info}
+
 ## Design North Star
 
 {north_star}
@@ -265,9 +283,9 @@ Avoid generic gradients, off-token colors, competing primary CTAs, centered long
 Do follow tokens and synthesis. Don't clone references.
 '''
     write(root / "DESIGN.md", design)
-    write(root / "docs" / "design-rules.md", f"# Design Rules\n\n{policy}\n\n## Selected Reference Synthesis\n\nClean SaaS + Material token discipline.\n\n## Anti-Patterns\n\nAvoid generic gradients, off-token colors, and exact reference layouts.\n")
-    write(root / "docs" / "design-qa-checklist.md", f"# Artic Design QA Checklist\n\n{policy}\n\n## Scored Review\n\n- [ ] Visual hierarchy: 0-5\n- [ ] Brand coherence: 0-5\n- [ ] Conversion clarity: 0-5\n- [ ] Mobile quality: 0-5\n- [ ] Accessibility: 0-5\n- [ ] Reference safety: pass/fail\n\n## Binary Gates\n\n- [ ] Tokens are used consistently.\n- [ ] CTA hierarchy is clear.\n- [ ] Mobile layout works.\n")
-    write(root / "docs" / "homepage-design-prompt.md", f"# Homepage Implementation Prompt\n\nUse DESIGN.md and docs/design-rules.md.\n\n{policy}\n")
+    write(root / "docs" / "design-rules.md", f"# Design Rules\n\n{language_info}\n\n{policy}\n\n## Selected Reference Synthesis\n\nClean SaaS + Material token discipline.\n\n## Anti-Patterns\n\nAvoid generic gradients, off-token colors, and exact reference layouts.\n")
+    write(root / "docs" / "design-qa-checklist.md", f"# Artic Design QA Checklist\n\n{language_info}\n\n{policy}\n\n## Scored Review\n\n- [ ] Visual hierarchy: 0-5\n- [ ] Brand coherence: 0-5\n- [ ] Conversion clarity: 0-5\n- [ ] Mobile quality: 0-5\n- [ ] Accessibility: 0-5\n- [ ] Reference safety: pass/fail\n\n## Binary Gates\n\n- [ ] Tokens are used consistently.\n- [ ] CTA hierarchy is clear.\n- [ ] Mobile layout works.\n")
+    write(root / "docs" / "homepage-design-prompt.md", f"# Homepage Implementation Prompt\n\n{language_info}\n\nUse DESIGN.md and docs/design-rules.md.\n\n{policy}\n")
 
 
 def main() -> int:

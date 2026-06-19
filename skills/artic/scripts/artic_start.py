@@ -80,6 +80,23 @@ def policy_block(brief: dict[str, Any]) -> str:
     return f"{POLICY_MARKER}\n{POLICY_COPY_BY_LOCALE.get(locale, POLICY)}"
 
 
+def language_block(brief: dict[str, Any]) -> str:
+    language = brief_language(brief)
+    locale = str(language.get("locale") or "en-US")
+    preserve_terms = language.get("preserve_terms", [])
+    preserve = ", ".join(str(item) for item in preserve_terms) if isinstance(preserve_terms, list) else str(preserve_terms or "")
+    return "\n".join([
+        f"<!-- artic-language: {locale} -->",
+        "## Language Contract",
+        "",
+        f"- Locale: {locale}",
+        f"- Output language: {language.get('output_language', 'English')}",
+        f"- Tone: {language.get('tone', 'clear, professional, product-focused')}",
+        f"- Preserve terms: {preserve or 'DESIGN.md, AI-native, Artic'}",
+        f"- Bilingual terms: {bool(language.get('bilingual_terms', False))}",
+    ])
+
+
 def query_from_inputs(brief: dict[str, Any], references: dict[str, Any]) -> str:
     if references.get("query"):
         return str(references["query"])
@@ -229,11 +246,12 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
     description = f"{project_description(brief)} Artic-generated homepage design system."
     ref_summary = synthesize_reference_summary(brief, references)
     policy = policy_block(brief)
+    language = language_block(brief)
 
     design = load_template("DESIGN.template.md")
     design = design.replace("{{PROJECT_NAME}}", yaml_double_quoted(name))
     design = design.replace("{{DESIGN_DESCRIPTION}}", yaml_double_quoted(description))
-    design = design.replace("{{OVERVIEW}}", overview(brief, references))
+    design = design.replace("{{OVERVIEW}}", f"{overview(brief, references)}\n\n{language}")
     north_star = str((intent or {}).get("design_north_star") or brief.get("style", {}).get("design_north_star") or "Every visual choice should support the project's primary conversion goal with original, reference-grounded design judgment.")
     design = design.replace("{{DESIGN_NORTH_STAR}}", north_star)
     design = replace_policy_text(design, policy)
@@ -241,11 +259,12 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
 
     rules = load_template("design-rules.template.md")
     rules = rules.replace("{{PROJECT_NAME}}", name)
-    rules = rules.replace("{{REFERENCE_SYNTHESIS}}", ref_summary)
+    rules = rules.replace("{{REFERENCE_SYNTHESIS}}", f"{language}\n\n{ref_summary}")
     rules = replace_policy_text(rules, policy)
     write(root / "docs" / "design-rules.md", rules)
 
     checklist = load_template("design-qa-checklist.template.md")
+    checklist = checklist.replace("# Artic Design QA Checklist\n", f"# Artic Design QA Checklist\n\n{language}\n")
     checklist = replace_policy_text(checklist, policy)
     if "Accessibility" not in checklist:
         checklist = checklist.replace("- [ ] Text contrast targets WCAG AA.", "- [ ] Accessibility: text contrast targets WCAG AA, focus states are visible, controls are semantic, and forms are labeled.")
@@ -253,6 +272,7 @@ def render_outputs(root: Path, brief: dict[str, Any], references: dict[str, Any]
 
     prompt = load_template("homepage-design-prompt.template.md")
     prompt = prompt.replace("{{PROJECT_NAME}}", name)
+    prompt = prompt.replace("# Homepage Implementation Prompt\n", f"# Homepage Implementation Prompt\n\n{language}\n")
     prompt = replace_policy_text(prompt, policy)
     write(root / "docs" / "homepage-design-prompt.md", prompt)
 

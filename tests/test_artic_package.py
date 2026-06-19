@@ -452,6 +452,104 @@ def test_artic_init_persists_llm_native_language_contract():
         assert "Reference policy:" not in brief_doc
 
 
+def test_locale_detection_prefers_explicit_locale_and_user_text():
+    locale_contract = importlib.import_module("locale_contract")
+    assert locale_contract.detect_locale_from_text("한국어 문장", explicit_locale="en-US") == "en-US"
+    assert locale_contract.detect_locale_from_text("anything", explicit_locale="ko") == "ko-KR"
+    assert locale_contract.detect_locale_from_text("한국 스타트업 느낌으로") == "ko-KR"
+    assert locale_contract.detect_locale_from_text("日本語でお願いします") == "ja-JP"
+    assert locale_contract.detect_locale_from_text("简体中文设计") == "zh-CN"
+
+
+def test_artic_init_session_detects_korean_and_renders_missing_questions():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        session = session_mod.create_or_update_session(
+            Path(tmp),
+            "한국 스타트업 느낌의 AI 회의록 랜딩. 토스처럼 쉽고 신뢰감 있게. 데모 요청이 목표.",
+        )
+        assert session["language"]["locale"] == "ko-KR"
+        assert session["status"] == "collecting"
+        assert session["answers"]["project"] == "AI 회의록 서비스"
+        assert session["answers"]["goal"] == "데모 요청"
+        assert "audience" in session["missing"]
+        assert (Path(tmp) / ".artic" / "init-session.json").exists()
+        questions = session_mod.render_questions(session)
+        assert questions
+        assert any("타깃" in question for question in questions)
+
+
+def test_artic_init_session_finalizes_korean_outputs():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session_mod.write_session(root, {
+            "schema_version": 1,
+            "status": "collecting",
+            "language": {
+                "locale": "ko-KR",
+                "output_language": "Korean",
+                "tone": "친근하지만 전문적인 제품/디자인 대화체",
+                "preserve_terms": ["DESIGN.md", "AI-native", "Artic", "WCAG AA"],
+                "bilingual_terms": True,
+            },
+            "answers": {
+                "project": "AI 회의록 서비스",
+                "audience": "한국 스타트업 운영팀과 세일즈팀",
+                "goal": "데모 요청",
+                "vibe": "토스처럼 쉽고 신뢰감 있는 모바일 우선 SaaS",
+                "references": "Toss clarity, Shopify Polaris trust",
+                "stack": "React Tailwind",
+            },
+            "missing": [],
+            "last_question_ids": [],
+        })
+        payload = session_mod.finalize_session(root, limit=4)
+        assert payload["language"]["locale"] == "ko-KR"
+        session = session_mod.read_session(root)
+        assert session["status"] == "initialized"
+        brief = json.loads((root / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        assert brief["language"]["locale"] == "ko-KR"
+        assert "참고 정책" in (root / "docs" / "artic-brief.md").read_text(encoding="utf-8")
+
+
+def test_artic_start_preserves_korean_language_contract():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "AI 회의록 서비스",
+            "--audience",
+            "한국 스타트업 운영팀과 세일즈팀",
+            "--goal",
+            "데모 요청",
+            "--vibe",
+            "토스처럼 쉽고 신뢰감 있는 모바일 우선 SaaS",
+            "--references",
+            "Toss clarity, Shopify Polaris trust",
+            "--stack",
+            "React Tailwind",
+            "--locale",
+            "ko-KR",
+            "--tone",
+            "친근하지만 전문적인 제품/디자인 대화체",
+            "--bilingual-terms",
+            "--limit",
+            "4",
+        ], check=True)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+        root = Path(tmp)
+        for rel in ["DESIGN.md", "docs/design-rules.md", "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md"]:
+            text = (root / rel).read_text(encoding="utf-8")
+            assert "<!-- artic-language: ko-KR -->" in text, rel
+            assert "Locale: ko-KR" in text, rel
+            assert "<!-- artic-policy: reference-safety-v1 -->" in text, rel
+            assert "참고 정책:" in text, rel
+
+
 def test_validator_accepts_localized_policy_copy_when_invariant_marker_exists():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run([
@@ -469,6 +567,23 @@ def test_validator_accepts_localized_policy_copy_when_invariant_marker_exists():
             assert "extract reusable principles only" not in text, rel
         result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
         assert result.returncode == 0, result.stdout
+
+
+def test_validator_requires_language_marker_for_localized_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"),
+            "--root",
+            tmp,
+            "--locale",
+            "ko-KR",
+        ], check=True)
+        design_path = Path(tmp) / "DESIGN.md"
+        design_path.write_text(design_path.read_text(encoding="utf-8").replace("<!-- artic-language: ko-KR -->\n", ""), encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode == 1
+        assert "localized outputs missing language marker: ko-KR" in result.stdout
 
 
 def test_artic_init_rejects_reference_limits_below_validator_minimum():
