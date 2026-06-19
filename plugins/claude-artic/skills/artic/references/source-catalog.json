@@ -4299,15 +4299,73 @@
         "license": "Apache-2.0"
       }
     ],
-    "tags": ["korea", "mobile", "consumer-app", "design-system", "tokens", "local-service", "marketplace"],
-    "strengths": ["Korean mobile consumer-product design language", "open tokens and component packages", "friendly local-service interaction patterns"],
-    "use_for": ["Korean mobile-native UX", "friendly local marketplace tone", "consumer service components", "tokenized mobile design"],
-    "product_fit": ["korean-market", "mobile-app", "consumer-service", "marketplace", "community", "startup"],
-    "visual_traits": ["friendly", "warm", "mobile-native", "rounded", "practical", "local"],
-    "page_patterns": ["home-feed", "list-detail", "bottom-sheet", "app-bar", "action-button", "chip", "feedback-state"],
-    "implementation_fit": ["react", "css", "tokens", "figma", "mobile", "web"],
-    "extraction_targets": ["mobile-component-anatomy", "action-button-patterns", "bottom-sheet-usage", "color-roles", "radius-spacing", "friendly-empty-states"],
-    "avoid_when": ["daangn-brand-clone", "exact-local-marketplace-flow", "brand-color-copy", "enterprise-dashboard"],
+    "tags": [
+      "korea",
+      "mobile",
+      "consumer-app",
+      "design-system",
+      "tokens",
+      "local-service",
+      "marketplace"
+    ],
+    "strengths": [
+      "Korean mobile consumer-product design language",
+      "open tokens and component packages",
+      "friendly local-service interaction patterns"
+    ],
+    "use_for": [
+      "Korean mobile-native UX",
+      "friendly local marketplace tone",
+      "consumer service components",
+      "tokenized mobile design"
+    ],
+    "product_fit": [
+      "korean-market",
+      "mobile-app",
+      "consumer-service",
+      "marketplace",
+      "community",
+      "startup"
+    ],
+    "visual_traits": [
+      "friendly",
+      "warm",
+      "mobile-native",
+      "rounded",
+      "practical",
+      "local"
+    ],
+    "page_patterns": [
+      "home-feed",
+      "list-detail",
+      "bottom-sheet",
+      "app-bar",
+      "action-button",
+      "chip",
+      "feedback-state"
+    ],
+    "implementation_fit": [
+      "react",
+      "css",
+      "tokens",
+      "figma",
+      "mobile",
+      "web"
+    ],
+    "extraction_targets": [
+      "mobile-component-anatomy",
+      "action-button-patterns",
+      "bottom-sheet-usage",
+      "color-roles",
+      "radius-spacing",
+      "friendly-empty-states"
+    ],
+    "avoid_when": [
+      "daangn-brand-clone",
+      "exact-local-marketplace-flow",
+      "brand-color-copy",
+      "enterprise-dashboard"
+    ],
     "application_guidance": "Use this to translate 'Korean app-like' or friendly local-service intent into mobile-native structure, warm but practical components, and tokenized hierarchy; keep Daangn/Karrot brand colors, copy, icons, and domain flows separate."
   },
   {
@@ -4328,15 +4386,66 @@
         "license": "Public catalog"
       }
     ],
-    "tags": ["korea", "design-md", "catalog", "semantic-mapping", "brand-safe", "design-systems"],
-    "strengths": ["structured Korean design-system observations", "Design.md-friendly schema", "explicit brand-safety framing"],
-    "use_for": ["Korean reference discovery", "semantic design intent mapping", "brand-safe abstraction", "design-md comparison"],
-    "product_fit": ["korean-market", "ai-native-docs", "design-system", "startup", "brand-positioning"],
-    "visual_traits": ["comparative", "structured", "token-aware", "brand-observational", "AI-readable"],
-    "page_patterns": ["design-md-entry", "catalog-card", "preview", "token-summary", "component-summary"],
-    "implementation_fit": ["markdown", "design-md", "catalog", "llm-ingestion", "semantic-search"],
-    "extraction_targets": ["korean-brand-descriptors", "frontmatter-schema", "visual-token-observations", "component-vocabulary", "safety-notes"],
-    "avoid_when": ["canonical-source-required", "asset-copying", "brand-clone", "unverified-secondary-source"],
+    "tags": [
+      "korea",
+      "design-md",
+      "catalog",
+      "semantic-mapping",
+      "brand-safe",
+      "design-systems"
+    ],
+    "strengths": [
+      "structured Korean design-system observations",
+      "Design.md-friendly schema",
+      "explicit brand-safety framing"
+    ],
+    "use_for": [
+      "Korean reference discovery",
+      "semantic design intent mapping",
+      "brand-safe abstraction",
+      "design-md comparison"
+    ],
+    "product_fit": [
+      "korean-market",
+      "ai-native-docs",
+      "design-system",
+      "startup",
+      "brand-positioning"
+    ],
+    "visual_traits": [
+      "comparative",
+      "structured",
+      "token-aware",
+      "brand-observational",
+      "AI-readable"
+    ],
+    "page_patterns": [
+      "design-md-entry",
+      "catalog-card",
+      "preview",
+      "token-summary",
+      "component-summary"
+    ],
+    "implementation_fit": [
+      "markdown",
+      "design-md",
+      "catalog",
+      "llm-ingestion",
+      "semantic-search"
+    ],
+    "extraction_targets": [
+      "korean-brand-descriptors",
+      "frontmatter-schema",
+      "visual-token-observations",
+      "component-vocabulary",
+      "safety-notes"
+    ],
+    "avoid_when": [
+      "canonical-source-required",
+      "asset-copying",
+      "brand-clone",
+      "unverified-secondary-source"
+    ],
     "application_guidance": "Use this as a Korean design-intelligence index and semantic mapping aid; verify important entries against canonical sources and extract generic facets rather than brand assets, copy, exact palettes, or product flows."
   },
   {
@@ -4352,15 +4461,70 @@
         "license": "OFL-1.1"
       }
     ],
-    "tags": ["korea", "typography", "hangul", "font", "ui", "mobile", "webfont"],
-    "strengths": ["modern Korean UI typography", "system-like Hangul readability", "variable and webfont distribution"],
-    "use_for": ["Korean UI typography", "Hangul readability", "mobile app typography", "neutral SaaS type stack"],
-    "product_fit": ["korean-market", "mobile-app", "saas", "fintech", "commerce", "public-service"],
-    "visual_traits": ["clean", "neutral", "readable", "modern", "system-like", "dense-but-clear"],
-    "page_patterns": ["body-copy", "labels", "captions", "numeric-ui", "forms", "lists"],
-    "implementation_fit": ["css", "webfont", "variable-font", "npm", "cdn", "figma"],
-    "extraction_targets": ["font-family-stack", "weight-scale", "line-height-guidance", "hangul-label-spacing", "dynamic-subsetting"],
-    "avoid_when": ["brand-owned-typeface-required", "editorial-serif-direction", "non-korean-content-only"],
+    "tags": [
+      "korea",
+      "typography",
+      "hangul",
+      "font",
+      "ui",
+      "mobile",
+      "webfont"
+    ],
+    "strengths": [
+      "modern Korean UI typography",
+      "system-like Hangul readability",
+      "variable and webfont distribution"
+    ],
+    "use_for": [
+      "Korean UI typography",
+      "Hangul readability",
+      "mobile app typography",
+      "neutral SaaS type stack"
+    ],
+    "product_fit": [
+      "korean-market",
+      "mobile-app",
+      "saas",
+      "fintech",
+      "commerce",
+      "public-service"
+    ],
+    "visual_traits": [
+      "clean",
+      "neutral",
+      "readable",
+      "modern",
+      "system-like",
+      "dense-but-clear"
+    ],
+    "page_patterns": [
+      "body-copy",
+      "labels",
+      "captions",
+      "numeric-ui",
+      "forms",
+      "lists"
+    ],
+    "implementation_fit": [
+      "css",
+      "webfont",
+      "variable-font",
+      "npm",
+      "cdn",
+      "figma"
+    ],
+    "extraction_targets": [
+      "font-family-stack",
+      "weight-scale",
+      "line-height-guidance",
+      "hangul-label-spacing",
+      "dynamic-subsetting"
+    ],
+    "avoid_when": [
+      "brand-owned-typeface-required",
+      "editorial-serif-direction",
+      "non-korean-content-only"
+    ],
     "application_guidance": "Use this as the default Korean UI typography reference when users ask for a Korean-app feel; pair it with relaxed Hangul line-height, clear label spacing, and project-specific type scale choices."
   },
   {
@@ -4376,15 +4540,70 @@
         "license": "Public docs"
       }
     ],
-    "tags": ["korea", "android", "mobile", "one-ui", "galaxy", "large-screen", "accessibility"],
-    "strengths": ["Korean Android/Galaxy user familiarity", "thumb-friendly mobile layout principles", "large-screen and foldable adaptation"],
-    "use_for": ["Android-native familiarity", "mobile-first layout", "foldable and large-screen guidance", "comfortable touch targets"],
-    "product_fit": ["korean-market", "android-app", "mobile-web", "consumer-app", "fintech", "commerce"],
-    "visual_traits": ["comfortable", "layered", "calm", "device-native", "adaptive", "touch-friendly"],
-    "page_patterns": ["settings-list", "list-detail", "bottom-navigation", "split-pane", "foldable-layout", "large-screen-adaptation"],
-    "implementation_fit": ["mobile-guidelines", "android", "responsive", "accessibility", "interaction-rules"],
-    "extraction_targets": ["thumb-reachability", "large-screen-layout", "foldable-adaptation", "mobile-motion", "accessibility-posture"],
-    "avoid_when": ["samsung-ui-clone", "galaxy-exclusive-claims", "brand-asset-copy", "desktop-first-saas"],
+    "tags": [
+      "korea",
+      "android",
+      "mobile",
+      "one-ui",
+      "galaxy",
+      "large-screen",
+      "accessibility"
+    ],
+    "strengths": [
+      "Korean Android/Galaxy user familiarity",
+      "thumb-friendly mobile layout principles",
+      "large-screen and foldable adaptation"
+    ],
+    "use_for": [
+      "Android-native familiarity",
+      "mobile-first layout",
+      "foldable and large-screen guidance",
+      "comfortable touch targets"
+    ],
+    "product_fit": [
+      "korean-market",
+      "android-app",
+      "mobile-web",
+      "consumer-app",
+      "fintech",
+      "commerce"
+    ],
+    "visual_traits": [
+      "comfortable",
+      "layered",
+      "calm",
+      "device-native",
+      "adaptive",
+      "touch-friendly"
+    ],
+    "page_patterns": [
+      "settings-list",
+      "list-detail",
+      "bottom-navigation",
+      "split-pane",
+      "foldable-layout",
+      "large-screen-adaptation"
+    ],
+    "implementation_fit": [
+      "mobile-guidelines",
+      "android",
+      "responsive",
+      "accessibility",
+      "interaction-rules"
+    ],
+    "extraction_targets": [
+      "thumb-reachability",
+      "large-screen-layout",
+      "foldable-adaptation",
+      "mobile-motion",
+      "accessibility-posture"
+    ],
+    "avoid_when": [
+      "samsung-ui-clone",
+      "galaxy-exclusive-claims",
+      "brand-asset-copy",
+      "desktop-first-saas"
+    ],
     "application_guidance": "Use this to make Korean mobile experiences feel familiar to Galaxy/Android users through reachability, adaptive layout, and mobile interaction rules; do not make outputs look like Samsung system UI."
   },
   {
@@ -4405,15 +4624,69 @@
         "license": "Public docs"
       }
     ],
-    "tags": ["korea", "react-native", "expo", "mobile", "ui-library", "theme", "cross-platform"],
-    "strengths": ["Korean community mobile UI defaults", "React Native and Expo implementation focus", "theme and accessibility-oriented component primitives"],
-    "use_for": ["Korean mobile MVPs", "React Native implementation", "cross-platform theming", "Expo app defaults"],
-    "product_fit": ["korean-market", "mobile-app", "startup", "prototype", "react-native", "expo"],
-    "visual_traits": ["neutral", "lightweight", "developer-friendly", "mobile-native", "themeable"],
-    "page_patterns": ["button", "input", "card", "list", "provider-theme", "dark-light-mode"],
-    "implementation_fit": ["react-native", "expo", "typescript", "storybook", "theme", "accessibility"],
-    "extraction_targets": ["theme-object-shape", "component-api", "font-defaults", "accessibility-props", "responsive-layout"],
-    "avoid_when": ["enterprise-depth-required", "web-only-project", "brand-visual-source"],
+    "tags": [
+      "korea",
+      "react-native",
+      "expo",
+      "mobile",
+      "ui-library",
+      "theme",
+      "cross-platform"
+    ],
+    "strengths": [
+      "Korean community mobile UI defaults",
+      "React Native and Expo implementation focus",
+      "theme and accessibility-oriented component primitives"
+    ],
+    "use_for": [
+      "Korean mobile MVPs",
+      "React Native implementation",
+      "cross-platform theming",
+      "Expo app defaults"
+    ],
+    "product_fit": [
+      "korean-market",
+      "mobile-app",
+      "startup",
+      "prototype",
+      "react-native",
+      "expo"
+    ],
+    "visual_traits": [
+      "neutral",
+      "lightweight",
+      "developer-friendly",
+      "mobile-native",
+      "themeable"
+    ],
+    "page_patterns": [
+      "button",
+      "input",
+      "card",
+      "list",
+      "provider-theme",
+      "dark-light-mode"
+    ],
+    "implementation_fit": [
+      "react-native",
+      "expo",
+      "typescript",
+      "storybook",
+      "theme",
+      "accessibility"
+    ],
+    "extraction_targets": [
+      "theme-object-shape",
+      "component-api",
+      "font-defaults",
+      "accessibility-props",
+      "responsive-layout"
+    ],
+    "avoid_when": [
+      "enterprise-depth-required",
+      "web-only-project",
+      "brand-visual-source"
+    ],
     "application_guidance": "Use this when Artic needs practical Korean mobile implementation defaults for React Native or Expo; treat it as cross-platform UI scaffolding, not as a finished brand direction."
   },
   {
@@ -4429,15 +4702,68 @@
         "license": "Kakao Developers terms"
       }
     ],
-    "tags": ["korea", "kakao", "social-login", "oauth", "signup", "brand-compliance", "onboarding"],
-    "strengths": ["official Kakao Login button rules", "clear provider identity and label guidance", "Korean social-login convention"],
-    "use_for": ["Korean social login", "provider button compliance", "signup/login clarity", "auth CTA stacks"],
-    "product_fit": ["korean-market", "consumer-service", "commerce", "mobile-app", "signup", "onboarding"],
-    "visual_traits": ["official", "recognizable", "friendly", "low-friction", "provider-specific"],
-    "page_patterns": ["login-page", "signup-page", "social-login-stack", "oauth-entry", "account-linking"],
-    "implementation_fit": ["provider-button", "brand-guideline", "auth-flow", "mobile-web", "compliance-checklist"],
-    "extraction_targets": ["button-anatomy", "label-rules", "symbol-rules", "color-constraints", "provider-button-hierarchy"],
-    "avoid_when": ["no-kakao-login", "generic-yellow-cta", "kakao-brand-clone", "asset-modification"],
+    "tags": [
+      "korea",
+      "kakao",
+      "social-login",
+      "oauth",
+      "signup",
+      "brand-compliance",
+      "onboarding"
+    ],
+    "strengths": [
+      "official Kakao Login button rules",
+      "clear provider identity and label guidance",
+      "Korean social-login convention"
+    ],
+    "use_for": [
+      "Korean social login",
+      "provider button compliance",
+      "signup/login clarity",
+      "auth CTA stacks"
+    ],
+    "product_fit": [
+      "korean-market",
+      "consumer-service",
+      "commerce",
+      "mobile-app",
+      "signup",
+      "onboarding"
+    ],
+    "visual_traits": [
+      "official",
+      "recognizable",
+      "friendly",
+      "low-friction",
+      "provider-specific"
+    ],
+    "page_patterns": [
+      "login-page",
+      "signup-page",
+      "social-login-stack",
+      "oauth-entry",
+      "account-linking"
+    ],
+    "implementation_fit": [
+      "provider-button",
+      "brand-guideline",
+      "auth-flow",
+      "mobile-web",
+      "compliance-checklist"
+    ],
+    "extraction_targets": [
+      "button-anatomy",
+      "label-rules",
+      "symbol-rules",
+      "color-constraints",
+      "provider-button-hierarchy"
+    ],
+    "avoid_when": [
+      "no-kakao-login",
+      "generic-yellow-cta",
+      "kakao-brand-clone",
+      "asset-modification"
+    ],
     "application_guidance": "Use this only for actual Kakao Login entry points: preserve official provider identity, size, label, and action clarity while keeping the rest of the product's brand system original."
   },
   {
@@ -4453,15 +4779,68 @@
         "license": "Kakao Developers terms"
       }
     ],
-    "tags": ["korea", "kakao-sync", "signup", "easy-signup", "consent", "onboarding", "conversion"],
-    "strengths": ["official Kakao easy-signup button guidance", "login vs start/signup distinction", "Korean low-friction onboarding pattern"],
-    "use_for": ["Korean easy signup", "start CTA clarity", "consent-aware onboarding", "social signup conversion"],
-    "product_fit": ["korean-market", "commerce", "consumer-service", "mobile-app", "signup", "membership"],
-    "visual_traits": ["friendly", "official", "fast-entry", "recognizable", "conversion-oriented"],
-    "page_patterns": ["start-with-kakao", "signup-cta", "consent-flow", "event-to-signup", "membership-onboarding"],
-    "implementation_fit": ["provider-button", "signup-flow", "consent-copy", "mobile-web", "brand-compliance"],
-    "extraction_targets": ["start-label-rules", "signup-context", "consent-separation", "button-usage", "social-onboarding-friction"],
-    "avoid_when": ["no-kakao-sync", "hidden-consent", "forced-channel-add", "kakao-brand-clone"],
+    "tags": [
+      "korea",
+      "kakao-sync",
+      "signup",
+      "easy-signup",
+      "consent",
+      "onboarding",
+      "conversion"
+    ],
+    "strengths": [
+      "official Kakao easy-signup button guidance",
+      "login vs start/signup distinction",
+      "Korean low-friction onboarding pattern"
+    ],
+    "use_for": [
+      "Korean easy signup",
+      "start CTA clarity",
+      "consent-aware onboarding",
+      "social signup conversion"
+    ],
+    "product_fit": [
+      "korean-market",
+      "commerce",
+      "consumer-service",
+      "mobile-app",
+      "signup",
+      "membership"
+    ],
+    "visual_traits": [
+      "friendly",
+      "official",
+      "fast-entry",
+      "recognizable",
+      "conversion-oriented"
+    ],
+    "page_patterns": [
+      "start-with-kakao",
+      "signup-cta",
+      "consent-flow",
+      "event-to-signup",
+      "membership-onboarding"
+    ],
+    "implementation_fit": [
+      "provider-button",
+      "signup-flow",
+      "consent-copy",
+      "mobile-web",
+      "brand-compliance"
+    ],
+    "extraction_targets": [
+      "start-label-rules",
+      "signup-context",
+      "consent-separation",
+      "button-usage",
+      "social-onboarding-friction"
+    ],
+    "avoid_when": [
+      "no-kakao-sync",
+      "hidden-consent",
+      "forced-channel-add",
+      "kakao-brand-clone"
+    ],
     "application_guidance": "Use this to distinguish Korean social signup from simple login: explain what starting with Kakao means, separate consent steps clearly, and avoid turning Kakao identity into generic brand decoration."
   },
   {
@@ -4477,15 +4856,68 @@
         "license": "NAVER Developers terms"
       }
     ],
-    "tags": ["korea", "naver", "social-login", "oauth", "provider-button", "signup", "brand-compliance"],
-    "strengths": ["official NAVER Login button rules", "Korean provider identity and sizing conventions", "social-login stack guidance"],
-    "use_for": ["Korean social login", "provider button stack", "account linking", "signup/login clarity"],
-    "product_fit": ["korean-market", "commerce", "content-service", "mobile-app", "signup", "onboarding"],
-    "visual_traits": ["official", "stable", "recognizable", "utility-first", "provider-specific"],
-    "page_patterns": ["social-login-stack", "signup-page", "account-linking", "auth-provider-list", "login-modal"],
-    "implementation_fit": ["provider-button", "brand-guideline", "auth-flow", "mobile-web", "compliance-checklist"],
-    "extraction_targets": ["button-color-rules", "logo-size", "label-spacing", "button-variants", "provider-stack-consistency"],
-    "avoid_when": ["no-naver-login", "generic-green-cta", "naver-brand-clone", "logo-modification"],
+    "tags": [
+      "korea",
+      "naver",
+      "social-login",
+      "oauth",
+      "provider-button",
+      "signup",
+      "brand-compliance"
+    ],
+    "strengths": [
+      "official NAVER Login button rules",
+      "Korean provider identity and sizing conventions",
+      "social-login stack guidance"
+    ],
+    "use_for": [
+      "Korean social login",
+      "provider button stack",
+      "account linking",
+      "signup/login clarity"
+    ],
+    "product_fit": [
+      "korean-market",
+      "commerce",
+      "content-service",
+      "mobile-app",
+      "signup",
+      "onboarding"
+    ],
+    "visual_traits": [
+      "official",
+      "stable",
+      "recognizable",
+      "utility-first",
+      "provider-specific"
+    ],
+    "page_patterns": [
+      "social-login-stack",
+      "signup-page",
+      "account-linking",
+      "auth-provider-list",
+      "login-modal"
+    ],
+    "implementation_fit": [
+      "provider-button",
+      "brand-guideline",
+      "auth-flow",
+      "mobile-web",
+      "compliance-checklist"
+    ],
+    "extraction_targets": [
+      "button-color-rules",
+      "logo-size",
+      "label-spacing",
+      "button-variants",
+      "provider-stack-consistency"
+    ],
+    "avoid_when": [
+      "no-naver-login",
+      "generic-green-cta",
+      "naver-brand-clone",
+      "logo-modification"
+    ],
     "application_guidance": "Use this only for actual NAVER Login entry points; keep provider buttons equally legible and accessible, and never reuse NAVER green or logos as generic product branding."
   },
   {
@@ -4501,15 +4933,71 @@
         "license": "Public standard mirror"
       }
     ],
-    "tags": ["korea", "accessibility", "kwcag", "public-service", "forms", "compliance", "trust"],
-    "strengths": ["Korean accessibility criteria", "form and authentication quality guardrails", "public/financial service trust baseline"],
-    "use_for": ["Korean accessibility", "form validation", "auth/payment QA", "public-service quality", "trust UX"],
-    "product_fit": ["korean-market", "public-service", "fintech", "commerce", "onboarding", "forms"],
-    "visual_traits": ["clear", "accessible", "predictable", "high-contrast", "error-recoverable"],
-    "page_patterns": ["login", "identity-verification", "consent-form", "payment", "application-flow", "error-message"],
-    "implementation_fit": ["accessibility-checklist", "validation", "forms", "keyboard", "labels", "contrast"],
-    "extraction_targets": ["keyboard-access", "focus-visibility", "contrast", "input-error-recovery", "labels-and-names", "time-limit-guidance"],
-    "avoid_when": ["visual-style-source", "legal-compliance-claim", "non-korean-accessibility-only"],
+    "tags": [
+      "korea",
+      "accessibility",
+      "kwcag",
+      "public-service",
+      "forms",
+      "compliance",
+      "trust"
+    ],
+    "strengths": [
+      "Korean accessibility criteria",
+      "form and authentication quality guardrails",
+      "public/financial service trust baseline"
+    ],
+    "use_for": [
+      "Korean accessibility",
+      "form validation",
+      "auth/payment QA",
+      "public-service quality",
+      "trust UX"
+    ],
+    "product_fit": [
+      "korean-market",
+      "public-service",
+      "fintech",
+      "commerce",
+      "onboarding",
+      "forms"
+    ],
+    "visual_traits": [
+      "clear",
+      "accessible",
+      "predictable",
+      "high-contrast",
+      "error-recoverable"
+    ],
+    "page_patterns": [
+      "login",
+      "identity-verification",
+      "consent-form",
+      "payment",
+      "application-flow",
+      "error-message"
+    ],
+    "implementation_fit": [
+      "accessibility-checklist",
+      "validation",
+      "forms",
+      "keyboard",
+      "labels",
+      "contrast"
+    ],
+    "extraction_targets": [
+      "keyboard-access",
+      "focus-visibility",
+      "contrast",
+      "input-error-recovery",
+      "labels-and-names",
+      "time-limit-guidance"
+    ],
+    "avoid_when": [
+      "visual-style-source",
+      "legal-compliance-claim",
+      "non-korean-accessibility-only"
+    ],
     "application_guidance": "Use this as a Korean quality bar for trust-heavy pages: make forms, login, verification, consent, and payment flows keyboard-accessible, clearly labeled, contrast-safe, and recoverable."
   },
   {
@@ -4525,15 +5013,69 @@
         "license": "Public privacy guidance"
       }
     ],
-    "tags": ["korea", "privacy", "consent", "signup", "forms", "trust", "personal-information"],
-    "strengths": ["Korean consent UX structure", "required vs optional consent separation", "privacy-minimization trust guidance"],
-    "use_for": ["signup consent", "privacy form clarity", "marketing consent", "personal-information trust", "Korean onboarding"],
-    "product_fit": ["korean-market", "fintech", "commerce", "membership", "public-service", "onboarding"],
-    "visual_traits": ["transparent", "structured", "trustworthy", "plain-language", "choice-preserving"],
-    "page_patterns": ["signup-consent", "terms-agreement", "marketing-opt-in", "privacy-table", "required-optional-separation"],
-    "implementation_fit": ["form-copy", "consent-checklist", "privacy-notice", "validation", "onboarding"],
-    "extraction_targets": ["required-optional-consent", "collection-purpose", "retention-period", "refusal-notice", "separate-consent"],
-    "avoid_when": ["legal-advice-substitute", "dark-pattern-consent", "forced-optional-consent", "policy-copying"],
+    "tags": [
+      "korea",
+      "privacy",
+      "consent",
+      "signup",
+      "forms",
+      "trust",
+      "personal-information"
+    ],
+    "strengths": [
+      "Korean consent UX structure",
+      "required vs optional consent separation",
+      "privacy-minimization trust guidance"
+    ],
+    "use_for": [
+      "signup consent",
+      "privacy form clarity",
+      "marketing consent",
+      "personal-information trust",
+      "Korean onboarding"
+    ],
+    "product_fit": [
+      "korean-market",
+      "fintech",
+      "commerce",
+      "membership",
+      "public-service",
+      "onboarding"
+    ],
+    "visual_traits": [
+      "transparent",
+      "structured",
+      "trustworthy",
+      "plain-language",
+      "choice-preserving"
+    ],
+    "page_patterns": [
+      "signup-consent",
+      "terms-agreement",
+      "marketing-opt-in",
+      "privacy-table",
+      "required-optional-separation"
+    ],
+    "implementation_fit": [
+      "form-copy",
+      "consent-checklist",
+      "privacy-notice",
+      "validation",
+      "onboarding"
+    ],
+    "extraction_targets": [
+      "required-optional-consent",
+      "collection-purpose",
+      "retention-period",
+      "refusal-notice",
+      "separate-consent"
+    ],
+    "avoid_when": [
+      "legal-advice-substitute",
+      "dark-pattern-consent",
+      "forced-optional-consent",
+      "policy-copying"
+    ],
     "application_guidance": "Use this to make Korean signup and consent screens transparent: separate required, optional, marketing, and third-party consent, explain purpose and retention, and avoid visually coercing optional choices."
   },
   {
@@ -4549,15 +5091,69 @@
         "license": "Public privacy guidance"
       }
     ],
-    "tags": ["korea", "privacy-policy", "footer", "trust", "transparency", "personal-information", "legal-content"],
-    "strengths": ["Korean privacy policy information architecture", "transparency and footer trust guidance", "user-rights disclosure structure"],
-    "use_for": ["privacy-policy IA", "footer trust links", "signup details", "account settings", "transparency copy"],
-    "product_fit": ["korean-market", "saas", "fintech", "commerce", "membership", "public-service"],
-    "visual_traits": ["transparent", "organized", "official", "readable", "trust-building"],
-    "page_patterns": ["footer-trust-link", "privacy-policy-page", "account-rights", "consent-detail", "inquiry-page"],
-    "implementation_fit": ["content-structure", "footer", "legal-placeholder", "policy-page", "trust-checklist"],
-    "extraction_targets": ["policy-sections", "disclosure-location", "plain-language", "rights-exercise", "processor-third-party-structure"],
-    "avoid_when": ["legal-advice-substitute", "copying-another-policy", "claiming-compliance", "single-static-footer-only"],
+    "tags": [
+      "korea",
+      "privacy-policy",
+      "footer",
+      "trust",
+      "transparency",
+      "personal-information",
+      "legal-content"
+    ],
+    "strengths": [
+      "Korean privacy policy information architecture",
+      "transparency and footer trust guidance",
+      "user-rights disclosure structure"
+    ],
+    "use_for": [
+      "privacy-policy IA",
+      "footer trust links",
+      "signup details",
+      "account settings",
+      "transparency copy"
+    ],
+    "product_fit": [
+      "korean-market",
+      "saas",
+      "fintech",
+      "commerce",
+      "membership",
+      "public-service"
+    ],
+    "visual_traits": [
+      "transparent",
+      "organized",
+      "official",
+      "readable",
+      "trust-building"
+    ],
+    "page_patterns": [
+      "footer-trust-link",
+      "privacy-policy-page",
+      "account-rights",
+      "consent-detail",
+      "inquiry-page"
+    ],
+    "implementation_fit": [
+      "content-structure",
+      "footer",
+      "legal-placeholder",
+      "policy-page",
+      "trust-checklist"
+    ],
+    "extraction_targets": [
+      "policy-sections",
+      "disclosure-location",
+      "plain-language",
+      "rights-exercise",
+      "processor-third-party-structure"
+    ],
+    "avoid_when": [
+      "legal-advice-substitute",
+      "copying-another-policy",
+      "claiming-compliance",
+      "single-static-footer-only"
+    ],
     "application_guidance": "Use this to make Korean privacy trust visible: place policy links predictably, structure policy pages around user rights and data purposes, and keep legal placeholders clearly marked for review."
   },
   {
@@ -4573,15 +5169,1355 @@
         "license": "Public partner docs"
       }
     ],
-    "tags": ["asia", "payment", "wallet", "fintech", "checkout", "transaction", "mobile"],
-    "strengths": ["Asia wallet/payment journey structure", "mandatory vs optional payment elements", "transaction result and detail hierarchy"],
-    "use_for": ["payment result pages", "transaction details", "wallet checkout", "fintech trust hierarchy", "merchant payment UX"],
-    "product_fit": ["fintech", "commerce", "korean-market", "asia-market", "wallet", "checkout"],
-    "visual_traits": ["trustworthy", "transaction-focused", "status-clear", "brand-aware", "action-oriented"],
-    "page_patterns": ["payment-result", "transaction-detail", "payment-code", "wallet-handoff", "merchant-checkout"],
-    "implementation_fit": ["payment-flow", "status-pages", "transaction-ui", "checkout", "mobile-wallet"],
-    "extraction_targets": ["amount-merchant-status-hierarchy", "mandatory-optional-elements", "payment-result-states", "transaction-detail-access", "next-action-clarity"],
-    "avoid_when": ["alipay-brand-copy", "non-payment-product", "platform-specific-rules-as-global", "unlicensed-brand-assets"],
+    "tags": [
+      "asia",
+      "payment",
+      "wallet",
+      "fintech",
+      "checkout",
+      "transaction",
+      "mobile"
+    ],
+    "strengths": [
+      "Asia wallet/payment journey structure",
+      "mandatory vs optional payment elements",
+      "transaction result and detail hierarchy"
+    ],
+    "use_for": [
+      "payment result pages",
+      "transaction details",
+      "wallet checkout",
+      "fintech trust hierarchy",
+      "merchant payment UX"
+    ],
+    "product_fit": [
+      "fintech",
+      "commerce",
+      "korean-market",
+      "asia-market",
+      "wallet",
+      "checkout"
+    ],
+    "visual_traits": [
+      "trustworthy",
+      "transaction-focused",
+      "status-clear",
+      "brand-aware",
+      "action-oriented"
+    ],
+    "page_patterns": [
+      "payment-result",
+      "transaction-detail",
+      "payment-code",
+      "wallet-handoff",
+      "merchant-checkout"
+    ],
+    "implementation_fit": [
+      "payment-flow",
+      "status-pages",
+      "transaction-ui",
+      "checkout",
+      "mobile-wallet"
+    ],
+    "extraction_targets": [
+      "amount-merchant-status-hierarchy",
+      "mandatory-optional-elements",
+      "payment-result-states",
+      "transaction-detail-access",
+      "next-action-clarity"
+    ],
+    "avoid_when": [
+      "alipay-brand-copy",
+      "non-payment-product",
+      "platform-specific-rules-as-global",
+      "unlicensed-brand-assets"
+    ],
     "application_guidance": "Use this as an Asia payment comparator for Korean fintech and commerce: generalize amount, merchant, status, next action, and transaction detail hierarchy without copying Alipay+ branding or partner-only requirements."
+  },
+  {
+    "id": "threejs-examples",
+    "name": "three.js Official Examples",
+    "type": "3d-webgl-example-catalog",
+    "url": "https://threejs.org/examples/",
+    "license": "MIT for three.js project and examples; verify third-party assets used inside individual examples",
+    "live_sources": [
+      {
+        "url": "https://threejs.org/examples/",
+        "kind": "html",
+        "license": "MIT project examples"
+      },
+      {
+        "url": "https://github.com/mrdoob/three.js/blob/dev/LICENSE",
+        "kind": "license",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "3d",
+      "webgl",
+      "threejs",
+      "interactive",
+      "gltf",
+      "shader",
+      "postprocessing",
+      "webxr"
+    ],
+    "strengths": [
+      "broad WebGL technique coverage",
+      "official three.js implementation patterns",
+      "loader and material examples",
+      "performance-oriented instancing and LOD examples"
+    ],
+    "use_for": [
+      "3D technique selection",
+      "WebGL hero patterns",
+      "product model interaction",
+      "shader and postprocessing references",
+      "loader capability checks"
+    ],
+    "product_fit": [
+      "3d-landing-page",
+      "developer-tool",
+      "ai-product",
+      "product-showcase",
+      "immersive-site"
+    ],
+    "visual_traits": [
+      "technical",
+      "interactive",
+      "dimensional",
+      "experimental",
+      "render-driven"
+    ],
+    "page_patterns": [
+      "3d-hero",
+      "interactive-model-viewer",
+      "shader-background",
+      "scroll-scene",
+      "xr-demo",
+      "visual-lab"
+    ],
+    "implementation_fit": [
+      "threejs",
+      "webgl",
+      "gltf",
+      "webgpu",
+      "javascript",
+      "canvas"
+    ],
+    "extraction_targets": [
+      "loaders",
+      "materials",
+      "lighting",
+      "postprocessing",
+      "raycasting",
+      "instancing",
+      "fallback-boundaries"
+    ],
+    "avoid_when": [
+      "static-marketing-site",
+      "no-webgl-budget",
+      "strict-accessibility-no-canvas",
+      "brand-clone-request"
+    ],
+    "application_guidance": "Use this as the official WebGL technique atlas for 3D homepage decisions; translate loader, material, lighting, shader, and interaction patterns into original product-specific 3D sections with static fallbacks."
+  },
+  {
+    "id": "react-three-fiber-examples",
+    "name": "React Three Fiber Examples",
+    "type": "react-3d-example-catalog",
+    "url": "https://r3f.docs.pmnd.rs/getting-started/examples",
+    "license": "React Three Fiber is MIT; verify individual demo assets and linked sandboxes separately",
+    "live_sources": [
+      {
+        "url": "https://r3f.docs.pmnd.rs/getting-started/examples",
+        "kind": "html",
+        "license": "Documentation/example gallery"
+      },
+      {
+        "url": "https://github.com/pmndrs/react-three-fiber/blob/master/LICENSE",
+        "kind": "license",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "3d",
+      "react",
+      "r3f",
+      "webgl",
+      "product-configurator",
+      "scroll",
+      "gltf",
+      "landing-page"
+    ],
+    "strengths": [
+      "React-native 3D composition patterns",
+      "polished product configurator examples",
+      "Drei and postprocessing ecosystem fit",
+      "scroll and portal interaction examples"
+    ],
+    "use_for": [
+      "React 3D landing sections",
+      "product configurators",
+      "scroll-driven scenes",
+      "HTML and WebGL composition",
+      "interactive feature demos"
+    ],
+    "product_fit": [
+      "react-app",
+      "nextjs-site",
+      "saas",
+      "commerce",
+      "developer-tool",
+      "ai-product"
+    ],
+    "visual_traits": [
+      "polished",
+      "interactive",
+      "modern",
+      "componentized",
+      "immersive"
+    ],
+    "page_patterns": [
+      "scroll-3d-story",
+      "product-configurator",
+      "interactive-gallery",
+      "3d-card-grid",
+      "annotated-model"
+    ],
+    "implementation_fit": [
+      "react",
+      "react-three-fiber",
+      "drei",
+      "threejs",
+      "nextjs",
+      "gltfjsx"
+    ],
+    "extraction_targets": [
+      "component-composition",
+      "canvas-layout",
+      "scroll-controls",
+      "html-overlays",
+      "model-loading",
+      "adaptive-quality"
+    ],
+    "avoid_when": [
+      "non-react-stack",
+      "seo-only-static-page",
+      "asset-license-unknown",
+      "continuous-motion-without-fallback"
+    ],
+    "application_guidance": "Use this for React-first 3D interaction planning; adapt configurator, scroll, annotation, and WebGL-plus-HTML composition patterns into project-specific sections while checking every demo asset separately."
+  },
+  {
+    "id": "drei",
+    "name": "pmndrs Drei",
+    "type": "react-3d-component-library",
+    "url": "https://drei.docs.pmnd.rs/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://drei.docs.pmnd.rs/",
+        "kind": "html",
+        "license": "MIT project docs"
+      },
+      {
+        "url": "https://github.com/pmndrs/drei/blob/master/LICENSE",
+        "kind": "license",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "3d",
+      "react",
+      "r3f",
+      "drei",
+      "webgl",
+      "components",
+      "controls",
+      "text3d"
+    ],
+    "strengths": [
+      "production-ready R3F helpers",
+      "common 3D UI controls",
+      "environment and shadow primitives",
+      "HTML overlay integration"
+    ],
+    "use_for": [
+      "3D component vocabulary",
+      "presentation controls",
+      "scroll controls",
+      "environment lighting",
+      "3D text and annotations"
+    ],
+    "product_fit": [
+      "react-app",
+      "nextjs-site",
+      "developer-tool",
+      "product-showcase",
+      "interactive-docs"
+    ],
+    "visual_traits": [
+      "componentized",
+      "controlled",
+      "layered",
+      "polished",
+      "reusable"
+    ],
+    "page_patterns": [
+      "presentation-3d",
+      "floating-object",
+      "annotated-model",
+      "scroll-scene",
+      "environment-lit-hero"
+    ],
+    "implementation_fit": [
+      "react-three-fiber",
+      "drei",
+      "threejs",
+      "typescript",
+      "nextjs"
+    ],
+    "extraction_targets": [
+      "controls",
+      "html-overlays",
+      "lighting",
+      "shadows",
+      "text",
+      "asset-loading",
+      "interaction-states"
+    ],
+    "avoid_when": [
+      "non-react-stack",
+      "simple-static-image",
+      "team-cannot-maintain-webgl",
+      "motion-heavy-without-controls"
+    ],
+    "application_guidance": "Use this as the reusable component vocabulary for React 3D pages; apply controls, lighting, shadows, text, and HTML overlay primitives to specify maintainable 3D sections rather than bespoke canvas code."
+  },
+  {
+    "id": "model-viewer",
+    "name": "Google model-viewer",
+    "type": "3d-web-component-standard",
+    "url": "https://modelviewer.dev/docs/",
+    "license": "Apache-2.0 for model-viewer; sample models use mixed licenses and require per-asset review",
+    "live_sources": [
+      {
+        "url": "https://modelviewer.dev/docs/",
+        "kind": "html",
+        "license": "Apache-2.0 project docs"
+      },
+      {
+        "url": "https://modelviewer.dev/examples/loading/",
+        "kind": "html",
+        "license": "Apache-2.0 project docs"
+      },
+      {
+        "url": "https://github.com/google/model-viewer/blob/master/LICENSE",
+        "kind": "license",
+        "license": "Apache-2.0"
+      }
+    ],
+    "tags": [
+      "3d",
+      "gltf",
+      "glb",
+      "model-viewer",
+      "web-component",
+      "ar",
+      "accessibility",
+      "poster",
+      "lazy-loading"
+    ],
+    "strengths": [
+      "simple GLB/GLTF embedding",
+      "built-in accessibility attributes",
+      "poster and manual reveal loading",
+      "AR and camera control support"
+    ],
+    "use_for": [
+      "product model embeds",
+      "3D viewer sections",
+      "AR-ready product previews",
+      "lazy 3D loading",
+      "accessible model descriptions"
+    ],
+    "product_fit": [
+      "commerce",
+      "product-showcase",
+      "hardware",
+      "education",
+      "saas",
+      "mobile-first-site"
+    ],
+    "visual_traits": [
+      "focused",
+      "product-centered",
+      "accessible",
+      "controlled",
+      "fallback-friendly"
+    ],
+    "page_patterns": [
+      "product-viewer",
+      "manual-load-3d",
+      "poster-to-model",
+      "ar-preview",
+      "annotated-object"
+    ],
+    "implementation_fit": [
+      "web-component",
+      "gltf",
+      "glb",
+      "html",
+      "ar",
+      "progressive-enhancement"
+    ],
+    "extraction_targets": [
+      "alt-text",
+      "poster",
+      "lazy-loading",
+      "manual-reveal",
+      "touch-action",
+      "camera-controls",
+      "decoder-configuration",
+      "fallback-state"
+    ],
+    "avoid_when": [
+      "custom-shader-scene",
+      "large-game-like-world",
+      "unsupported-model-format",
+      "sample-asset-license-unknown"
+    ],
+    "application_guidance": "Use this for practical 3D product embeds: specify alt text, poster, lazy or manual reveal, touch behavior, camera controls, decoder setup, and graceful fallback before any custom WebGL work."
+  },
+  {
+    "id": "khronos-gltf",
+    "name": "Khronos glTF Runtime 3D Asset Delivery",
+    "type": "3d-format-standard",
+    "url": "https://www.khronos.org/gltf/",
+    "license": "Royalty-free Khronos specification; individual sample assets have separate licenses",
+    "live_sources": [
+      {
+        "url": "https://www.khronos.org/gltf/",
+        "kind": "html",
+        "license": "Khronos public specification page"
+      }
+    ],
+    "tags": [
+      "3d",
+      "gltf",
+      "glb",
+      "format",
+      "runtime",
+      "asset-delivery",
+      "standard",
+      "interoperability"
+    ],
+    "strengths": [
+      "royalty-free 3D delivery standard",
+      "compact runtime asset format",
+      "broad viewer and tool ecosystem",
+      "clear model component vocabulary"
+    ],
+    "use_for": [
+      "3D asset format decisions",
+      "GLB delivery guidance",
+      "viewer compatibility checks",
+      "model metadata planning",
+      "extension support review"
+    ],
+    "product_fit": [
+      "3d-landing-page",
+      "commerce",
+      "education",
+      "developer-tool",
+      "product-showcase",
+      "immersive-site"
+    ],
+    "visual_traits": [
+      "standardized",
+      "portable",
+      "efficient",
+      "structured",
+      "implementation-ready"
+    ],
+    "page_patterns": [
+      "3d-asset-spec",
+      "model-viewer",
+      "technical-qa",
+      "asset-pipeline",
+      "format-checklist"
+    ],
+    "implementation_fit": [
+      "gltf",
+      "glb",
+      "threejs",
+      "model-viewer",
+      "r3f",
+      "asset-pipeline"
+    ],
+    "extraction_targets": [
+      "format-choice",
+      "scene-structure",
+      "materials",
+      "textures",
+      "animations",
+      "extensions",
+      "runtime-efficiency"
+    ],
+    "avoid_when": [
+      "proprietary-only-models",
+      "unverified-extension-support",
+      "license-metadata-missing",
+      "static-illustration-only"
+    ],
+    "application_guidance": "Use this to ground 3D asset delivery in GLB/GLTF standards; document format, scene components, materials, textures, animations, and extension support before selecting a viewer or interaction pattern."
+  },
+  {
+    "id": "gltf-validator",
+    "name": "Khronos glTF Validator",
+    "type": "3d-asset-quality-gate",
+    "url": "https://github.khronos.org/glTF-Validator/",
+    "license": "Official Khronos validator; verify repository license for redistributed tooling",
+    "live_sources": [
+      {
+        "url": "https://github.khronos.org/glTF-Validator/",
+        "kind": "html",
+        "license": "Official Khronos validator page"
+      }
+    ],
+    "tags": [
+      "3d",
+      "gltf",
+      "glb",
+      "validator",
+      "quality-gate",
+      "qa",
+      "performance",
+      "asset-health"
+    ],
+    "strengths": [
+      "browser-local validation",
+      "official glTF conformance checks",
+      "CLI and NPM availability",
+      "machine-readable asset issue reporting"
+    ],
+    "use_for": [
+      "3D asset QA",
+      "GLB validation",
+      "catalog health metadata",
+      "pre-implementation checks",
+      "CI quality gate"
+    ],
+    "product_fit": [
+      "developer-tool",
+      "3d-landing-page",
+      "commerce",
+      "education",
+      "product-showcase"
+    ],
+    "visual_traits": [
+      "validated",
+      "reliable",
+      "technical",
+      "quality-focused",
+      "implementation-ready"
+    ],
+    "page_patterns": [
+      "asset-health-report",
+      "qa-checklist",
+      "validator-output",
+      "implementation-readiness",
+      "catalog-metadata"
+    ],
+    "implementation_fit": [
+      "gltf",
+      "glb",
+      "ci",
+      "npm",
+      "cli",
+      "asset-pipeline"
+    ],
+    "extraction_targets": [
+      "validation-errors",
+      "validation-warnings",
+      "format-compliance",
+      "texture-issues",
+      "mesh-issues",
+      "metadata-health"
+    ],
+    "avoid_when": [
+      "no-model-file-access",
+      "visual-inspiration-only",
+      "non-gltf-source",
+      "third-party-asset-cannot-be-fixed"
+    ],
+    "application_guidance": "Use this as the mechanical quality gate for GLB/GLTF candidates; convert validation errors, warnings, and asset health details into implementation-readiness notes for generated design docs."
+  },
+  {
+    "id": "gltf-transform",
+    "name": "glTF Transform CLI",
+    "type": "3d-asset-optimization-tool",
+    "url": "https://gltf-transform.dev/cli",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://gltf-transform.dev/cli",
+        "kind": "html",
+        "license": "MIT project docs"
+      },
+      {
+        "url": "https://github.com/donmccurdy/glTF-Transform",
+        "kind": "repository",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "3d",
+      "gltf",
+      "glb",
+      "optimization",
+      "performance",
+      "compression",
+      "ktx2",
+      "meshopt",
+      "draco"
+    ],
+    "strengths": [
+      "inspect and optimize GLB assets",
+      "texture and geometry compression pipeline",
+      "validation and reporting support",
+      "automation-friendly CLI"
+    ],
+    "use_for": [
+      "3D asset optimization",
+      "performance budgets",
+      "texture compression",
+      "draw-call reduction",
+      "CI asset checks"
+    ],
+    "product_fit": [
+      "3d-landing-page",
+      "commerce",
+      "developer-tool",
+      "product-showcase",
+      "mobile-first-site"
+    ],
+    "visual_traits": [
+      "optimized",
+      "efficient",
+      "implementation-ready",
+      "measured",
+      "portable"
+    ],
+    "page_patterns": [
+      "asset-optimization-pipeline",
+      "performance-budget",
+      "before-after-model",
+      "mobile-3d-checklist",
+      "qa-report"
+    ],
+    "implementation_fit": [
+      "gltf",
+      "glb",
+      "cli",
+      "ci",
+      "ktx2",
+      "meshopt",
+      "draco"
+    ],
+    "extraction_targets": [
+      "file-size",
+      "texture-size",
+      "compression",
+      "deduplication",
+      "pruning",
+      "draw-calls",
+      "mobile-performance"
+    ],
+    "avoid_when": [
+      "derivative-assets-not-allowed",
+      "precision-critical-cad",
+      "animation-hierarchy-fragile",
+      "no-visual-regression-budget"
+    ],
+    "application_guidance": "Use this to turn 3D asset choices into measurable budgets; specify inspect, validate, resize, compress, deduplicate, and visual-check steps before recommending a model for mobile web."
+  },
+  {
+    "id": "poly-haven",
+    "name": "Poly Haven",
+    "type": "cc0-3d-asset-library",
+    "url": "https://polyhaven.com/",
+    "license": "CC0 for assets; website content, metadata, thumbnails, logos, and API terms are separate",
+    "live_sources": [
+      {
+        "url": "https://polyhaven.com/license",
+        "kind": "html",
+        "license": "CC0 asset license"
+      }
+    ],
+    "tags": [
+      "3d",
+      "cc0",
+      "assets",
+      "models",
+      "hdri",
+      "textures",
+      "pbr",
+      "lighting"
+    ],
+    "strengths": [
+      "high-quality CC0 assets",
+      "HDRI lighting resources",
+      "PBR texture and model coverage",
+      "commercial-friendly asset sourcing"
+    ],
+    "use_for": [
+      "safe 3D asset sourcing",
+      "PBR material references",
+      "environment lighting",
+      "realistic product renders",
+      "hero scene mood"
+    ],
+    "product_fit": [
+      "3d-landing-page",
+      "commerce",
+      "product-showcase",
+      "creative-portfolio",
+      "education",
+      "saas"
+    ],
+    "visual_traits": [
+      "realistic",
+      "premium",
+      "material-rich",
+      "well-lit",
+      "cinematic"
+    ],
+    "page_patterns": [
+      "3d-hero-object",
+      "environment-lit-scene",
+      "material-swatch",
+      "product-render",
+      "visual-moodboard"
+    ],
+    "implementation_fit": [
+      "gltf",
+      "hdr",
+      "exr",
+      "pbr",
+      "threejs",
+      "model-viewer",
+      "r3f"
+    ],
+    "extraction_targets": [
+      "asset-license",
+      "lighting",
+      "materials",
+      "texture-scale",
+      "environment-map",
+      "render-mood",
+      "attribution-policy"
+    ],
+    "avoid_when": [
+      "copying-site-content",
+      "metadata-scraping",
+      "brand-specific-asset-needed",
+      "low-bandwidth-static-page"
+    ],
+    "application_guidance": "Use this as a safe CC0 source for realistic 3D mood, materials, HDRI lighting, and model choices; keep website identity and metadata out of generated work while adapting asset qualities."
+  },
+  {
+    "id": "kenney-assets",
+    "name": "Kenney Assets",
+    "type": "cc0-game-and-3d-asset-library",
+    "url": "https://kenney.nl/assets",
+    "license": "Kenney game assets are commonly CC0; verify the license shown on each asset page before reuse",
+    "live_sources": [
+      {
+        "url": "https://kenney.nl/assets",
+        "kind": "html",
+        "license": "Asset pages show per-pack license"
+      }
+    ],
+    "tags": [
+      "3d",
+      "cc0",
+      "low-poly",
+      "game-assets",
+      "modular",
+      "icons",
+      "casual",
+      "friendly"
+    ],
+    "strengths": [
+      "large low-poly 3D kit catalog",
+      "modular scene packs",
+      "friendly game-like visual language",
+      "broad UI and asset ecosystem"
+    ],
+    "use_for": [
+      "casual 3D landing style",
+      "gamified onboarding",
+      "modular scene construction",
+      "friendly SaaS illustration",
+      "education and creator tools"
+    ],
+    "product_fit": [
+      "education",
+      "game-adjacent-product",
+      "creator-tool",
+      "children-family",
+      "casual-saas",
+      "community-site"
+    ],
+    "visual_traits": [
+      "friendly",
+      "low-poly",
+      "playful",
+      "modular",
+      "approachable"
+    ],
+    "page_patterns": [
+      "low-poly-hero",
+      "modular-world",
+      "gamified-feature-grid",
+      "3d-empty-state",
+      "scene-kit"
+    ],
+    "implementation_fit": [
+      "gltf",
+      "obj",
+      "game-assets",
+      "threejs",
+      "r3f",
+      "static-render"
+    ],
+    "extraction_targets": [
+      "modular-asset-system",
+      "low-poly-style",
+      "color-blocking",
+      "scene-composition",
+      "gamified-metaphor",
+      "license-check"
+    ],
+    "avoid_when": [
+      "luxury-premium-brand",
+      "photoreal-product",
+      "unverified-pack-license",
+      "exact-game-asset-copy"
+    ],
+    "application_guidance": "Use this for approachable low-poly and gamified 3D direction; translate modular scene logic, friendly proportions, and clear color blocking into original product-specific visuals after checking each pack license."
+  },
+  {
+    "id": "3dicons",
+    "name": "3dicons",
+    "type": "cc0-3d-icon-library",
+    "url": "https://3dicons.co/",
+    "license": "CC0 for the current open 3dicons version; Pro or premium collections may use separate terms",
+    "live_sources": [
+      {
+        "url": "https://3dicons.co/",
+        "kind": "html",
+        "license": "CC0 current version"
+      },
+      {
+        "url": "https://github.com/realvjy/3dicons",
+        "kind": "repository",
+        "license": "CC0-1.0"
+      }
+    ],
+    "tags": [
+      "3d",
+      "cc0",
+      "icons",
+      "feature-cards",
+      "figma",
+      "landing-page",
+      "soft-shadow",
+      "clay"
+    ],
+    "strengths": [
+      "ready-to-use 3D icon renders",
+      "multiple styles and camera angles",
+      "feature-card friendly metaphors",
+      "Figma and design workflow fit"
+    ],
+    "use_for": [
+      "3D feature icons",
+      "landing page cards",
+      "empty states",
+      "presentation visuals",
+      "friendly product metaphors"
+    ],
+    "product_fit": [
+      "saas",
+      "ai-product",
+      "developer-tool",
+      "education",
+      "startup-landing",
+      "creator-tool"
+    ],
+    "visual_traits": [
+      "soft",
+      "friendly",
+      "dimensional",
+      "iconic",
+      "clay-like",
+      "presentation-ready"
+    ],
+    "page_patterns": [
+      "feature-icon-grid",
+      "benefit-card",
+      "3d-empty-state",
+      "hero-supporting-icons",
+      "presentation-section"
+    ],
+    "implementation_fit": [
+      "figma",
+      "static-render",
+      "png",
+      "design-system",
+      "homepage"
+    ],
+    "extraction_targets": [
+      "icon-metaphors",
+      "camera-angles",
+      "shadow-style",
+      "material-style",
+      "feature-card-rhythm",
+      "cc0-asset-policy"
+    ],
+    "avoid_when": [
+      "custom-brand-illustration-required",
+      "pro-collection-without-terms",
+      "photoreal-3d",
+      "exact-icon-set-clone"
+    ],
+    "application_guidance": "Use this for safe 3D icon and feature-card language; adapt camera angles, soft shadows, material treatment, and metaphor density into original icon systems for SaaS and AI product pages."
+  },
+  {
+    "id": "ambientcg",
+    "name": "ambientCG",
+    "type": "cc0-pbr-material-library",
+    "url": "https://ambientcg.com/",
+    "license": "CC0 1.0 for downloadable asset files and material preview renders",
+    "live_sources": [
+      {
+        "url": "https://ambientcg.com/license",
+        "kind": "html",
+        "license": "CC0 1.0"
+      }
+    ],
+    "tags": [
+      "3d",
+      "cc0",
+      "pbr",
+      "materials",
+      "textures",
+      "surface",
+      "rendering",
+      "asset"
+    ],
+    "strengths": [
+      "CC0 PBR material library",
+      "commercial-friendly raw file use",
+      "material preview renders",
+      "surface realism for 3D scenes"
+    ],
+    "use_for": [
+      "3D material direction",
+      "surface texture references",
+      "PBR token language",
+      "product render realism",
+      "background planes"
+    ],
+    "product_fit": [
+      "3d-landing-page",
+      "commerce",
+      "architecture",
+      "product-showcase",
+      "creative-portfolio"
+    ],
+    "visual_traits": [
+      "textural",
+      "realistic",
+      "surface-focused",
+      "material-rich",
+      "grounded"
+    ],
+    "page_patterns": [
+      "material-swatch",
+      "texture-closeup",
+      "product-surface",
+      "realistic-ground-plane",
+      "render-style-guide"
+    ],
+    "implementation_fit": [
+      "pbr",
+      "textures",
+      "threejs",
+      "r3f",
+      "blender",
+      "model-viewer"
+    ],
+    "extraction_targets": [
+      "material-properties",
+      "texture-scale",
+      "surface-detail",
+      "roughness-metalness",
+      "normal-maps",
+      "cc0-credit-copy"
+    ],
+    "avoid_when": [
+      "flat-vector-only-brand",
+      "large-texture-budget-unavailable",
+      "unoptimized-mobile-scene",
+      "brand-palette-only-task"
+    ],
+    "application_guidance": "Use this for CC0 PBR material direction; translate surface scale, roughness, normal detail, and material preview behavior into lightweight render guidance with mobile texture budgets."
+  },
+  {
+    "id": "codrops-threejs-demos",
+    "name": "Codrops Three.js and WebGL Demos",
+    "type": "webgl-interaction-tutorial-catalog",
+    "url": "https://tympanus.net/codrops/tag/three-js/",
+    "license": "Codrops demo code is commonly MIT unless otherwise stated; article media and demo assets require separate checks",
+    "live_sources": [
+      {
+        "url": "https://tympanus.net/codrops/tag/three-js/",
+        "kind": "html",
+        "license": "Tutorial pages with per-demo terms"
+      },
+      {
+        "url": "https://tympanus.net/codrops/licensing/",
+        "kind": "html",
+        "license": "Codrops licensing guidance"
+      }
+    ],
+    "tags": [
+      "3d",
+      "webgl",
+      "threejs",
+      "shader",
+      "interaction",
+      "gallery",
+      "scroll",
+      "tutorial"
+    ],
+    "strengths": [
+      "practical WebGL interaction tutorials",
+      "shader and image transition patterns",
+      "high-quality landing and gallery demos",
+      "implementation walkthroughs"
+    ],
+    "use_for": [
+      "interactive landing effects",
+      "WebGL image galleries",
+      "shader transitions",
+      "scroll storytelling",
+      "creative product reveals"
+    ],
+    "product_fit": [
+      "creative-agency",
+      "portfolio",
+      "immersive-site",
+      "product-launch",
+      "editorial",
+      "ai-product"
+    ],
+    "visual_traits": [
+      "experimental",
+      "motion-rich",
+      "editorial",
+      "immersive",
+      "high-impact"
+    ],
+    "page_patterns": [
+      "webgl-gallery",
+      "shader-transition",
+      "scroll-reveal",
+      "3d-product-grid",
+      "interactive-hero"
+    ],
+    "implementation_fit": [
+      "threejs",
+      "webgl",
+      "gsap",
+      "shader",
+      "javascript",
+      "canvas"
+    ],
+    "extraction_targets": [
+      "transition-logic",
+      "shader-uniforms",
+      "scroll-orchestration",
+      "image-to-texture",
+      "motion-timing",
+      "asset-license-split"
+    ],
+    "avoid_when": [
+      "plain-enterprise-dashboard",
+      "no-motion-accessibility-plan",
+      "asset-license-unknown",
+      "performance-budget-small"
+    ],
+    "application_guidance": "Use this for high-impact WebGL interaction patterns; translate shader transitions, scroll choreography, and image-to-texture techniques into original experiences with separate checks for code and media assets."
+  },
+  {
+    "id": "model-viewer-loading",
+    "name": "model-viewer Lazy Loading and Manual Reveal",
+    "type": "3d-loading-accessibility-pattern",
+    "url": "https://modelviewer.dev/examples/loading/",
+    "license": "Apache-2.0 for model-viewer examples; displayed sample models require per-asset license checks",
+    "live_sources": [
+      {
+        "url": "https://modelviewer.dev/examples/loading/",
+        "kind": "html",
+        "license": "Apache-2.0 project examples"
+      }
+    ],
+    "tags": [
+      "3d",
+      "model-viewer",
+      "gltf",
+      "glb",
+      "lazy-loading",
+      "poster",
+      "manual-reveal",
+      "accessibility",
+      "performance",
+      "reduced-motion"
+    ],
+    "strengths": [
+      "poster-first 3D loading patterns",
+      "manual reveal for heavy models",
+      "invalid model fallback behavior",
+      "touch and alt attribute examples"
+    ],
+    "use_for": [
+      "3D loading UX",
+      "poster fallback",
+      "manual model reveal",
+      "performance-safe hero",
+      "accessible product preview"
+    ],
+    "product_fit": [
+      "commerce",
+      "product-showcase",
+      "mobile-first-site",
+      "saas",
+      "education",
+      "hardware"
+    ],
+    "visual_traits": [
+      "controlled",
+      "fallback-friendly",
+      "accessible",
+      "performance-aware",
+      "product-focused"
+    ],
+    "page_patterns": [
+      "poster-first-3d",
+      "load-3d-button",
+      "fallback-poster",
+      "lazy-product-viewer",
+      "mobile-touch-viewer"
+    ],
+    "implementation_fit": [
+      "model-viewer",
+      "html",
+      "web-component",
+      "gltf",
+      "glb",
+      "progressive-enhancement"
+    ],
+    "extraction_targets": [
+      "poster",
+      "manual-reveal",
+      "lazy-loading",
+      "alt-text",
+      "touch-action",
+      "fallback-state",
+      "load-button-copy"
+    ],
+    "avoid_when": [
+      "no-static-poster",
+      "mandatory-eager-3d",
+      "unsupported-format",
+      "sample-model-license-unknown"
+    ],
+    "application_guidance": "Use this to make 3D sections load safely: define poster-first states, manual reveal controls, alt text, touch behavior, and model failure fallback before adding animation or AR features."
+  },
+  {
+    "id": "mdn-webgl-best-practices",
+    "name": "MDN WebGL Best Practices",
+    "type": "webgl-performance-accessibility-reference",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices",
+    "license": "MDN content license applies; attribute MDN when reusing text",
+    "live_sources": [
+      {
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices",
+        "kind": "html",
+        "license": "MDN documentation license"
+      }
+    ],
+    "tags": [
+      "3d",
+      "webgl",
+      "performance",
+      "accessibility",
+      "mobile",
+      "gpu",
+      "context-loss",
+      "canvas",
+      "qa"
+    ],
+    "strengths": [
+      "browser-level WebGL stability guidance",
+      "mobile and GPU constraint framing",
+      "resource cleanup practices",
+      "extension and context-loss handling"
+    ],
+    "use_for": [
+      "WebGL quality gates",
+      "mobile 3D performance",
+      "canvas fallback planning",
+      "GPU budget checks",
+      "renderer lifecycle review"
+    ],
+    "product_fit": [
+      "3d-landing-page",
+      "developer-tool",
+      "product-showcase",
+      "immersive-site",
+      "mobile-first-site"
+    ],
+    "visual_traits": [
+      "stable",
+      "efficient",
+      "defensive",
+      "technical",
+      "device-aware"
+    ],
+    "page_patterns": [
+      "webgl-qa-checklist",
+      "mobile-render-budget",
+      "context-loss-fallback",
+      "performance-notes",
+      "technical-design-doc"
+    ],
+    "implementation_fit": [
+      "webgl",
+      "threejs",
+      "r3f",
+      "canvas",
+      "javascript",
+      "performance-qa"
+    ],
+    "extraction_targets": [
+      "resource-cleanup",
+      "extension-fallbacks",
+      "texture-limits",
+      "context-loss",
+      "gpu-memory",
+      "blocking-calls",
+      "mobile-constraints"
+    ],
+    "avoid_when": [
+      "visual-inspiration-only",
+      "no-webgl-implementation",
+      "static-render-only",
+      "team-cannot-maintain-renderer"
+    ],
+    "application_guidance": "Use this to turn WebGL ambition into practical quality rules; specify GPU limits, cleanup, extension fallbacks, context-loss behavior, and mobile render budgets for any custom 3D canvas."
+  },
+  {
+    "id": "web-dev-motion-accessibility",
+    "name": "web.dev Animation and Motion Accessibility",
+    "type": "motion-accessibility-reference",
+    "url": "https://web.dev/learn/accessibility/motion",
+    "license": "Google Developers/web.dev content license applies; verify page footer before reusing text",
+    "live_sources": [
+      {
+        "url": "https://web.dev/learn/accessibility/motion",
+        "kind": "html",
+        "license": "Google Developers content license"
+      },
+      {
+        "url": "https://web.dev/articles/prefers-reduced-motion",
+        "kind": "html",
+        "license": "Google Developers content license"
+      }
+    ],
+    "tags": [
+      "3d",
+      "accessibility",
+      "motion",
+      "reduced-motion",
+      "prefers-reduced-motion",
+      "animation",
+      "webgl",
+      "wcag"
+    ],
+    "strengths": [
+      "motion sensitivity guidance",
+      "prefers-reduced-motion implementation framing",
+      "pause and reduced-motion design principles",
+      "applies directly to auto-rotating 3D heroes"
+    ],
+    "use_for": [
+      "motion-safe 3D design",
+      "reduced-motion fallback",
+      "auto-rotation controls",
+      "parallax and camera motion review",
+      "accessibility checklist"
+    ],
+    "product_fit": [
+      "3d-landing-page",
+      "saas",
+      "commerce",
+      "creative-portfolio",
+      "mobile-first-site",
+      "ai-product"
+    ],
+    "visual_traits": [
+      "motion-safe",
+      "inclusive",
+      "controlled",
+      "calm",
+      "accessible"
+    ],
+    "page_patterns": [
+      "reduced-motion-mode",
+      "pause-stop-hide-control",
+      "static-3d-poster",
+      "motion-toggle",
+      "accessible-animation-spec"
+    ],
+    "implementation_fit": [
+      "css",
+      "javascript",
+      "webgl",
+      "threejs",
+      "r3f",
+      "model-viewer",
+      "accessibility-qa"
+    ],
+    "extraction_targets": [
+      "reduced-motion-plan",
+      "auto-rotate-controls",
+      "parallax-fallback",
+      "camera-motion-limits",
+      "static-poster",
+      "pause-stop-hide"
+    ],
+    "avoid_when": [
+      "motion-essential-without-alternative",
+      "camera-shake-branding",
+      "flashing-effects",
+      "no-pause-control"
+    ],
+    "application_guidance": "Use this to make 3D motion optional and inclusive; require reduced-motion behavior, static poster alternatives, pause controls, and calm camera choreography for animated WebGL or model-viewer sections."
   }
 ]
