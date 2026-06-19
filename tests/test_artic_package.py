@@ -20,6 +20,15 @@ def test_skill_copies_are_in_sync():
 def headings(path: Path):
     return [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.startswith("## ")]
 
+
+def test_readme_hero_image_is_synced():
+    image_re = re.compile(r'<img width="300" height="300" alt=" -7" src="https://github.com/user-attachments/assets/[^"]+" />')
+    expected = image_re.search((ROOT / "README.md").read_text(encoding="utf-8"))
+    assert expected, "README.md missing synced hero image"
+    for rel in README_FILES[1:]:
+        found = image_re.search((ROOT / rel).read_text(encoding="utf-8"))
+        assert found and found.group(0) == expected.group(0), rel
+
 def test_readme_translations_have_synced_structure():
     expected = headings(ROOT / "README.md")
     assert expected
