@@ -30,6 +30,7 @@ Artic は、実装前に参照駆動の AI-native ホームページデザイン
 ```text
 @artic init      # 意図と参照を収集
 @artic start     # DESIGN.md と補助文書を生成
+@artic show      # 安全な静的 preview をレンダリング
 @artic review    # 実装を文書に照らして確認
 ```
 
@@ -53,6 +54,7 @@ marketplace パッケージをインストールします:
 ```text
 /claude-artic:artic init
 /claude-artic:artic start
+/claude-artic:artic show
 ```
 
 自然文でも依頼できます:
@@ -92,6 +94,7 @@ Codex に依頼します:
 ```text
 @artic init
 @artic start
+@artic show
 ```
 
 ### Local checkout fallback
@@ -110,6 +113,7 @@ python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product d
 python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product developer saas" --limit 3 --live-fetch --cache-dir /tmp/artic-cache --fixtures-dir /tmp/no-fixtures --output /tmp/artic-smoke/docs/live-reference-synthesis.md
 python3 skills/artic/scripts/scaffold_artic_files.py --root /tmp/artic-smoke
 python3 skills/artic/scripts/validate_artic_outputs.py --root /tmp/artic-smoke
+python3 skills/artic/scripts/artic_show.py --root .
 python3 skills/artic/scripts/artic_version.py --root .
 python3 skills/artic/scripts/artic_update.py --root .
 ```
@@ -123,8 +127,9 @@ Artic が呼び出されると、エージェントは次を行います:
 3. Search multiple professional/OSS design resources instead of relying on one style.
 4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
 5. Resolve conflicts between references based on the user's project goal.
-6. Run `@artic start` to generate `DESIGN.md` and supporting docs.
-7. Validate the generated design docs before implementation.
+6. `@artic start` で `DESIGN.md` と補助文書を生成します。
+7. `@artic show` で、アプリのソースファイルを変更しない安全な静的 preview `.artic/show/index.html` をレンダリングします。
+8. 実装前に生成されたデザイン文書を検証します。
 
 ## When To Use It
 
@@ -148,6 +153,7 @@ Artic が呼び出されると、エージェントは次を行います:
 | デザインヒアリング開始 | `@artic init` |
 | 高速ヒアリング実行 | `@artic init quick` |
 | 文書をコンパイル | `@artic start` |
+| 安全な静的 preview をレンダリング | `@artic show` |
 | 実装をレビュー | `@artic review the homepage against DESIGN.md` |
 | インストール済み/最新バージョン確認 | `@artic version` |
 | 安全な更新コマンド表示 | `@artic update` |
@@ -168,6 +174,7 @@ DESIGN.md
 docs/design-rules.md
 docs/design-qa-checklist.md
 docs/homepage-design-prompt.md
+.artic/show/index.html     # @artic show が生成する preview 専用ファイル。デフォルトではアプリファイルを変更しません
 ```
 
 ## Repository Layout

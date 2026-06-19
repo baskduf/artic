@@ -30,6 +30,7 @@ Artic 是一个兼容 Claude/Codex 的 skill，用于在实现前创建参考驱
 ```text
 @artic init      # 收集意图和参考
 @artic start     # 生成 DESIGN.md 和辅助文档
+@artic show      # 渲染安全的静态 preview
 @artic review    # 按文档检查实现
 ```
 
@@ -53,6 +54,7 @@ Agent 会在内部处理用户访谈、把 brief 归一化为搜索 facets、检
 ```text
 /claude-artic:artic init
 /claude-artic:artic start
+/claude-artic:artic show
 ```
 
 也可以用自然语言请求：
@@ -92,6 +94,7 @@ codex plugin add codex-artic@artic
 ```text
 @artic init
 @artic start
+@artic show
 ```
 
 ### Local checkout fallback
@@ -110,6 +113,7 @@ python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product d
 python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product developer saas" --limit 3 --live-fetch --cache-dir /tmp/artic-cache --fixtures-dir /tmp/no-fixtures --output /tmp/artic-smoke/docs/live-reference-synthesis.md
 python3 skills/artic/scripts/scaffold_artic_files.py --root /tmp/artic-smoke
 python3 skills/artic/scripts/validate_artic_outputs.py --root /tmp/artic-smoke
+python3 skills/artic/scripts/artic_show.py --root .
 python3 skills/artic/scripts/artic_version.py --root .
 python3 skills/artic/scripts/artic_update.py --root .
 ```
@@ -123,8 +127,9 @@ Artic 被调用后，Agent 会：
 3. Search multiple professional/OSS design resources instead of relying on one style.
 4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
 5. Resolve conflicts between references based on the user's project goal.
-6. Run `@artic start` to generate `DESIGN.md` and supporting docs.
-7. Validate the generated design docs before implementation.
+6. 运行 `@artic start` 生成 `DESIGN.md` 和辅助文档。
+7. 运行 `@artic show` 渲染 `.artic/show/index.html`，作为不会修改应用源码的安全静态 preview。
+8. 在实现前验证生成的设计文档。
 
 ## When To Use It
 
@@ -148,6 +153,7 @@ Artic 被调用后，Agent 会：
 | 开始设计访谈 | `@artic init` |
 | 运行快速访谈 | `@artic init quick` |
 | 编译文档 | `@artic start` |
+| 渲染安全静态 preview | `@artic show` |
 | 审查实现 | `@artic review the homepage against DESIGN.md` |
 | 检查已安装/最新版本 | `@artic version` |
 | 输出安全更新命令 | `@artic update` |
@@ -168,6 +174,7 @@ DESIGN.md
 docs/design-rules.md
 docs/design-qa-checklist.md
 docs/homepage-design-prompt.md
+.artic/show/index.html     # 由 @artic show 生成的 preview 文件；默认不修改应用文件
 ```
 
 ## Repository Layout
