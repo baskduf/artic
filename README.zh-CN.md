@@ -117,9 +117,9 @@ Artic 被调用后，Agent 会：
 
 1. 当首页/设计请求很模糊时，先暂停而不是直接实现。
 2. 运行 `@artic init` 收集 product、audience、goal、vibe、constraints 和 references。
-3. Search multiple professional/OSS design resources instead of relying on one style.
-4. Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.
-5. Resolve conflicts between references based on the user's project goal.
+3. 搜索多个专业/OSS 设计资源，而不是依赖单一风格。
+4. 提取可复用规则：颜色角色、字体层级、间距节奏、组件、动效与可访问性。
+5. 根据用户的项目目标解决不同参考之间的冲突。
 6. 运行 `@artic start`，让 public agent workflow 编写 `.artic/strategy.json`、保存 `docs/artic-strategy.md`，再运行 compiler 生成 `DESIGN.md` 和辅助文档。
 7. 运行 `@artic show`，基于 strategy artifacts 渲染 `.artic/show/index.html`，作为不会修改应用源码的安全静态 preview。
 8. 运行 `@artic review`，把实现与 `.artic/strategy.json`、`docs/artic-strategy.md`、`DESIGN.md` 对比，并验证生成的设计文档。
@@ -128,10 +128,10 @@ Artic 被调用后，Agent 会：
 
 适合用于：
 
-- Homepages, landing pages, product pages, and website redesigns.
-- Projects with weak or missing design docs.
-- AI-native design documentation before coding.
-- Reference-driven design direction without exact brand copying.
+- 主页、落地页、产品页和网站改版。
+- 设计文档薄弱或缺失的项目。
+- 编码前的 AI-native 设计文档。
+- 不精确复制品牌的参考驱动设计方向。
 
 不适合用于：
 
@@ -157,7 +157,7 @@ Artic 被调用后，Agent 会：
 
 ## Output Policy
 
-Artic writes durable files instead of dumping long design prose into chat:
+Artic 会写入持久文件，而不是把大段设计说明直接倾倒到聊天里：
 
 ```text
 .artic/init-session.json   # draft interview state from @artic init
@@ -194,7 +194,7 @@ python3 -m pip install pytest pyyaml
 python3 -m pytest -q
 ```
 
-CI validates Python scripts, JSON manifests, README translation structure, skill-copy sync, smoke scaffolding, warning-free DESIGN.md lint, and marketplace plugin layout.
+CI 会验证 Python 脚本、JSON 清单、README 翻译结构、skill copy 同步、smoke scaffold、无警告 DESIGN.md lint，以及 marketplace plugin layout。
 
 Distribution note: the wheel is metadata-only; marketplace packages, release tarballs, and sdists carry the skill/plugin payload.
 

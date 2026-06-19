@@ -44,7 +44,14 @@ def assert_no_finalized_artic_outputs(root: Path):
 
 def write_fixture_strategy(root: Path, source_ids: list[str] | None = None, north_star: str | None = None) -> dict:
     """Write a minimal valid strategy-first contract fixture for @artic start."""
-    source_ids = ["voltagent-awesome-design-md", "shadcn-ui", "material-design"] if source_ids is None else source_ids
+    if source_ids is None:
+        references_path = root / ".artic" / "references.json"
+        if references_path.exists():
+            references = json.loads(references_path.read_text(encoding="utf-8"))
+            selected = references.get("selected_sources", []) if isinstance(references, dict) else []
+            source_ids = [str(row["id"]) for row in selected if isinstance(row, dict) and row.get("id")][:3]
+        else:
+            source_ids = ["shopify-polaris", "shadcn-ui", "tailwind-css"]
     north_star = north_star or "Make the product feel like a calm command center for proof-rich decisions."
     reference_roles = [
         {
@@ -565,6 +572,12 @@ def test_artic_start_ready_init_without_strategy_writes_prompt_and_refuses_gener
         assert "strategy" in result.stdout.lower()
         assert (root / ".artic" / "strategy-prompt.md").exists()
         assert not (root / "DESIGN.md").exists()
+        assert not (root / ".artic" / "brief.json").exists()
+        assert not (root / ".artic" / "references.json").exists()
+        assert not (root / ".artic" / "state.json").exists()
+        assert not (root / "docs" / "artic-brief.md").exists()
+        session = json.loads((root / ".artic" / "init-session.json").read_text(encoding="utf-8"))
+        assert session["status"] == "ready"
 
 
 def test_artic_start_existing_brief_without_strategy_writes_prompt_and_refuses_generation():
@@ -612,6 +625,93 @@ def test_artic_start_invalid_strategy_reports_validation_errors():
         assert result.returncode != 0
         assert "strategy" in result.stdout.lower()
         assert "design_north_star" in result.stdout or "reference_roles" in result.stdout
+
+
+def test_artic_start_rejects_strategy_roles_for_unselected_sources_before_writing_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "AI Meeting Assistant",
+            "--audience",
+            "sales teams",
+            "--goal",
+            "demo requests",
+            "--vibe",
+            "clean trustworthy saas",
+            "--stack",
+            "React",
+            "--limit",
+            "3",
+        ], check=True, capture_output=True, text=True)
+        write_fixture_strategy(root, source_ids=["not-in-selected-or-catalog"])
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "invalid_strategy_sources" in result.stdout
+        assert "not-in-selected-or-catalog" in result.stdout
+        assert not (root / "DESIGN.md").exists()
+        assert not (root / "docs" / "artic-strategy.md").exists()
+
+
+def test_artic_start_ready_init_invalid_strategy_refuses_without_finalizing_session():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        artic_init_session.create_or_update_session(
+            root,
+            "AI 회의록 서비스",
+            answers={
+                "project": "AI 회의록 서비스",
+                "audience": "스타트업 운영팀과 세일즈팀",
+                "goal": "데모 요청",
+                "vibe": "clean trustworthy mobile-first saas",
+                "stack": "React Tailwind",
+            },
+        )
+        write_fixture_strategy(root)
+        strategy_path = root / ".artic" / "strategy.json"
+        strategy = json.loads(strategy_path.read_text(encoding="utf-8"))
+        strategy.pop("design_north_star")
+        strategy_path.write_text(json.dumps(strategy, indent=2) + "\n", encoding="utf-8")
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "invalid_strategy" in result.stdout
+        for rel in [".artic/brief.json", ".artic/references.json", ".artic/intent.json", ".artic/state.json", "docs/artic-brief.md", "DESIGN.md", "docs/design-rules.md"]:
+            assert not (root / rel).exists(), rel
+        assert (root / ".artic" / "strategy.json").exists()
+
+
+def test_artic_start_ready_init_invalid_strategy_sources_refuses_without_finalizing_session():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        artic_init_session.create_or_update_session(
+            root,
+            "AI 회의록 서비스",
+            answers={
+                "project": "AI 회의록 서비스",
+                "audience": "스타트업 운영팀과 세일즈팀",
+                "goal": "데모 요청",
+                "vibe": "clean trustworthy mobile-first saas",
+                "stack": "React Tailwind",
+            },
+        )
+        write_fixture_strategy(root, source_ids=["not-in-selected-or-catalog"])
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "invalid_strategy_sources" in result.stdout
+        assert "not-in-selected-or-catalog" in result.stdout
+        for rel in [".artic/brief.json", ".artic/references.json", ".artic/intent.json", ".artic/state.json", "docs/artic-brief.md", "DESIGN.md", "docs/design-rules.md"]:
+            assert not (root / rel).exists(), rel
+        assert (root / ".artic" / "strategy.json").exists()
 
 
 def test_artic_start_valid_strategy_generates_strategy_doc_and_design_north_star():
@@ -1019,6 +1119,25 @@ def test_artic_show_blocks_missing_design_inputs_without_creating_preview():
         assert not (Path(tmp) / ".artic" / "show").exists()
 
 
+def test_artic_show_requires_strategy_contract_before_creating_preview():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        (root / ".artic" / "strategy.json").unlink()
+
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_show.py"),
+            "--root",
+            tmp,
+        ], capture_output=True, text=True)
+
+        assert result.returncode == 1
+        payload = json.loads(result.stdout)
+        assert ".artic/strategy.json" in payload["error"]
+        assert not (root / ".artic" / "show" / "index.html").exists()
+
+
 def test_artic_show_generates_static_preview_without_modifying_app_files():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -1188,6 +1307,25 @@ def test_artic_init_session_detects_korean_and_renders_missing_questions():
         questions = session_mod.render_questions(session)
         assert questions
         assert any("타깃" in question for question in questions)
+
+
+def test_artic_init_session_parses_labeled_english_answers_and_surfaces_asset_policy_when_ready():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        session = session_mod.create_or_update_session(
+            Path(tmp),
+            "Project: Payroll SaaS. Audience: HR teams. Goal: demo requests. Vibe: clean trustworthy.",
+        )
+
+        assert session["status"] == "ready"
+        assert session["answers"]["project"] == "Payroll SaaS"
+        assert session["answers"]["audience"] == "HR teams"
+        assert session["answers"]["goal"] == "demo requests"
+        assert session["answers"]["vibe"] == "clean trustworthy"
+        optional_questions = session_mod.render_optional_questions(session)
+        assert any("licensed public assets" in question for question in optional_questions)
+        summary = session_mod.render_ready_summary(session)
+        assert "asset" in summary.lower()
 
 
 def test_artic_init_session_ready_does_not_generate_outputs_before_start():
@@ -2019,6 +2157,8 @@ def test_skill_docs_expose_version_update_start_and_show_commands():
         assert ".artic/show/index.html" in text, rel
         assert "@artic version" in text, rel
         assert "@artic update" in text, rel
+        assert "~/.hermes/skills/creative/artic" not in text, rel
+        assert "<artic-skill>/scripts/validate_artic_outputs.py --root <project-root>" in text, rel
 
 
 def test_skill_docs_expose_shared_catalog_curation_instruction():
@@ -2096,6 +2236,10 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (payload / "plugins/claude-artic/.claude-plugin/plugin.json").write_text("{}", encoding="utf-8")
         (payload / "plugins/codex-artic/.codex-plugin").mkdir(parents=True)
         (payload / "plugins/codex-artic/.codex-plugin/plugin.json").write_text("{}", encoding="utf-8")
+        (payload / ".claude-plugin").mkdir(parents=True)
+        (payload / ".claude-plugin/marketplace.json").write_text("{}", encoding="utf-8")
+        (payload / ".agents/plugins").mkdir(parents=True)
+        (payload / ".agents/plugins/marketplace.json").write_text("{}", encoding="utf-8")
         (payload / "skills/artic/scripts/__pycache__/artic_init.cpython-39.pyc").write_bytes(b"bad")
         with tarfile.open(bad_tar, "w:gz") as tf:
             tf.add(payload, arcname=f"artic-{project_version()}")
@@ -2123,11 +2267,33 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (clean_payload / "plugins/claude-artic/.claude-plugin/plugin.json").write_text("{}", encoding="utf-8")
         (clean_payload / "plugins/codex-artic/.codex-plugin").mkdir(parents=True)
         (clean_payload / "plugins/codex-artic/.codex-plugin/plugin.json").write_text("{}", encoding="utf-8")
+        (clean_payload / ".claude-plugin").mkdir(parents=True)
+        (clean_payload / ".claude-plugin/marketplace.json").write_text("{}", encoding="utf-8")
+        (clean_payload / ".agents/plugins").mkdir(parents=True)
+        (clean_payload / ".agents/plugins/marketplace.json").write_text("{}", encoding="utf-8")
         with tarfile.open(missing_command_tar, "w:gz") as tf:
             tf.add(clean_payload, arcname=f"artic-{project_version()}")
         result = subprocess.run([sys.executable, str(checker), "--require-payload", str(missing_command_tar)], capture_output=True, text=True)
         assert result.returncode != 0
         assert "missing required payload skills/artic/scripts/validate_artic_strategy.py" in result.stdout
+        (clean_payload / "skills/artic/scripts/validate_artic_strategy.py").write_text("", encoding="utf-8")
+
+        missing_marketplace_tar = root / "missing-marketplace.tar.gz"
+        with tarfile.open(missing_marketplace_tar, "w:gz") as tf:
+            tf.add(clean_payload / "skills", arcname=f"artic-{project_version()}/skills")
+            tf.add(clean_payload / "plugins", arcname=f"artic-{project_version()}/plugins")
+        result = subprocess.run([sys.executable, str(checker), "--require-payload", str(missing_marketplace_tar)], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "missing required payload .claude-plugin/marketplace.json" in result.stdout
+
+        unsafe_tar = root / "unsafe.tar.gz"
+        with tarfile.open(unsafe_tar, "w:gz") as tf:
+            unsafe = root / "outside.txt"
+            unsafe.write_text("outside", encoding="utf-8")
+            tf.add(unsafe, arcname="../outside.txt")
+        result = subprocess.run([sys.executable, str(checker), str(unsafe_tar)], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "unsafe archive entry" in result.stdout
 
         good_zip = root / "metadata.whl"
         with zipfile.ZipFile(good_zip, "w") as zf:
@@ -2146,10 +2312,47 @@ def test_skill_archive_builder_excludes_bytecode_from_marketplace_archive():
         assert result.returncode == 0, result.stdout
 
 
+def test_skill_archive_builder_rejects_paths_outside_root():
+    builder = ROOT / "scripts" / "build_skill_archive.py"
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "repo"
+        root.mkdir()
+        outside = Path(tmp) / "outside.txt"
+        outside.write_text("outside", encoding="utf-8")
+        output = Path(tmp) / "out.tar.gz"
+
+        result = subprocess.run([sys.executable, str(builder), "--root", str(root), "--output", str(output), "../outside.txt"], capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "outside archive root" in result.stderr or "outside archive root" in result.stdout
+        assert not output.exists() or output.stat().st_size == 0
+
+
 def test_manifest_excludes_bytecode_from_source_distribution():
     manifest = (ROOT / "MANIFEST.in").read_text(encoding="utf-8")
     assert "global-exclude *.py[cod]" in manifest
     assert "global-exclude __pycache__/*" in manifest
+
+
+def test_localized_readmes_do_not_keep_stale_english_workflow_copy():
+    stale_english = [
+        "Search multiple professional/OSS design resources instead of relying on one style.",
+        "Extract reusable rules: color roles, type hierarchy, spacing rhythm, components, motion, accessibility.",
+        "Resolve conflicts between references based on the user's project goal.",
+        "Homepages, landing pages, product pages, and website redesigns.",
+        "Projects with weak or missing design docs.",
+        "AI-native design documentation before coding.",
+        "Reference-driven design direction without exact brand copying.",
+        "Artic writes durable files instead of dumping long design prose into chat:",
+        "CI validates Python scripts",
+    ]
+    for rel in README_FILES[1:]:
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        for snippet in stale_english:
+            assert snippet not in text, (rel, snippet)
+    traditional = (ROOT / "README.zh-TW.md").read_text(encoding="utf-8")
+    for simplified in ["这个", "创建", "从目前", "稳定"]:
+        assert simplified not in traditional, simplified
 
 
 def test_readmes_document_release_and_ci_expectations():

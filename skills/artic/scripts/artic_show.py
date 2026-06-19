@@ -15,6 +15,7 @@ REQUIRED_INPUTS = [
     "docs/homepage-design-prompt.md",
     ".artic/brief.json",
     ".artic/references.json",
+    ".artic/strategy.json",
 ]
 POLICY_FALLBACK = "Reference policy: extract reusable principles only; do not copy logos, trademarks, proprietary illustrations, or exact layouts."
 POLICY_BY_LOCALE = {

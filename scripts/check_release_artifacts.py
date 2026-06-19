@@ -24,6 +24,8 @@ REQUIRED_PLUGIN_FILES = [
     "skills/artic/templates/strategy-prompt.template.md",
     "plugins/claude-artic/.claude-plugin/plugin.json",
     "plugins/codex-artic/.codex-plugin/plugin.json",
+    ".claude-plugin/marketplace.json",
+    ".agents/plugins/marketplace.json",
 ]
 
 
@@ -42,6 +44,16 @@ def normalize(name: str) -> str:
     if parts and parts[0].startswith("artic-"):
         parts = parts[1:]
     return "/".join(parts)
+
+
+def unsafe_entries(names: list[str]) -> list[str]:
+    bad: list[str] = []
+    for name in names:
+        normalized = name.replace("\\", "/")
+        parts = [part for part in normalized.split("/") if part]
+        if normalized.startswith("/") or ".." in parts or not parts:
+            bad.append(name)
+    return bad
 
 
 def forbidden_entries(names: list[str]) -> list[str]:
@@ -79,6 +91,7 @@ def main() -> int:
             findings.append(f"{archive}: cannot inspect archive: {exc}")
             continue
         bad = forbidden_entries(names)
+        findings.extend(f"{archive}: unsafe archive entry {name}" for name in unsafe_entries(names))
         findings.extend(f"{archive}: forbidden bytecode/cache entry {name}" for name in bad)
         if args.require_payload:
             findings.extend(require_payload(names, archive))

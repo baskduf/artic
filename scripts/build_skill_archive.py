@@ -25,6 +25,17 @@ def should_skip(path: Path) -> bool:
     return "__pycache__" in path.parts or path.name.endswith(FORBIDDEN_SUFFIXES)
 
 
+def safe_relative_path(root: Path, rel: Path) -> Path:
+    if rel.is_absolute() or ".." in rel.parts:
+        raise ValueError(f"path outside archive root: {rel}")
+    path = (root / rel).resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"path outside archive root: {rel}") from exc
+    return path
+
+
 def clean_info(info: tarfile.TarInfo) -> tarfile.TarInfo:
     info.uid = 0
     info.gid = 0
@@ -35,7 +46,7 @@ def clean_info(info: tarfile.TarInfo) -> tarfile.TarInfo:
 
 
 def add_path(tf: tarfile.TarFile, root: Path, rel: Path) -> None:
-    path = root / rel
+    path = safe_relative_path(root, rel)
     if not path.exists():
         raise FileNotFoundError(path)
     if should_skip(rel):
@@ -61,12 +72,16 @@ def main() -> int:
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     include_paths = [Path(path) for path in (args.paths or DEFAULT_INCLUDE_PATHS)]
+    for rel in include_paths:
+        safe_relative_path(root, rel)
 
-    with output.open("wb") as raw:
+    temp_output = output.with_name(output.name + ".tmp")
+    with temp_output.open("wb") as raw:
         with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as gz:
             with tarfile.open(fileobj=gz, mode="w") as tf:
                 for rel in include_paths:
                     add_path(tf, root, rel)
+    temp_output.replace(output)
     print(output)
     return 0
 
