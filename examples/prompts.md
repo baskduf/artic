@@ -18,11 +18,3 @@ References: Linear for clarity, Shopify Polaris for trust/forms, Material for to
 ```
 
 Expected public workflow: the agent writes `.artic/strategy.json` and `docs/artic-strategy.md`, then runs the compiler. If you invoke the raw compiler and strategy is missing, it writes `.artic/strategy-prompt.md` and exits non-zero so the agent can provide design direction.
-
-```text
-@artic show
-```
-
-```text
-@artic review the implemented homepage against .artic/strategy.json, docs/artic-strategy.md, and DESIGN.md
-```
