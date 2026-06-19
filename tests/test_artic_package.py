@@ -55,6 +55,123 @@ def test_catalog_search_smoke():
     assert rows[0]["score"] > 0
 
 
+def test_artic_init_persists_llm_native_language_contract():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "한국어 AI 회의 도우미",
+            "--audience",
+            "한국 스타트업 운영팀",
+            "--goal",
+            "데모 요청",
+            "--vibe",
+            "신뢰감 있고 명확한 모바일 우선 SaaS",
+            "--references",
+            "Linear clarity, Shopify Polaris trust, Material token discipline",
+            "--stack",
+            "React Tailwind",
+            "--locale",
+            "ko-KR",
+            "--tone",
+            "명확하고 전문적인 한국 스타트업 톤",
+            "--preserve-term",
+            "DESIGN.md",
+            "--preserve-term",
+            "AI-native",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        assert payload["language"]["locale"] == "ko-KR"
+        brief = json.loads((Path(tmp) / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        assert brief["language"] == {
+            "locale": "ko-KR",
+            "output_language": "Korean",
+            "tone": "명확하고 전문적인 한국 스타트업 톤",
+            "preserve_terms": ["DESIGN.md", "AI-native"],
+            "bilingual_terms": False,
+        }
+        brief_doc = (Path(tmp) / "docs" / "artic-brief.md").read_text(encoding="utf-8")
+        assert "Language: ko-KR / Korean" in brief_doc
+        assert "Preserve terms: DESIGN.md, AI-native" in brief_doc
+        assert "<!-- artic-policy: reference-safety-v1 -->" in brief_doc
+        assert "참고 정책:" in brief_doc
+        assert "Reference policy:" not in brief_doc
+
+
+def test_validator_accepts_localized_policy_copy_when_invariant_marker_exists():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"),
+            "--root",
+            tmp,
+            "--locale",
+            "ko-KR",
+        ], check=True)
+        for rel in ["DESIGN.md", "docs/design-rules.md", "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md"]:
+            text = (Path(tmp) / rel).read_text(encoding="utf-8")
+            assert "<!-- artic-policy: reference-safety-v1 -->" in text, rel
+            assert "참고 정책:" in text, rel
+            assert "extract reusable principles only" not in text, rel
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode == 0, result.stdout
+
+
+def test_artic_init_rejects_reference_limits_below_validator_minimum():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "AI Meeting Assistant",
+            "--audience",
+            "startup operators",
+            "--goal",
+            "demo requests",
+            "--vibe",
+            "clean trustworthy saas",
+            "--limit",
+            "1",
+        ], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "limit must be >= 3" in result.stdout
+
+
+def test_validator_requires_language_contract_in_brief():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        brief_path = Path(tmp) / ".artic" / "brief.json"
+        brief = json.loads(brief_path.read_text(encoding="utf-8"))
+        brief.pop("language")
+        brief_path.write_text(json.dumps(brief, indent=2), encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "brief missing key: language" in result.stdout
+
+
+def test_validator_checks_quality_tokens_inside_their_own_sections():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        design = Path(tmp) / "DESIGN.md"
+        text = design.read_text(encoding="utf-8")
+        text = text.replace("  sm: 8px\n", "")
+        text = text.replace("  md: 16px\n", "")
+        text = text.replace("  lg: 24px\n", "")
+        design.write_text(text, encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "spacing missing quality token: sm" in result.stdout
+        assert "spacing missing quality token: md" in result.stdout
+        assert "spacing missing quality token: lg" in result.stdout
+
+
 def test_reference_synthesis_smoke_uses_local_fixture_corpus():
     with tempfile.TemporaryDirectory() as tmp:
         output = Path(tmp) / "reference-synthesis.md"
@@ -196,6 +313,18 @@ def test_design_templates_reference_all_declared_color_tokens():
         text = (ROOT / rel).read_text(encoding="utf-8")
         for token in ("primary", "secondary", "accent", "surface", "neutral", "text", "muted", "border"):
             assert f"colors.{token}" in text, (rel, token)
+
+
+def test_rendered_design_template_passes_artic_validator():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        template = (ROOT / "skills/artic/templates/DESIGN.template.md").read_text(encoding="utf-8")
+        rendered = template.replace("{{PROJECT_NAME}}", "Template Smoke Project")
+        rendered = rendered.replace("{{DESIGN_DESCRIPTION}}", "Template-rendered Artic design system.")
+        rendered = rendered.replace("{{OVERVIEW}}", "Template-rendered clean SaaS homepage direction.")
+        (Path(tmp) / "DESIGN.md").write_text(rendered, encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode == 0, result.stdout
 
 
 def test_marketplace_plugin_layout_smoke():

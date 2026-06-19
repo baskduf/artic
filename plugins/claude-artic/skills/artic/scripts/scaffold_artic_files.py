@@ -5,13 +5,46 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 POLICY = "Reference policy: extract reusable principles only; do not copy logos, trademarks, proprietary illustrations, or exact layouts."
+POLICY_MARKER = "<!-- artic-policy: reference-safety-v1 -->"
+POLICY_COPY_BY_LOCALE = {
+    "en-US": POLICY,
+    "ko-KR": "참고 정책: 재사용 가능한 원칙만 추출하고, 로고, 상표, 독점 일러스트, 정확한 레이아웃은 복사하지 않습니다.",
+    "ja-JP": "参照ポリシー: 再利用可能な原則のみを抽出し、ロゴ、商標、独自イラスト、正確なレイアウトはコピーしません。",
+    "zh-CN": "参考政策：仅提取可复用原则，不复制标志、商标、专有插画或精确布局。",
+    "zh-TW": "參考政策：僅萃取可重用原則，不複製標誌、商標、專有插圖或精確版面。",
+}
+SUPPORTED_LANGUAGES = {
+    "en-US": "English",
+    "ko-KR": "Korean",
+    "ja-JP": "Japanese",
+    "zh-CN": "Simplified Chinese",
+    "zh-TW": "Traditional Chinese (Taiwan)",
+}
+
 
 def write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
-def scaffold(root: Path, project_name: str) -> None:
+
+def policy_block(locale: str) -> str:
+    return f"{POLICY_MARKER}\n{POLICY_COPY_BY_LOCALE.get(locale, POLICY)}"
+
+
+def language_contract(locale: str) -> dict:
+    return {
+        "locale": locale,
+        "output_language": SUPPORTED_LANGUAGES.get(locale, locale),
+        "tone": "clear, professional, product-focused",
+        "preserve_terms": ["DESIGN.md", "AI-native", "Artic"],
+        "bilingual_terms": False,
+    }
+
+
+def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
     now = datetime.now(timezone.utc).isoformat()
+    language = language_contract(locale)
+    policy = policy_block(locale)
     brief = {
         "artic_version": "0.1.0",
         "project": {
@@ -31,21 +64,22 @@ def scaffold(root: Path, project_name: str) -> None:
         },
         "references": [],
         "implementation": {"stack": "unspecified", "mobile_first": True, "accessibility": "WCAG AA"},
-        "copy_policy": "extract reusable principles only; do not copy logos, trademarks, proprietary illustrations, or exact layouts",
+        "language": language,
+        "copy_policy": "artic-policy: reference-safety-v1",
     }
     references = {
         "selected_sources": [
-            {"id": "google-design-md", "reason": "output contract and validation"},
-            {"id": "voltagent-awesome-design-md", "reason": "homepage and SaaS style candidates"},
-            {"id": "material-design", "reason": "token and accessibility discipline"},
+            {"id": "google-design-md", "reason": "output contract and validation", "extraction_targets": ["tokens", "validation"]},
+            {"id": "voltagent-awesome-design-md", "reason": "homepage and SaaS style candidates", "extraction_targets": ["layout", "cta", "proof"]},
+            {"id": "material-design", "reason": "token and accessibility discipline", "extraction_targets": ["tokens", "accessibility", "components"]},
         ],
         "synthesis": "Clean SaaS hierarchy with token discipline and mobile-first accessibility.",
     }
-    state = {"artic_version": "0.1.0", "last_generated_at": now, "status": "scaffolded"}
+    state = {"artic_version": "0.1.0", "last_generated_at": now, "status": "scaffolded", "language": language}
     write(root / ".artic" / "brief.json", json.dumps(brief, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "references.json", json.dumps(references, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "state.json", json.dumps(state, indent=2, ensure_ascii=False) + "\n")
-    write(root / "docs" / "artic-brief.md", f"# Artic Brief\n\nProject: {project_name}\n\n{POLICY}\n")
+    write(root / "docs" / "artic-brief.md", f"# Artic Brief\n\nProject: {project_name}\nLanguage: {language['locale']} / {language['output_language']}\n\n{policy}\n")
     design = f'''---
 version: alpha
 name: "{project_name}"
@@ -66,19 +100,37 @@ typography:
     fontWeight: 760
     lineHeight: 1.05
     letterSpacing: "-0.04em"
+  h2:
+    fontFamily: Inter
+    fontSize: 2.5rem
+    fontWeight: 720
+    lineHeight: 1.12
+  h3:
+    fontFamily: Inter
+    fontSize: 1.5rem
+    fontWeight: 680
+    lineHeight: 1.25
   body-md:
     fontFamily: Inter
     fontSize: 1rem
     fontWeight: 400
     lineHeight: 1.65
+  caption:
+    fontFamily: Inter
+    fontSize: 0.875rem
+    fontWeight: 500
+    lineHeight: 1.45
 rounded:
   sm: 6px
   md: 12px
   lg: 20px
 spacing:
+  xs: 4px
   sm: 8px
   md: 16px
   lg: 24px
+  xl: 40px
+  section: 96px
 components:
   button-primary:
     backgroundColor: "{{colors.primary}}"
@@ -100,6 +152,16 @@ components:
     textColor: "{{colors.text}}"
     rounded: "{{rounded.lg}}"
     padding: "{{spacing.lg}}"
+  form-field:
+    backgroundColor: "{{colors.surface}}"
+    textColor: "{{colors.text}}"
+    rounded: "{{rounded.md}}"
+    padding: "{{spacing.sm}}"
+  proof-strip:
+    backgroundColor: "{{colors.neutral}}"
+    textColor: "{{colors.muted}}"
+    rounded: "{{rounded.lg}}"
+    padding: "{{spacing.md}}"
   divider:
     backgroundColor: "{{colors.border}}"
     height: 1px
@@ -113,7 +175,9 @@ components:
 
 ## Overview
 
-Clean, trustworthy, mobile-first SaaS homepage direction. {POLICY}
+Clean, trustworthy, mobile-first SaaS homepage direction.
+
+{policy}
 
 ## Colors
 
@@ -127,6 +191,18 @@ Use clear hierarchy and readable body text.
 
 Use mobile-first sections and consistent spacing.
 
+## Page Composition
+
+Hero, proof, feature, trust, conversion, FAQ, and final CTA sections should answer one user question at a time.
+
+## Visual Hierarchy
+
+Primary CTA and promise must dominate; secondary actions remain quieter.
+
+## Responsive Behavior
+
+Mobile-first: stack sections, keep one primary CTA visible, and preserve readable line lengths.
+
 ## Elevation & Depth
 
 Use subtle surfaces and restrained shadows.
@@ -137,25 +213,40 @@ Use the documented radius scale.
 
 ## Components
 
-Buttons, cards, and forms must use documented tokens.
+Buttons, cards, forms, proof sections, and final CTA blocks must use documented tokens.
+
+## Motion
+
+Use restrained motion only where it clarifies hierarchy or state.
+
+## Accessibility
+
+Target WCAG AA contrast, visible focus states, semantic controls, and labeled forms.
+
+## Anti-Patterns
+
+Avoid generic gradients, off-token colors, competing primary CTAs, centered long copy, and exact reference layouts.
 
 ## Do's and Don'ts
 
 Do follow tokens and synthesis. Don't clone references.
 '''
     write(root / "DESIGN.md", design)
-    write(root / "docs" / "design-rules.md", f"# Design Rules\n\n{POLICY}\n\n## Selected Reference Synthesis\n\nClean SaaS + Material token discipline.\n")
-    write(root / "docs" / "design-qa-checklist.md", f"# Artic Design QA Checklist\n\n{POLICY}\n\n- [ ] Tokens are used consistently.\n- [ ] CTA hierarchy is clear.\n- [ ] Mobile layout works.\n")
-    write(root / "docs" / "homepage-design-prompt.md", f"# Homepage Implementation Prompt\n\nUse DESIGN.md and docs/design-rules.md.\n\n{POLICY}\n")
+    write(root / "docs" / "design-rules.md", f"# Design Rules\n\n{policy}\n\n## Selected Reference Synthesis\n\nClean SaaS + Material token discipline.\n\n## Anti-Patterns\n\nAvoid generic gradients, off-token colors, and exact reference layouts.\n")
+    write(root / "docs" / "design-qa-checklist.md", f"# Artic Design QA Checklist\n\n{policy}\n\n## Scored Review\n\n- [ ] Visual hierarchy: 0-5\n- [ ] Brand coherence: 0-5\n- [ ] Conversion clarity: 0-5\n- [ ] Mobile quality: 0-5\n- [ ] Accessibility: 0-5\n- [ ] Reference safety: pass/fail\n\n## Binary Gates\n\n- [ ] Tokens are used consistently.\n- [ ] CTA hierarchy is clear.\n- [ ] Mobile layout works.\n")
+    write(root / "docs" / "homepage-design-prompt.md", f"# Homepage Implementation Prompt\n\nUse DESIGN.md and docs/design-rules.md.\n\n{policy}\n")
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", required=True)
     parser.add_argument("--project-name", default="Artic Smoke Project")
+    parser.add_argument("--locale", default="en-US")
     args = parser.parse_args()
-    scaffold(Path(args.root), args.project_name)
+    scaffold(Path(args.root), args.project_name, args.locale)
     print(f"Scaffolded Artic files at {Path(args.root).resolve()}")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
