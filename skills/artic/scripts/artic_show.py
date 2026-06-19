@@ -670,11 +670,13 @@ def create_show_preview(root: Path, max_iterations: int = 3, min_score: float = 
     payload = {
         "root": str(root.resolve()),
         "preview_bundle": str(show_root),
+        "bundle_dir": str(show_root),
         "entrypoint": str(show_root / "index.html"),
         "preview_file": str(show_root / "index.html"),
         "selected_iteration": selected_iteration,
         "generated_preview_files": sorted(str(root / item) for item in dict.fromkeys(generated_preview_files)),
         "asset_files": sorted(str(root / item) for item in dict.fromkeys(asset_files)) + [str(show_root / "assets" / "manifest.json")],
+        "asset_manifest": str(show_root / "assets" / "manifest.json"),
         "report_file": str(show_root / "report.json"),
         "critique_file": str(show_root / "critique.md"),
         "modified_app_files": [],
