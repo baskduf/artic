@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 - 2026-06-19
+
+### Added
+- Added `@artic show` to render Artic design outputs into `.artic/show/index.html` as a safe static preview without modifying app source files by default.
+- Added 3D/resource catalog coverage for spatial, immersive, and asset-heavy homepage design direction.
+- Added release artifact hygiene checks for marketplace archives, source distributions, wheels, and required skill/plugin payload files.
+
+### Changed
+- Documented `@artic show`, `@artic version`, and `@artic update` across English, Korean, Japanese, Simplified Chinese, and Traditional Chinese READMEs.
+- Updated stable Codex marketplace install examples to pin `baskduf/artic@v0.3.0`.
+- Expanded Artic reference synthesis so agents can route 3D-heavy prompts to relevant resource catalogs while preserving reference-safety boundaries.
+
 ## 0.2.0 - 2026-06-19
 
 ### Added
