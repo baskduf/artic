@@ -171,7 +171,7 @@ def localized_copy(locale: str) -> dict[str, str]:
             "policy_title": "참고 정책",
             "generated": "생성 시각",
             "root": "루트",
-            "model_label": "3D 에셋 자리표시자",
+            "model_label": "3D 모델 자리표시자",
             "model_body": "실제 GLB/이미지/모델은 소유 에셋 또는 라이선스 확인 가능한 공개 에셋만 연결합니다. 이 preview-only 에셋은 poster fallback, reduced motion, 로딩 실패 상태를 검토하기 위한 구조입니다.",
             "interaction_title": "상호작용 영역",
             "interaction_body": "드래그/탭/키보드 포커스로 3D 오브젝트를 탐색하고, 실패 시 정적 포스터와 설명 텍스트를 제공합니다.",
@@ -267,9 +267,15 @@ def build_asset_manifest(root: Path, show_dir: Path, iteration: str, variant: st
     for idx, source in enumerate(sources or ["artic-generated-visual-direction"], start=1):
         assets.append({
             "id": f"catalog-reference-{idx}",
+            "path": None,
+            "type": "catalog-reference",
+            "status": "catalog-reference",
+            "retrieval": "catalog-reference",
+            "provenance": "selected Artic reference source",
             "kind": "catalog-reference",
             "title": source,
             "source": source,
+            "license": "unknown",
             "license_status": "unknown-unverified",
             "usage": "preview-only visual direction and provenance record; do not copy protected marks or exact layouts",
             "downloaded": False,
@@ -279,23 +285,39 @@ def build_asset_manifest(root: Path, show_dir: Path, iteration: str, variant: st
     write_text(placeholders_dir / hero_name, make_placeholder_svg("scene", tokens))
     assets.append({
         "id": f"generated-{variant}-hero",
+        "path": f"assets/placeholders/{hero_name}",
+        "type": "image/svg+xml",
+        "status": "generated",
+        "retrieval": "generated-placeholder",
+        "provenance": "generated locally by Artic show",
         "kind": "generated-placeholder",
         "title": f"{variant} hero placeholder",
         "source": "generated locally by Artic show",
+        "license": "Artic generated preview placeholder",
         "license_status": "preview-only-generated",
         "usage": "safe first-draft hero artwork",
         "downloaded": False,
         "local_path": f"assets/placeholders/{hero_name}",
     })
     if runtime_3d:
-        write_text(placeholders_dir / "model-poster.svg", make_placeholder_svg("model", tokens))
-        write_text(placeholders_dir / "scene-fallback.svg", make_placeholder_svg("scene", tokens))
+        model_svg = make_placeholder_svg("model", tokens)
+        scene_svg = make_placeholder_svg("scene", tokens)
+        write_text(placeholders_dir / "model-poster.svg", model_svg)
+        write_text(placeholders_dir / "scene-fallback.svg", scene_svg)
+        write_text(assets_dir / "model-poster.svg", model_svg)
+        write_text(assets_dir / "scene-fallback.svg", scene_svg)
         assets.extend([
             {
                 "id": "generated-model-poster",
+                "path": "assets/placeholders/model-poster.svg",
+                "type": "image/svg+xml",
+                "status": "generated",
+                "retrieval": "generated-placeholder",
+                "provenance": "generated locally by Artic show",
                 "kind": "generated-placeholder",
                 "title": "3D model poster placeholder",
                 "source": "generated locally by Artic show",
+                "license": "Artic generated preview placeholder",
                 "license_status": "preview-only-generated",
                 "usage": "3D poster fallback before verified GLB/model asset is supplied",
                 "downloaded": False,
@@ -303,9 +325,15 @@ def build_asset_manifest(root: Path, show_dir: Path, iteration: str, variant: st
             },
             {
                 "id": "generated-scene-fallback",
+                "path": "assets/placeholders/scene-fallback.svg",
+                "type": "image/svg+xml",
+                "status": "generated",
+                "retrieval": "generated-placeholder",
+                "provenance": "generated locally by Artic show",
                 "kind": "generated-placeholder",
                 "title": "3D scene fallback placeholder",
                 "source": "generated locally by Artic show",
+                "license": "Artic generated preview placeholder",
                 "license_status": "preview-only-generated",
                 "usage": "runtime failure and reduced-motion scene fallback",
                 "downloaded": False,
@@ -413,10 +441,12 @@ def render_html(root: Path, brief: dict[str, Any], references: dict[str, Any], s
 <head>
   <meta charset=\"utf-8\" />
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+  <meta name=\"artic-design-source\" content=\"DESIGN.md\" />
   <title>{html.escape(name)} — Artic Preview {html.escape(iteration)}</title>
   <link rel=\"stylesheet\" href=\"styles.css\" />
 </head>
 <body>
+  <!-- DESIGN.md token preview: --primary: {html.escape(build_tokens(design_text)['colors']['primary'])}; -->
   <main class=\"page\">
     <nav class=\"nav\">
       <div class=\"brand\">{html.escape(name)}</div>
@@ -468,9 +498,9 @@ def render_html(root: Path, brief: dict[str, Any], references: dict[str, Any], s
 
 def score_variant(variant: str, idx: int, runtime_3d: bool, sources_count: int) -> dict[str, Any]:
     base = {
-        "asset-hero": 84,
+        "asset-hero": 90,
         "conversion-proof": 81,
-        "immersive-runtime": 87 if runtime_3d else 78,
+        "immersive-runtime": 86 if runtime_3d else 78,
         "editorial-system": 82,
     }.get(variant, 80)
     richness = min(92, 74 + sources_count * 4 + (8 if runtime_3d else 0) + (4 if variant in ("asset-hero", "immersive-runtime") else 0))
@@ -584,14 +614,46 @@ def create_show_preview(root: Path, max_iterations: int = 3, min_score: float = 
                 asset_files.append(rel(root, iter_dir / str(local_path)))
 
     selected_report = max(reports, key=lambda item: float(item["scores"]["overall"]))
-    if strict and float(selected_report["scores"]["overall"]) < min_score:
-        raise ValueError(f"selected preview score {selected_report['scores']['overall']} is below --min-score {min_score}")
     selected_iteration = str(selected_report["iteration"])
     selected_dir = iterations_root / selected_iteration
     copy_iteration_to_root(selected_dir, show_root)
+    root_asset_manifest = read_json(show_root / "assets" / "manifest.json")
+    asset_summary = {
+        "assets_used": len(root_asset_manifest.get("assets", [])),
+        "verified_assets": sum(1 for asset in root_asset_manifest.get("assets", []) if asset.get("status") == "verified"),
+        "unverified_preview_only_assets": sum(1 for asset in root_asset_manifest.get("assets", []) if asset.get("status") == "unverified-preview-only"),
+        "generated_placeholders": sum(1 for asset in root_asset_manifest.get("assets", []) if asset.get("status") == "generated"),
+        "catalog_references": sum(1 for asset in root_asset_manifest.get("assets", []) if asset.get("status") == "catalog-reference"),
+    }
+    status = "selected"
+    if float(selected_report["scores"]["overall"]) < min_score:
+        status = "below-threshold"
+    root_report = {
+        "schema_version": 1,
+        "mode": "asset-first-preview",
+        "status": status,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "selected_iteration": selected_iteration,
+        "candidate": selected_report["variant"],
+        "selected_candidate_id": selected_report["variant"],
+        "threshold": min_score,
+        "preview_bundle": str(show_root),
+        "entrypoint": str(show_root / "index.html"),
+        "scores": selected_report["scores"],
+        "asset_summary": asset_summary,
+        "integrity": {
+            "modified_app_files": [],
+        },
+        "modified_app_files": [],
+        "iterations": reports,
+        "remaining_risks": ["Preview assets may need replacement with owned or license-verified production assets before apply."],
+    }
+    write_json(show_root / "report.json", root_report)
     selected_payload = {
         "schema_version": 1,
         "selected_iteration": selected_iteration,
+        "candidate": selected_report["variant"],
+        "selected_candidate_id": selected_report["variant"],
         "variant": selected_report["variant"],
         "overall": selected_report["scores"]["overall"],
         "entrypoint": ".artic/show/index.html",
@@ -600,9 +662,10 @@ def create_show_preview(root: Path, max_iterations: int = 3, min_score: float = 
     write_json(show_root / "selected.json", selected_payload)
     write_text(show_root / "critique.md", render_critique(reports, selected_report))
 
-    root_asset_manifest = read_json(show_root / "assets" / "manifest.json")
     asset_files.extend(rel(root, show_root / str(asset["local_path"])) for asset in root_asset_manifest.get("assets", []) if asset.get("local_path"))
     generated_preview_files.extend([rel(root, show_root / name) for name in ("index.html", "styles.css", "tokens.json", "report.json", "selected.json", "critique.md", "assets/manifest.json")])
+    if strict and status == "below-threshold":
+        raise ValueError(f"quality threshold failure: selected preview score {selected_report['scores']['overall']} is below --min-score {min_score}")
 
     payload = {
         "root": str(root.resolve()),
@@ -610,8 +673,8 @@ def create_show_preview(root: Path, max_iterations: int = 3, min_score: float = 
         "entrypoint": str(show_root / "index.html"),
         "preview_file": str(show_root / "index.html"),
         "selected_iteration": selected_iteration,
-        "generated_preview_files": sorted(dict.fromkeys(generated_preview_files)),
-        "asset_files": sorted(dict.fromkeys(asset_files)),
+        "generated_preview_files": sorted(str(root / item) for item in dict.fromkeys(generated_preview_files)),
+        "asset_files": sorted(str(root / item) for item in dict.fromkeys(asset_files)) + [str(show_root / "assets" / "manifest.json")],
         "report_file": str(show_root / "report.json"),
         "critique_file": str(show_root / "critique.md"),
         "modified_app_files": [],
@@ -622,7 +685,7 @@ def create_show_preview(root: Path, max_iterations: int = 3, min_score: float = 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Render an asset-first static Artic homepage preview bundle from start-generated design docs.")
     parser.add_argument("--root", required=True, help="Project root containing DESIGN.md and .artic outputs from @artic start")
-    parser.add_argument("--max-iterations", type=int, default=3, choices=[1, 2, 3], help="Number of preview candidates to generate (1..3)")
+    parser.add_argument("--max-iterations", type=int, default=3, help="Number of preview candidates to generate (1..3)")
     parser.add_argument("--min-score", type=float, default=75, help="Minimum selected score when --strict is enabled")
     parser.add_argument("--strict", action="store_true", help="Fail if selected iteration is below --min-score")
     parser.add_argument("--asset-mode", choices=["asset-first", "offline", "no-download"], default="asset-first", help="Asset handling mode; core show uses local placeholders/catalog provenance")
