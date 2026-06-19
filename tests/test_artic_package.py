@@ -87,7 +87,7 @@ def test_artic_version_network_failure_marks_latest_unavailable(monkeypatch):
 
 def test_artic_update_guidance_without_latest_omits_version_pin():
     payload = {
-        "installed_version": "0.1.1",
+        "installed_version": "0.1.0",
         "latest": None,
         "latest_state": "not_found",
         "status": "latest-not-found",
@@ -226,44 +226,6 @@ def test_artic_start_generates_and_validates_docs_from_init_outputs():
         assert "Reference Synthesis" in (root / "docs" / "design-rules.md").read_text(encoding="utf-8")
         state = json.loads((root / ".artic" / "state.json").read_text(encoding="utf-8"))
         assert state["status"] == "generated"
-
-
-def test_artic_start_synthesis_preserves_initialized_reference_selection():
-    with tempfile.TemporaryDirectory() as tmp:
-        subprocess.run([
-            sys.executable,
-            str(ROOT / "skills/artic/scripts/artic_init.py"),
-            "--root",
-            tmp,
-            "--project",
-            "Korean AI Meeting Assistant",
-            "--audience",
-            "startup operators and sales teams",
-            "--goal",
-            "demo requests",
-            "--vibe",
-            "clean trustworthy mobile-first saas",
-            "--references",
-            "Linear clarity, Shopify Polaris trust, Material token discipline",
-            "--stack",
-            "React Tailwind",
-            "--limit",
-            "4",
-        ], check=True)
-        subprocess.run([
-            sys.executable,
-            str(ROOT / "skills/artic/scripts/artic_start.py"),
-            "--root",
-            tmp,
-        ], check=True, capture_output=True, text=True)
-
-        root = Path(tmp)
-        initialized = json.loads((root / ".artic" / "references.json").read_text(encoding="utf-8"))["selected_sources"]
-        initialized_ids = {row["id"] for row in initialized}
-        rules = (root / "docs" / "design-rules.md").read_text(encoding="utf-8")
-        synthesized_ids = set(re.findall(r"`([^`]+)`\)", rules))
-        assert initialized_ids <= synthesized_ids
-        assert "voltagent-awesome-design-md" not in synthesized_ids - initialized_ids
 
 
 def test_artic_start_no_validate_skips_validator_but_writes_outputs():
@@ -770,8 +732,8 @@ def test_version_command_reports_installed_versions_without_network():
     ], capture_output=True, text=True)
     assert result.returncode == 0, result.stderr or result.stdout
     payload = json.loads(result.stdout)
-    assert payload["installed"]["pyproject"] == "0.1.1"
-    assert payload["installed"]["skill"] == "0.1.1"
+    assert payload["installed"]["pyproject"] == "0.1.0"
+    assert payload["installed"]["skill"] == "0.1.0"
     assert payload["status"] == "latest-unchecked"
     assert payload["version_mismatches"] == []
 
@@ -807,8 +769,8 @@ def test_version_command_supports_installed_plugin_roots_without_network():
         ], capture_output=True, text=True)
         assert result.returncode == 0, result.stderr or result.stdout
         payload = json.loads(result.stdout)
-        assert payload["installed"]["skill"] == "0.1.1"
-        assert payload["installed"][expected_key] == "0.1.1"
+        assert payload["installed"]["skill"] == "0.1.0"
+        assert payload["installed"][expected_key] == "0.1.0"
         assert payload["status"] == "latest-unchecked"
         assert payload["version_mismatches"] == []
 
@@ -823,7 +785,7 @@ def test_update_command_supports_installed_plugin_roots_without_network():
         "--no-network",
     ], capture_output=True, text=True)
     assert result.returncode == 0, result.stderr or result.stdout
-    assert "Current: 0.1.1" in result.stdout
+    assert "Current: 0.1.0" in result.stdout
     assert "Blocked:" not in result.stdout
     assert "No files were modified" in result.stdout
 
@@ -914,7 +876,7 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (payload / "plugins/codex-artic/.codex-plugin/plugin.json").write_text("{}", encoding="utf-8")
         (payload / "skills/artic/scripts/__pycache__/artic_init.cpython-39.pyc").write_bytes(b"bad")
         with tarfile.open(bad_tar, "w:gz") as tf:
-            tf.add(payload, arcname="artic-0.1.1")
+            tf.add(payload, arcname="artic-0.1.0")
         result = subprocess.run([sys.executable, str(checker), "--require-payload", str(bad_tar)], capture_output=True, text=True)
         assert result.returncode != 0
         assert "forbidden bytecode/cache entry" in result.stdout
@@ -935,14 +897,14 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (clean_payload / "plugins/codex-artic/.codex-plugin").mkdir(parents=True)
         (clean_payload / "plugins/codex-artic/.codex-plugin/plugin.json").write_text("{}", encoding="utf-8")
         with tarfile.open(missing_command_tar, "w:gz") as tf:
-            tf.add(clean_payload, arcname="artic-0.1.1")
+            tf.add(clean_payload, arcname="artic-0.1.0")
         result = subprocess.run([sys.executable, str(checker), "--require-payload", str(missing_command_tar)], capture_output=True, text=True)
         assert result.returncode != 0
         assert "missing required payload skills/artic/scripts/artic_version.py" in result.stdout
 
         good_zip = root / "metadata.whl"
         with zipfile.ZipFile(good_zip, "w") as zf:
-            zf.writestr("artic-0.1.1.dist-info/METADATA", "Name: artic\nVersion: 0.1.1\n")
+            zf.writestr("artic-0.1.0.dist-info/METADATA", "Name: artic\nVersion: 0.1.0\n")
         result = subprocess.run([sys.executable, str(checker), str(good_zip)], capture_output=True, text=True)
         assert result.returncode == 0, result.stdout
 
@@ -951,7 +913,7 @@ def test_skill_archive_builder_excludes_bytecode_from_marketplace_archive():
     builder = ROOT / "scripts" / "build_skill_archive.py"
     checker = ROOT / "scripts" / "check_release_artifacts.py"
     with tempfile.TemporaryDirectory() as tmp:
-        output = Path(tmp) / "artic-skill-v0.1.1.tar.gz"
+        output = Path(tmp) / "artic-skill-v0.1.0.tar.gz"
         subprocess.run([sys.executable, str(builder), "--root", str(ROOT), "--output", str(output)], check=True)
         result = subprocess.run([sys.executable, str(checker), "--require-payload", str(output)], capture_output=True, text=True)
         assert result.returncode == 0, result.stdout

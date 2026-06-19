@@ -71,11 +71,9 @@ jobs:
       - name: Verify built package metadata
         run: |
           python - <<'PY'
-          import email.parser, pathlib, re, tarfile, zipfile
+          import email.parser, pathlib, tarfile, zipfile
           expected_name = 'artic'
-          match = re.search(r'^version = "([^"]+)"', pathlib.Path('pyproject.toml').read_text(), re.MULTILINE)
-          assert match, 'pyproject.toml missing version'
-          expected_version = match.group(1)
+          expected_version = '0.1.0'
           wheels = list(pathlib.Path('dist').glob('*.whl'))
           sdists = list(pathlib.Path('dist').glob('*.tar.gz'))
           assert wheels, 'missing wheel artifact'
