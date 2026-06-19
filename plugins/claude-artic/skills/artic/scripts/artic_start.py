@@ -355,6 +355,17 @@ def validate_outputs(root: Path) -> subprocess.CompletedProcess[str]:
 
 
 def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, Any]:
+    session_path = root / ".artic" / "init-session.json"
+    brief_path = root / ".artic" / "brief.json"
+    references_path = root / ".artic" / "references.json"
+    if session_path.exists() and (not brief_path.exists() or not references_path.exists()):
+        from artic_init_session import finalize_session, is_ready, read_session, render_questions
+
+        session = read_session(root)
+        if not is_ready(session):
+            questions = render_questions(session)
+            raise ValueError("init session is still collecting; answer missing fields before @artic start: " + "; ".join(questions))
+        finalize_session(root)
     brief = read_json(root / ".artic" / "brief.json")
     references = read_json(root / ".artic" / "references.json")
     intent = read_json(root / ".artic" / "intent.json") if (root / ".artic" / "intent.json").exists() else migrate_legacy_intent(root, brief, references)

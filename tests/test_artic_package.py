@@ -479,6 +479,77 @@ def test_artic_init_session_detects_korean_and_renders_missing_questions():
         assert any("타깃" in question for question in questions)
 
 
+def test_artic_init_session_ready_does_not_generate_outputs_before_start():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session = session_mod.create_or_update_session(
+            root,
+            "한국어로 진행해줘",
+            answers={
+                "project": "AI 회의록 서비스",
+                "audience": "한국 스타트업 운영팀",
+                "goal": "데모 요청",
+                "vibe": "쉽고 신뢰감 있는 모바일 우선 SaaS",
+            },
+        )
+        assert session["status"] == "ready"
+        assert (root / ".artic" / "init-session.json").exists()
+        for rel in [
+            ".artic/brief.json",
+            ".artic/references.json",
+            ".artic/state.json",
+            "docs/artic-brief.md",
+            "DESIGN.md",
+            "docs/design-rules.md",
+        ]:
+            assert not (root / rel).exists(), rel
+
+
+def test_artic_start_finalizes_ready_init_session():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session_mod.write_session(root, {
+            "schema_version": 1,
+            "status": "ready",
+            "language": {
+                "locale": "ko-KR",
+                "output_language": "Korean",
+                "tone": "친근하지만 전문적인 제품/디자인 대화체",
+                "preserve_terms": ["DESIGN.md", "AI-native", "Artic", "WCAG AA"],
+                "bilingual_terms": True,
+            },
+            "answers": {
+                "project": "AI 회의록 서비스",
+                "audience": "한국 스타트업 운영팀과 세일즈팀",
+                "goal": "데모 요청",
+                "vibe": "토스처럼 쉽고 신뢰감 있는 모바일 우선 SaaS",
+                "references": "Toss clarity, Shopify Polaris trust",
+                "stack": "React Tailwind",
+            },
+            "missing": [],
+            "last_question_ids": [],
+        })
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+        assert (root / ".artic" / "brief.json").exists()
+        assert (root / ".artic" / "references.json").exists()
+        assert (root / "DESIGN.md").exists()
+        session = session_mod.read_session(root)
+        assert session["status"] == "initialized"
+
+
+def test_artic_start_blocks_collecting_init_session():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session_mod.create_or_update_session(root, "한국어로 AI 회의록 서비스 랜딩 만들고 싶어")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode == 1
+        assert "init session is still collecting" in result.stdout
+        assert not (root / ".artic" / "brief.json").exists()
+
+
 def test_artic_init_session_finalizes_korean_outputs():
     session_mod = importlib.import_module("artic_init_session")
     with tempfile.TemporaryDirectory() as tmp:

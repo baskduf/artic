@@ -152,15 +152,16 @@ Skip it for:
 | Check installed/latest version | `@artic version` |
 | Print safe update commands | `@artic update` |
 
-`@artic init` follows the user's language. For example, `한국어로 Artic init 진행해줘. AI 회의록 서비스 랜딩을 만들고 싶어.` starts a Korean interview, stores `ko-KR` in `.artic/brief.json.language`, and keeps machine-readable terms such as `DESIGN.md`, `AI-native`, and `Artic` intact.
+`@artic init` follows the user's language. For example, `한국어로 Artic init 진행해줘. AI 회의록 서비스 랜딩을 만들고 싶어.` starts a Korean interview, stores `ko-KR` in `.artic/init-session.json.language`, asks for missing fields, and does not generate design artifacts until `@artic start`.
 
 ## Output Policy
 
 Artic writes durable files instead of dumping long design prose into chat:
 
 ```text
-.artic/brief.json
-.artic/references.json
+.artic/init-session.json   # draft interview state from @artic init
+.artic/brief.json          # finalized by @artic start
+.artic/references.json     # finalized by @artic start
 .artic/state.json
 docs/artic-brief.md
 DESIGN.md

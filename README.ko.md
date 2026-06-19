@@ -152,15 +152,16 @@ Artic이 호출되면 에이전트는 다음을 수행합니다:
 | 설치/최신 버전 확인 | `@artic version` |
 | 안전한 업데이트 명령 출력 | `@artic update` |
 
-`@artic init`은 사용자의 언어를 따릅니다. 예를 들어 `한국어로 Artic init 진행해줘. AI 회의록 서비스 랜딩을 만들고 싶어.`라고 말하면 한국어 인터뷰를 시작하고, `.artic/brief.json.language`에 `ko-KR`을 저장하며, `DESIGN.md`, `AI-native`, `Artic` 같은 기계가 읽는 용어는 그대로 보존합니다.
+`@artic init`은 사용자의 언어를 따릅니다. 예를 들어 `한국어로 Artic init 진행해줘. AI 회의록 서비스 랜딩을 만들고 싶어.`라고 말하면 한국어 인터뷰를 시작하고, `.artic/init-session.json.language`에 `ko-KR`을 저장하며, 부족한 항목을 질문합니다. 디자인 산출물은 사용자가 `@artic start`를 실행하기 전까지 생성하지 않습니다.
 
 ## Output Policy
 
 Artic은 긴 디자인 설명을 채팅에 쏟아내지 않고 지속 가능한 파일을 작성합니다:
 
 ```text
-.artic/brief.json
-.artic/references.json
+.artic/init-session.json   # @artic init의 draft 인터뷰 상태
+.artic/brief.json          # @artic start에서 finalization
+.artic/references.json     # @artic start에서 finalization
 .artic/state.json
 docs/artic-brief.md
 DESIGN.md

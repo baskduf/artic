@@ -46,21 +46,20 @@ Do not use Artic for exact cloning of a brand/site or copying logos, trademarks,
 
 ### `@artic init`
 
-Purpose: run the design intake interview and create a structured brief.
+Purpose: run a conversational design intake and persist a draft session. Do not generate Artic design artifacts until the user explicitly asks for `@artic start`.
 
 Required behavior:
 1. Inspect existing docs if available: `DESIGN.md`, `docs/design-rules.md`, `docs/artic-brief.md`, `README.md`, and project docs under `docs/`.
-2. Ask a compact interview unless the user already supplied enough context.
-3. Detect the user's language from explicit locale or the first message, then continue the interview in that language unless the user asks otherwise.
-4. Ask only for missing information; do not repeat fields already supplied.
-5. Persist partial conversational state in `.artic/init-session.json` when answers are incomplete.
-6. Capture finalized answers into `.artic/brief.json` and `docs/artic-brief.md`.
-7. Normalize answers into searchable facets.
-8. Search the Artic source catalog and select 3-5 candidate references.
-9. Save `.artic/references.json` and `.artic/state.json`.
+2. Detect the user's language from explicit locale or the first message, then continue the interview in that language unless the user asks otherwise.
+3. Ask only for missing information; do not repeat fields already supplied.
+4. Persist every partial answer in `.artic/init-session.json`.
+5. If required fields are still missing, ask the next compact set of questions in the user's language.
+6. If the draft is ready, summarize the captured answers and tell the user to run `@artic start` to generate files.
+7. Do not call the deterministic compiler, search the catalog, or write `.artic/brief.json`, `.artic/references.json`, `.artic/state.json`, `docs/artic-brief.md`, `DESIGN.md`, or design docs during `@artic init`.
 
 Language behavior:
-- Store language intent under `.artic/brief.json.language`, `.artic/state.json.language`, and generated docs using `<!-- artic-language: <locale> -->`.
+- Store draft language intent under `.artic/init-session.json.language` during `@artic init`.
+- When `@artic start` compiles the ready session, carry the language contract into `.artic/brief.json.language`, `.artic/state.json.language`, and generated docs using `<!-- artic-language: <locale> -->`.
 - Preserve machine-readable terms such as `DESIGN.md`, `AI-native`, `Artic`, source names, and design token keys.
 - Localize user-facing interview questions and prose according to the language contract.
 - Validate localized reference safety with the invariant `<!-- artic-policy: reference-safety-v1 -->` marker, not exact English copy.
@@ -93,13 +92,16 @@ python3 <artic-skill>/scripts/artic_start.py --root <project-root>
 ```
 
 Required behavior:
-1. Read `.artic/brief.json`, `.artic/references.json`, and existing project docs.
-2. Search/combine multiple professional/OSS design sources.
-3. Extract reusable design principles only.
-4. Resolve conflicts explicitly based on user goal.
-5. Generate `DESIGN.md`, `docs/design-rules.md`, `docs/design-qa-checklist.md`, and `docs/homepage-design-prompt.md`.
-6. Validate with `scripts/validate_artic_outputs.py` when available.
-7. If Node is available, optionally run `npx -y @google/design.md lint DESIGN.md`.
+1. If `.artic/init-session.json` exists and `.artic/brief.json`/`.artic/references.json` are not finalized yet, read the session first.
+2. If the session is still collecting, stop and ask the remaining init questions instead of generating files.
+3. If the session is ready, compile it into `.artic/brief.json`, `.artic/references.json`, `.artic/state.json`, and `docs/artic-brief.md` before generating design docs.
+4. Read `.artic/brief.json`, `.artic/references.json`, and existing project docs.
+5. Search/combine multiple professional/OSS design sources.
+6. Extract reusable design principles only.
+7. Resolve conflicts explicitly based on user goal.
+8. Generate `DESIGN.md`, `docs/design-rules.md`, `docs/design-qa-checklist.md`, and `docs/homepage-design-prompt.md`.
+9. Validate with `scripts/validate_artic_outputs.py` when available.
+10. If Node is available, optionally run `npx -y @google/design.md lint DESIGN.md`.
 
 ### `@artic review` MVP-light
 
@@ -181,7 +183,13 @@ Reference policy: extract reusable principles only; do not copy logos, trademark
 
 ## Output Contract
 
-`@artic init` creates:
+`@artic init` creates or updates only the draft session:
+
+```text
+.artic/init-session.json
+```
+
+`@artic start` finalizes a ready session into:
 
 ```text
 .artic/brief.json
@@ -190,7 +198,7 @@ Reference policy: extract reusable principles only; do not copy logos, trademark
 docs/artic-brief.md
 ```
 
-`@artic start` creates:
+`@artic start` then creates:
 
 ```text
 DESIGN.md
