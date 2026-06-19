@@ -55,6 +55,7 @@ def test_catalog_search_smoke():
     assert rows[0]["score"] > 0
 
 
+
 def test_catalog_sources_have_quality_retrieval_metadata():
     catalog = json.loads((ROOT / "skills/artic/references/source-catalog.json").read_text(encoding="utf-8"))
     required = {"product_fit", "visual_traits", "page_patterns", "implementation_fit", "extraction_targets", "avoid_when", "risk_notes"}
@@ -236,6 +237,55 @@ def test_validator_checks_quality_tokens_inside_their_own_sections():
         assert "spacing missing quality token: sm" in result.stdout
         assert "spacing missing quality token: md" in result.stdout
         assert "spacing missing quality token: lg" in result.stdout
+
+def test_design_intent_mapper_normalizes_user_language_to_facets():
+    result = subprocess.run([
+        sys.executable,
+        str(ROOT / "skills/artic/scripts/design_intent_mapper.py"),
+        "--project",
+        "B2B SaaS developer tool",
+        "--audience",
+        "engineering leaders",
+        "--goal",
+        "signup conversion",
+        "--vibe",
+        "Linear/Stripe 느낌으로 신뢰감 있게, 너무 기업스럽진 않게",
+        "--avoid",
+        "too corporate",
+    ], check=True, capture_output=True, text=True)
+    intent = json.loads(result.stdout)
+    assert intent["selected_preset"] == "developer-tool"
+    assert "developer-tool" in intent["style_facets"]
+    assert "premium-saas" in intent["style_facets"]
+    assert "trust" in intent["style_facets"]
+    assert "heavy-corporate" in intent["avoid_facets"]
+    assert "clear-cta" in intent["design_principles"]
+    assert "catalog_query" in intent and "developer-tool" in intent["catalog_query"]
+    assert intent["llm_contract"]["role"].startswith("Map user language")
+
+
+def test_catalog_search_can_use_semantic_intent_mapping():
+    result = subprocess.run([
+        sys.executable,
+        str(ROOT / "skills/artic/scripts/search_reference_catalog.py"),
+        "--semantic-intent",
+        "--project",
+        "B2B SaaS developer tool",
+        "--goal",
+        "signup conversion",
+        "--vibe",
+        "Linear/Stripe 느낌으로 신뢰감 있게",
+        "--avoid",
+        "too corporate",
+        "--limit",
+        "3",
+        "--include-intent",
+    ], check=True, capture_output=True, text=True)
+    payload = json.loads(result.stdout)
+    assert "developer-tool" in payload["intent"]["style_facets"]
+    assert len(payload["results"]) == 3
+    assert payload["results"][0]["score"] > 0
+
 
 
 def test_reference_synthesis_smoke_uses_local_fixture_corpus():
