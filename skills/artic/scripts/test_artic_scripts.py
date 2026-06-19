@@ -6,28 +6,54 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def write_fixture_strategy(root: Path, source_ids=None, north_star=None):
+def write_fixture_strategy(root: Path, source_ids: list[str] | None = None, north_star: str | None = None) -> dict:
+    """Write a minimal valid strategy-first contract fixture for @artic start."""
     source_ids = ["voltagent-awesome-design-md", "shadcn-ui", "material-design"] if source_ids is None else source_ids
     north_star = north_star or "Make the product feel like a calm command center for proof-rich decisions."
+    reference_roles = [
+        {
+            "source_id": source_id,
+            "role": f"strategy_fixture_reference_{index + 1}",
+            "why_selected": "Fixture source used to verify strategy-driven compilation.",
+            "extract": ["tokens", "hierarchy", "component discipline"],
+            "avoid": ["exact layouts", "brand identity", "source copywriting"],
+        }
+        for index, source_id in enumerate(source_ids)
+    ]
     strategy = {
         "schema_version": 1,
-        "project": {
+        "created_by": "agent",
+        "project_summary": {
             "name": "Strategy Fixture Product",
             "audience": "startup operators comparing AI workflow tools",
-            "goal": "qualified demo requests",
-            "vibe": "calm proof-rich command center",
+            "primary_goal": "qualified demo requests",
             "stack": "React Tailwind",
         },
-        "strategy": {
-            "north_star": north_star,
-            "positioning": "Trustworthy AI operations workspace with visible proof and fast evaluation paths.",
-            "primary_user_journey": ["understand value", "inspect proof", "request demo"],
-            "success_metrics": ["demo-request conversion", "trust signal engagement"],
+        "design_north_star": north_star,
+        "target_user_interpretation": ["Users need clarity and trust before conversion."],
+        "conversion_strategy": {
+            "primary_cta": "Request demo",
+            "secondary_cta": "View example",
+            "proof_sequence": ["understand value", "inspect proof", "request demo"],
         },
-        "references": {
-            "source_ids": source_ids,
-            "selection_rationale": "Use compatible source patterns as reusable principles only.",
+        "reference_roles": reference_roles,
+        "conflict_resolution": [
+            {
+                "conflict": "clarity versus visual richness",
+                "decision": "prioritize clarity in the hero and move richness into supporting sections",
+                "rationale": "conversion depends on fast comprehension",
+            }
+        ],
+        "visual_system": {
+            "tone": ["clear", "trustworthy", "proof-rich"],
+            "color_roles": {"primary": "CTA", "surface": "content", "accent": "proof"},
+            "typography": "clear hierarchy",
+            "spacing": "mobile-first rhythm",
         },
+        "component_rules": ["Use one dominant primary CTA."],
+        "motion_interaction": ["Respect reduced motion."],
+        "accessibility": ["WCAG AA contrast", "keyboard reachable controls"],
+        "implementation_guidance": ["Use semantic HTML and tokenized styles."],
         "language": {
             "locale": "en-US",
             "output_language": "English",
@@ -35,6 +61,8 @@ def write_fixture_strategy(root: Path, source_ids=None, north_star=None):
             "preserve_terms": ["DESIGN.md", "AI-native", "Artic"],
             "bilingual_terms": False,
         },
+        "reference_policy": "artic-policy: reference-safety-v1",
+        "forbidden_copy_elements": ["logos", "trademarks", "proprietary illustrations", "exact layouts", "source copywriting"],
     }
     path = root / ".artic" / "strategy.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -74,6 +102,10 @@ class ArticScriptTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             north_star = "Signal Lantern north-star phrase for strategy-first Artic generation."
+            subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "scaffold_artic_files.py"), "--root", tmp],
+                check=True, text=True, capture_output=True,
+            )
             write_fixture_strategy(root, north_star=north_star)
             result = subprocess.run(
                 [sys.executable, str(ROOT / "scripts" / "artic_start.py"), "--root", tmp],

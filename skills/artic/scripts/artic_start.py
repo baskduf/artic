@@ -23,8 +23,8 @@ POLICY_COPY_BY_LOCALE = {
     "zh-TW": "參考政策：僅萃取可重用原則，不複製標誌、商標、專有插圖或精確版面。",
 }
 GENERATED_FILES = [
-    "DESIGN.md",
     "docs/artic-strategy.md",
+    "DESIGN.md",
     "docs/design-rules.md",
     "docs/design-qa-checklist.md",
     "docs/homepage-design-prompt.md",
@@ -140,7 +140,7 @@ def role_lines(strategy: dict[str, Any]) -> list[str]:
         if not isinstance(role, dict):
             continue
         lines.append(
-            "- `{}` as **{}** — {} Extract: {} Avoid: {}".format(
+            "- Reference (`{}`) as **{}** — {} Extract: {} Transform: translate into project-specific rules. Avoid: {}".format(
                 role.get("source_id", "unknown"),
                 role.get("role", "reference"),
                 role.get("why_selected", "selected for reusable principles"),
@@ -177,6 +177,10 @@ def strategy_doc(brief: dict[str, Any], strategy: dict[str, Any]) -> str:
         as_markdown(strategy.get("conversion_strategy", "")),
         "",
         "## Reference Roles",
+        "",
+        *(role_lines(strategy) or ["- No reference roles supplied."]),
+        "",
+        "## Source Application Plan",
         "",
         *(role_lines(strategy) or ["- No reference roles supplied."]),
         "",
@@ -369,7 +373,14 @@ def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, 
         raise ValueError(json.dumps({"error": "invalid_strategy", "errors": strategy_errors}, ensure_ascii=False))
 
     generated = render_outputs(root, brief, references, strategy, intent)
-    payload: dict[str, Any] = {"root": str(root.resolve()), "generated_files": generated, "validated": False}
+    payload: dict[str, Any] = {
+        "root": str(root.resolve()),
+        "generated_files": generated,
+        "validated": False,
+        "strategy_path": str(strategy_path.relative_to(root)),
+        "strategy_validated": True,
+        "strategy": {"design_north_star": str(strategy.get("design_north_star") or "")},
+    }
     if not no_validate:
         validation = validate_outputs(root)
         payload["validated"] = validation.returncode == 0

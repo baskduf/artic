@@ -6,9 +6,11 @@ Users may answer an `@artic init` question and an agent may accidentally treat t
 
 ## Rule
 
-Only explicit `@artic start` may finalize or generate files.
+Only explicit `@artic start` may finalize or generate files. In the public workflow, `@artic start` is an agent strategy step first and a compiler step second.
 
-`@artic init` and normal follow-up replies are draft collection only. They may update `.artic/init-session.json`, ask missing questions, or summarize readiness, but they must not create finalized brief/reference/design outputs. When `.artic/init-session.json` exists, its status is authoritative for `@artic start` even if older `.artic/brief.json` or `.artic/references.json` files already exist.
+`@artic init` and normal follow-up replies are draft collection only. They may update `.artic/init-session.json`, ask missing questions, or summarize readiness, but they must not create finalized brief/reference/strategy/design outputs. When `.artic/init-session.json` exists, its status is authoritative for `@artic start` even if older `.artic/brief.json` or `.artic/references.json` files already exist.
+
+The public `@artic start` agent workflow must author `.artic/strategy.json` and `docs/artic-strategy.md` before invoking the compiler. The raw `artic_start.py` fallback is compiler-only: if `.artic/strategy.json` is missing, it writes `.artic/strategy-prompt.md` and exits non-zero so the agent can supply design direction instead of letting a script invent it.
 
 ## Allowed Outputs By Command
 
@@ -26,8 +28,11 @@ Forbidden:
 .artic/intent.json
 .artic/brief.json
 .artic/references.json
+.artic/strategy.json
+.artic/strategy-prompt.md
 .artic/state.json
 docs/artic-brief.md
+docs/artic-strategy.md
 DESIGN.md
 docs/design-rules.md
 docs/design-qa-checklist.md
@@ -44,8 +49,10 @@ If `.artic/init-session.json.status` is `ready`, finalize first:
 .artic/intent.json
 .artic/brief.json
 .artic/references.json
+.artic/strategy.json
 .artic/state.json
 docs/artic-brief.md
+docs/artic-strategy.md
 ```
 
 Then generate:
@@ -55,6 +62,12 @@ DESIGN.md
 docs/design-rules.md
 docs/design-qa-checklist.md
 docs/homepage-design-prompt.md
+```
+
+Fallback-only output when an agent calls raw `artic_start.py` without strategy:
+
+```text
+.artic/strategy-prompt.md
 ```
 
 ## Agent Response Patterns
@@ -95,7 +108,7 @@ For Korean sessions:
 
 ### Start
 
-Finalize a ready session, generate docs, and run validation. If the session is still collecting, return a clear error with the missing fields/questions.
+Finalize a ready session, author `.artic/strategy.json` and `docs/artic-strategy.md`, generate docs through the compiler, and run validation. If the session is still collecting, return a clear error with the missing fields/questions. If the raw compiler reports missing strategy and writes `.artic/strategy-prompt.md`, the agent must answer that prompt and rerun `@artic start` rather than treating the prompt as completed design output.
 
 ## Regression Tests
 
