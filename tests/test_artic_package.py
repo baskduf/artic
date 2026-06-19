@@ -619,6 +619,75 @@ def test_artic_start_no_validate_skips_validator_but_writes_outputs():
         assert (Path(tmp) / "DESIGN.md").exists()
 
 
+def test_artic_show_blocks_missing_design_inputs_without_creating_preview():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_show.py"),
+            "--root",
+            tmp,
+        ], capture_output=True, text=True)
+        assert result.returncode == 1
+        payload = json.loads(result.stdout)
+        assert "missing required input" in payload["error"]
+        assert "DESIGN.md" in payload["error"]
+        assert not (Path(tmp) / ".artic" / "show").exists()
+
+
+def test_artic_show_generates_static_preview_without_modifying_app_files():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        app_file = root / "src" / "App.tsx"
+        app_file.parent.mkdir(parents=True)
+        original_app = "export default function App() { return <main>Existing app</main>; }\n"
+        app_file.write_text(original_app, encoding="utf-8")
+
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_show.py"),
+            "--root",
+            tmp,
+        ], check=True, capture_output=True, text=True)
+
+        payload = json.loads(result.stdout)
+        preview = root / ".artic" / "show" / "index.html"
+        assert payload["preview_file"] == str(preview)
+        assert payload["modified_app_files"] == []
+        assert preview.exists()
+        assert app_file.read_text(encoding="utf-8") == original_app
+        html = preview.read_text(encoding="utf-8")
+        assert "<!doctype html>" in html
+        assert "Artic Preview" in html
+        assert "Reference policy" in html
+        assert "DESIGN.md" in html
+
+
+def test_artic_show_sanitizes_design_token_values_before_css_output():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        design = root / "DESIGN.md"
+        design.write_text(
+            design.read_text(encoding="utf-8").replace(
+                '  primary: "#1F4FD8"',
+                '  primary: "red;} </style><script>alert(1)</script><style>"',
+            ),
+            encoding="utf-8",
+        )
+
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_show.py"),
+            "--root",
+            tmp,
+        ], check=True, capture_output=True, text=True)
+
+        html = (root / ".artic" / "show" / "index.html").read_text(encoding="utf-8")
+        assert "<script>alert(1)</script>" not in html
+        assert "--primary: #1F4FD8;" in html
+
+
 def test_artic_start_migrates_legacy_init_outputs_without_intent_file():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
@@ -1448,7 +1517,7 @@ def test_update_command_supports_installed_plugin_roots_without_network():
     assert "No files were modified" in result.stdout
 
 
-def test_skill_docs_expose_version_update_and_start_commands():
+def test_skill_docs_expose_version_update_start_and_show_commands():
     for rel in [
         "skills/artic/SKILL.md",
         "plugins/claude-artic/skills/artic/SKILL.md",
@@ -1457,6 +1526,9 @@ def test_skill_docs_expose_version_update_and_start_commands():
         text = (ROOT / rel).read_text(encoding="utf-8")
         assert "@artic start" in text, rel
         assert "artic_start.py --root <project-root>" in text, rel
+        assert "@artic show" in text, rel
+        assert "artic_show.py --root <project-root>" in text, rel
+        assert ".artic/show/index.html" in text, rel
         assert "@artic version" in text, rel
         assert "@artic update" in text, rel
 

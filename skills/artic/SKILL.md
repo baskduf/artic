@@ -27,6 +27,10 @@ Core flow:
 → compile the brief + selected references into AI-native design docs
 → generate DESIGN.md and implementation guidance
 → validate outputs
+
+@artic show
+→ render the generated design docs into a safe static homepage preview
+→ write `.artic/show/index.html` without modifying app source files by default
 ```
 
 Artic is not a generic design prompt. Its core value is searching multiple professional/OSS design resources, extracting compatible patterns, and synthesizing one project-specific AI-native design direction.
@@ -113,6 +117,23 @@ Required behavior:
 10. If Node is available, optionally run `npx -y @google/design.md lint DESIGN.md`.
 
 Lifecycle transition rule: `@artic start` is the only transition that may finalize a ready init session. If `.artic/init-session.json` is `collecting`, stop and ask the remaining questions; if it is `ready`, finalize it and then generate docs.
+
+### `@artic show`
+
+Purpose: render the current Artic design outputs into a safe static homepage preview.
+
+Executable path for agents/hosts that expose shell-backed commands:
+
+```bash
+python3 <artic-skill>/scripts/artic_show.py --root <project-root>
+```
+
+Required behavior:
+1. Require `DESIGN.md`, `docs/homepage-design-prompt.md`, `.artic/brief.json`, and `.artic/references.json` from a completed `@artic start` flow.
+2. Generate `.artic/show/index.html` as a static preview of the homepage direction.
+3. Do not modify app/source files by default; downstream files such as `app/page.tsx`, `src/App.tsx`, or `pages/index.tsx` require an explicit future `--apply` or separate apply command.
+4. Include the reference-safety policy in the preview so the preview remains reference-informed, not reference-copied.
+5. Return JSON with `preview_file` and `modified_app_files` for verification.
 
 ### `@artic review` MVP-light
 
