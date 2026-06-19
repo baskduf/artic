@@ -103,7 +103,7 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
     facets = normalize_facets(args.project, args.audience, args.goal, args.vibe, args.references, args.stack)
 
     brief = {
-        "artic_version": "0.1.0",
+        "artic_version": "0.1.1",
         "project": {
             "name": args.project,
             "type": "homepage",
@@ -129,7 +129,7 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
         "selected_sources": selected_sources,
         "synthesis": "Use selected sources as compatible patterns; localize prose according to the brief language contract while preserving source names and protected terms.",
     }
-    state = {"artic_version": "0.1.0", "last_generated_at": now, "status": "initialized", "language": lang}
+    state = {"artic_version": "0.1.1", "last_generated_at": now, "status": "initialized", "language": lang}
 
     write(root / ".artic" / "brief.json", json.dumps(brief, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "references.json", json.dumps(references, indent=2, ensure_ascii=False) + "\n")

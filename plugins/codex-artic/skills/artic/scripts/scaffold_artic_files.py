@@ -46,7 +46,7 @@ def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
     language = language_contract(locale)
     policy = policy_block(locale)
     brief = {
-        "artic_version": "0.1.0",
+        "artic_version": "0.1.1",
         "project": {
             "name": project_name,
             "type": "homepage",
@@ -75,7 +75,7 @@ def scaffold(root: Path, project_name: str, locale: str = "en-US") -> None:
         ],
         "synthesis": "Clean SaaS hierarchy with token discipline and mobile-first accessibility.",
     }
-    state = {"artic_version": "0.1.0", "last_generated_at": now, "status": "scaffolded", "language": language}
+    state = {"artic_version": "0.1.1", "last_generated_at": now, "status": "scaffolded", "language": language}
     write(root / ".artic" / "brief.json", json.dumps(brief, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "references.json", json.dumps(references, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "state.json", json.dumps(state, indent=2, ensure_ascii=False) + "\n")
