@@ -1,5 +1,6 @@
 from __future__ import annotations
-import json, re, subprocess, sys, tempfile
+import functools, json, re, subprocess, sys, tempfile, threading
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -113,6 +114,78 @@ def test_reference_synthesis_rejects_invalid_limit():
         ], capture_output=True, text=True)
         assert result.returncode != 0
         assert "limit must be >= 1" in result.stdout
+
+
+def test_reference_synthesis_can_live_fetch_and_cache_remote_sources():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        remote = root / "remote"
+        remote.mkdir()
+        (remote / "voltagent.md").write_text("# Remote VoltAgent\n\n- Live fetched SaaS hero pattern.\n", encoding="utf-8")
+        (remote / "shadcn.md").write_text("# Remote shadcn\n\n- Live fetched component primitive pattern.\n", encoding="utf-8")
+        catalog = root / "catalog.json"
+        cache = root / "cache"
+        output = root / "reference-synthesis.md"
+
+        handler = functools.partial(SimpleHTTPRequestHandler, directory=str(remote))
+        server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            base = f"http://127.0.0.1:{server.server_port}"
+            catalog.write_text(json.dumps([
+                {
+                    "id": "voltagent-awesome-design-md",
+                    "name": "VoltAgent awesome-design-md",
+                    "type": "design-md-corpus",
+                    "license": "MIT",
+                    "tags": ["homepage", "saas", "ai-product", "developer-tool"],
+                    "strengths": ["homepage style patterns"],
+                    "use_for": ["style candidates"],
+                    "live_sources": [{"url": f"{base}/voltagent.md", "kind": "markdown", "license": "MIT"}],
+                },
+                {
+                    "id": "shadcn-ui",
+                    "name": "shadcn/ui ecosystem",
+                    "type": "ui-implementation-ecosystem",
+                    "license": "MIT",
+                    "tags": ["react", "components", "developer-tool", "saas"],
+                    "strengths": ["component primitives"],
+                    "use_for": ["component defaults"],
+                    "live_sources": [{"url": f"{base}/shadcn.md", "kind": "markdown", "license": "MIT"}],
+                },
+            ]), encoding="utf-8")
+
+            result = subprocess.run([
+                sys.executable,
+                str(ROOT / "skills/artic/scripts/synthesize_reference_notes.py"),
+                "--query",
+                "ai product developer saas",
+                "--catalog",
+                str(catalog),
+                "--fixtures-dir",
+                str(root / "missing-fixtures"),
+                "--cache-dir",
+                str(cache),
+                "--live-fetch",
+                "--limit",
+                "2",
+                "--output",
+                str(output),
+            ], check=True, capture_output=True, text=True)
+        finally:
+            server.shutdown()
+            server.server_close()
+
+        payload = json.loads(result.stdout)
+        assert payload["live_fetch_count"] == 2
+        assert payload["cache_dir"] == str(cache)
+        assert len(list(cache.glob("*.md"))) == 2
+        synthesis = output.read_text(encoding="utf-8")
+        assert "live-fetched" in synthesis
+        assert "Live fetched SaaS hero pattern" in synthesis
+        assert "Live fetched component primitive pattern" in synthesis
+
 
 def test_design_templates_reference_all_declared_color_tokens():
     for rel in [

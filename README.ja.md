@@ -93,6 +93,7 @@ plugins/codex-artic                  # Codex plugin package
 ```bash
 python3 skills/artic/scripts/search_reference_catalog.py --query "ai product developer saas" --limit 3
 python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product developer saas" --limit 3 --output /tmp/artic-smoke/docs/reference-synthesis.md
+python3 skills/artic/scripts/synthesize_reference_notes.py --query "ai product developer saas" --limit 3 --live-fetch --cache-dir /tmp/artic-cache --fixtures-dir /tmp/no-fixtures --output /tmp/artic-smoke/docs/live-reference-synthesis.md
 python3 skills/artic/scripts/scaffold_artic_files.py --root /tmp/artic-smoke
 python3 skills/artic/scripts/validate_artic_outputs.py --root /tmp/artic-smoke
 ```
