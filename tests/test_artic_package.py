@@ -11,8 +11,24 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 artic_update = importlib.import_module("artic_update")
 artic_version = importlib.import_module("artic_version")
+artic_init_session = importlib.import_module("artic_init_session")
 
 README_FILES = ["README.md", "README.ko.md", "README.ja.md", "README.zh-CN.md", "README.zh-TW.md"]
+
+def assert_no_finalized_artic_outputs(root: Path):
+    forbidden = [
+        ".artic/intent.json",
+        ".artic/brief.json",
+        ".artic/references.json",
+        ".artic/state.json",
+        "docs/artic-brief.md",
+        "DESIGN.md",
+        "docs/design-rules.md",
+        "docs/design-qa-checklist.md",
+        "docs/homepage-design-prompt.md",
+    ]
+    for rel in forbidden:
+        assert not (root / rel).exists(), rel
 
 def test_json_manifests_parse():
     for rel in [".claude-plugin/marketplace.json", ".agents/plugins/marketplace.json", "plugins/claude-artic/.claude-plugin/plugin.json", "plugins/codex-artic/.codex-plugin/plugin.json", "skills/artic/references/source-catalog.json", "skills/artic/templates/brief.schema.json"]:
@@ -59,6 +75,18 @@ def test_readmes_document_version_and_update_commands():
         "@artic update",
         "python3 skills/artic/scripts/artic_version.py --root .",
         "python3 skills/artic/scripts/artic_update.py --root .",
+    ]
+    for rel in README_FILES:
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        for phrase in required_phrases:
+            assert phrase in text, (rel, phrase)
+
+
+def test_readmes_document_init_start_lifecycle_boundary():
+    required_phrases = [
+        ".artic/init-session.json",
+        "@artic init",
+        "@artic start",
     ]
     for rel in README_FILES:
         text = (ROOT / rel).read_text(encoding="utf-8")
@@ -206,6 +234,92 @@ def test_artic_init_generates_brief_and_reference_search_outputs():
         assert "Reference candidates" in (Path(tmp) / "docs" / "artic-brief.md").read_text(encoding="utf-8")
 
 
+def test_artic_conversational_init_collecting_writes_only_session():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session = artic_init_session.create_or_update_session(
+            root,
+            "한국어로 Artic init 진행해줘. AI 회의록 서비스 랜딩을 만들고 싶어.",
+        )
+        assert session["status"] == "collecting"
+        assert (root / ".artic" / "init-session.json").exists()
+        assert session["language"]["locale"] == "ko-KR"
+        assert "project" in session["answers"]
+        assert session["missing"]
+        assert_no_finalized_artic_outputs(root)
+
+
+def test_artic_conversational_init_ready_does_not_finalize_without_start():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session = artic_init_session.create_or_update_session(
+            root,
+            "AI 회의록 서비스. 타깃은 스타트업 운영팀과 세일즈팀. 목표는 데모 요청. 쉽고 신뢰감 있는 모바일 우선 SaaS 느낌.",
+            answers={
+                "project": "AI 회의록 서비스",
+                "audience": "스타트업 운영팀과 세일즈팀",
+                "goal": "데모 요청",
+                "vibe": "쉽고 신뢰감 있는 모바일 우선 SaaS",
+                "stack": "React Tailwind",
+            },
+        )
+        assert session["status"] == "ready"
+        assert session["missing"] == []
+        assert (root / ".artic" / "init-session.json").exists()
+        assert_no_finalized_artic_outputs(root)
+
+
+def test_artic_conversational_init_finalize_creates_start_inputs_only_when_explicit():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        artic_init_session.create_or_update_session(
+            root,
+            "AI 회의록 서비스",
+            answers={
+                "project": "AI 회의록 서비스",
+                "audience": "스타트업 운영팀과 세일즈팀",
+                "goal": "데모 요청",
+                "vibe": "clean trustworthy mobile-first saas",
+                "stack": "React Tailwind",
+            },
+        )
+        assert_no_finalized_artic_outputs(root)
+
+        payload = artic_init_session.finalize_session(root, limit=4)
+
+        assert payload["selected_count"] >= 3
+        assert (root / ".artic" / "intent.json").exists()
+        assert (root / ".artic" / "brief.json").exists()
+        assert (root / ".artic" / "references.json").exists()
+        assert (root / ".artic" / "state.json").exists()
+        assert (root / "docs" / "artic-brief.md").exists()
+        assert not (root / "DESIGN.md").exists()
+        session = json.loads((root / ".artic" / "init-session.json").read_text(encoding="utf-8"))
+        assert session["status"] == "initialized"
+
+
+def test_artic_init_session_ready_payload_instructs_start_without_generating():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session = artic_init_session.create_or_update_session(
+            root,
+            "AI 회의록 서비스",
+            answers={
+                "project": "AI 회의록 서비스",
+                "audience": "스타트업 운영팀과 세일즈팀",
+                "goal": "데모 요청",
+                "vibe": "쉽고 신뢰감 있는 모바일 우선 SaaS",
+            },
+        )
+        assert session["status"] == "ready"
+
+        summary = artic_init_session.render_ready_summary(session)
+
+        assert "@artic start" in summary
+        assert "AI 회의록 서비스" in summary
+        assert_no_finalized_artic_outputs(root)
+
+
 def test_artic_start_generates_and_validates_docs_from_init_outputs():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run([
@@ -256,6 +370,148 @@ def test_artic_start_generates_and_validates_docs_from_init_outputs():
         assert "Avoid:" in rules
         state = json.loads((root / ".artic" / "state.json").read_text(encoding="utf-8"))
         assert state["status"] == "generated"
+
+
+def test_artic_start_finalizes_ready_init_session_before_generating_docs():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        artic_init_session.create_or_update_session(
+            root,
+            "AI 회의록 서비스",
+            answers={
+                "project": "AI 회의록 서비스",
+                "audience": "스타트업 운영팀과 세일즈팀",
+                "goal": "데모 요청",
+                "vibe": "clean trustworthy mobile-first saas",
+                "stack": "React Tailwind",
+            },
+        )
+        assert_no_finalized_artic_outputs(root)
+
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_start.py"),
+            "--root",
+            tmp,
+        ], check=True, capture_output=True, text=True)
+
+        payload = json.loads(result.stdout)
+        assert payload["validated"] is True
+        assert (root / ".artic" / "brief.json").exists()
+        assert (root / ".artic" / "references.json").exists()
+        assert (root / "DESIGN.md").exists()
+        state = json.loads((root / ".artic" / "state.json").read_text(encoding="utf-8"))
+        assert state["status"] == "generated"
+
+
+def test_artic_start_refuses_collecting_init_session():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        artic_init_session.create_or_update_session(
+            root,
+            "한국어로 Artic init 진행해줘. AI 회의록 서비스 랜딩을 만들고 싶어.",
+        )
+
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_start.py"),
+            "--root",
+            tmp,
+        ], check=False, capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "cannot run @artic start before init is ready" in result.stdout
+        assert not (root / "DESIGN.md").exists()
+        assert not (root / ".artic" / "brief.json").exists()
+
+
+def test_artic_start_refuses_collecting_session_even_with_stale_finalized_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Old Project",
+            "--audience",
+            "old audience",
+            "--goal",
+            "old goal",
+            "--vibe",
+            "clean trustworthy mobile-first saas",
+            "--stack",
+            "React Tailwind",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        artic_init_session.create_or_update_session(
+            root,
+            "한국어로 Artic init 진행해줘. AI 회의록 서비스 랜딩을 만들고 싶어.",
+        )
+
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_start.py"),
+            "--root",
+            tmp,
+            "--no-validate",
+        ], check=False, capture_output=True, text=True)
+
+        assert result.returncode != 0
+        assert "cannot run @artic start before init is ready" in result.stdout
+        session = artic_init_session.read_session(root)
+        assert session["status"] == "collecting"
+
+
+def test_artic_start_finalizes_ready_session_over_stale_finalized_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Old Project",
+            "--audience",
+            "old audience",
+            "--goal",
+            "old goal",
+            "--vibe",
+            "clean trustworthy mobile-first saas",
+            "--stack",
+            "React Tailwind",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        artic_init_session.create_or_update_session(
+            root,
+            "AI 회의록 서비스",
+            answers={
+                "project": "AI 회의록 서비스",
+                "audience": "스타트업 운영팀과 세일즈팀",
+                "goal": "데모 요청",
+                "vibe": "clean trustworthy mobile-first saas",
+                "stack": "React Tailwind",
+            },
+        )
+
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_start.py"),
+            "--root",
+            tmp,
+        ], check=True, capture_output=True, text=True)
+
+        brief = json.loads((root / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        session = artic_init_session.read_session(root)
+        design = (root / "DESIGN.md").read_text(encoding="utf-8")
+        assert session["status"] == "initialized"
+        assert brief["project"]["name"] == "AI 회의록 서비스"
+        assert "AI 회의록 서비스" in design
+        assert "Old Project" not in design
 
 
 def test_artic_start_synthesis_preserves_initialized_reference_selection():
@@ -546,7 +802,8 @@ def test_artic_start_blocks_collecting_init_session():
         session_mod.create_or_update_session(root, "한국어로 AI 회의록 서비스 랜딩 만들고 싶어")
         result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
         assert result.returncode == 1
-        assert "init session is still collecting" in result.stdout
+        assert "cannot run @artic start before init is ready" in result.stdout
+        assert "missing audience, goal, vibe" in result.stdout
         assert not (root / ".artic" / "brief.json").exists()
 
 

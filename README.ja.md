@@ -152,13 +152,16 @@ Artic が呼び出されると、エージェントは次を行います:
 | インストール済み/最新バージョン確認 | `@artic version` |
 | 安全な更新コマンド表示 | `@artic update` |
 
+`@artic init` は会話型の draft 状態だけを `.artic/init-session.json` に保存します。必須情報がそろっても自動では文書を生成せず、ユーザーが明示的に `@artic start` を実行したときだけ生成を開始します。
+
 ## Output Policy
 
 Artic writes durable files instead of dumping long design prose into chat:
 
 ```text
-.artic/brief.json
-.artic/references.json
+.artic/init-session.json   # draft interview state from @artic init
+.artic/brief.json          # finalized by @artic start
+.artic/references.json     # finalized by @artic start
 .artic/state.json
 docs/artic-brief.md
 DESIGN.md
