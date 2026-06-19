@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 - 2026-06-20
+
+### Removed
+- Removed the public `@artic show` and `@artic review` workflow surface to keep Artic focused on `@artic init` → `@artic start`.
+- Removed show preview bundle generation, risk-readiness gating, production-readiness status fields, and related defensive output sections from the skill, scripts, schemas, validators, docs, and mirrored Claude/Codex packages.
+
+### Changed
+- Reframed reference safety as constructive design-principle extraction for original project-specific direction.
+
 ## 0.4.1 - 2026-06-20
 
 ### Fixed

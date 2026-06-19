@@ -1,7 +1,7 @@
 ---
 name: artic
-description: "Use when creating or improving a homepage/website and design rules are missing or weak. Artic is an agent design-direction protocol: @artic init interviews the user, @artic start authors strategy artifacts, then the compiler produces AI-native DESIGN.md docs without copying protected brand assets."
-version: 0.4.1
+description: "Use when creating or improving a homepage/website and design rules are missing or weak. Artic is an agent design-direction protocol: @artic init interviews the user, @artic start authors strategy artifacts, then the compiler produces AI-native DESIGN.md docs from reusable reference principles."
+version: 0.5.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -12,7 +12,7 @@ metadata:
 
 # Artic
 
-Artic is an agent design-direction protocol for AI-built websites: a contract-bound LLM design director that turns reference-informed judgment into implementation-ready design artifacts.
+Artic is a reference-informed design-documentation protocol for AI-built websites: a contract-bound LLM design director that turns project intent and reusable reference principles into implementation-ready design artifacts before coding.
 
 Core flow:
 
@@ -21,24 +21,16 @@ Core flow:
 → collect project/design intent
 → normalize into search facets
 → search professional and open-source design references
-→ select and combine the best patterns
+→ preserve a draft intake session
 
 @artic start
 → author `.artic/strategy.json` and `docs/artic-strategy.md` as the design-direction contract
 → run the compiler against that strategy
 → generate DESIGN.md and implementation guidance
 → validate outputs
-
-@artic show
-→ render the strategy artifacts and sourced/generated assets into a provenance-recorded asset-first visual draft bundle
-→ write `.artic/show/` preview files without modifying app source files
-
-@artic review
-→ compare implementation against `.artic/strategy.json`, `docs/artic-strategy.md`, and `DESIGN.md`
-→ report token, hierarchy, spacing, accessibility, CTA, mobile, and reference-safety drift
 ```
 
-Artic is not a generic design prompt or passive generator. Its core value is searching multiple professional/OSS design resources, extracting compatible patterns, and binding one project-specific AI-native design direction into a strategy contract. Scripts are validator/compiler/renderer helpers; they do not make the design judgment for the agent.
+Artic is not a generic design prompt or passive generator. Its core value is searching multiple professional/OSS design resources, extracting compatible patterns, and binding one project-specific AI-native design direction into a strategy contract. Scripts are validator/compiler helpers; they do not make the design judgment for the agent.
 
 ## When to Use
 
@@ -49,7 +41,7 @@ Use Artic when:
 - The user provides reference sites/images and wants the design improved.
 - The user wants AI-native docs before implementation.
 
-Do not use Artic for exact cloning of a brand/site or copying logos, trademarks, proprietary illustrations, exact layouts, copywriting, or animations.
+Do not use Artic for exact cloning of a brand/site or copying logos, trademarks, proprietary illustrations, exact layouts, copywriting, or animations. Use references to extract reusable design principles, then create original project-specific direction.
 
 ## Commands
 
@@ -71,7 +63,7 @@ Language behavior:
 - When `@artic start` compiles the ready session, carry the language contract into `.artic/brief.json.language`, `.artic/state.json.language`, and generated docs using `<!-- artic-language: <locale> -->`.
 - Preserve machine-readable terms such as `DESIGN.md`, `AI-native`, `Artic`, source names, and design token keys.
 - Localize user-facing interview questions and prose according to the language contract.
-- Validate localized reference safety with the invariant `<!-- artic-policy: reference-safety-v1 -->` marker, not exact English copy.
+- Validate localized reference principle policy with the invariant `<!-- artic-policy: reference-safety-v1 -->` marker, not exact English copy.
 
 Default interview questions:
 1. What product/service is this homepage for?
@@ -86,14 +78,11 @@ Default interview questions:
 10. Tech stack?
 11. Accessibility target? Default: WCAG AA.
 12. Existing docs that must be reflected?
-13. May Artic search/use owned or clearly licensed public assets, or should external sources stay as reference principles only?
 
-External reference vs external asset boundary:
+Reference boundary:
 - External references are design/runtime sources used for reusable principles, interaction patterns, accessibility/performance constraints, token relationships, and implementation guidance.
-- External assets are concrete media that can appear in the generated site: GLB files, images, models, icons, textures, fonts, illustrations, or similar files.
-- `@artic start` still treats external sources as reference-principles unless the user explicitly allows asset usage.
-- `@artic show` may use sourced or generated assets for the preview bundle when doing so improves the first visual draft, but every asset must be recorded in `.artic/show/assets/manifest.json` and `.artic/show/report.json` with source/generation notes, license status when known, and preview-only status when unverified.
-- Unverified assets are allowed only inside the preview bundle as provenance-recorded, preview-only material. Do not claim production license clearance; production/apply review belongs to a future `@artic apply` flow or a separate implementation review.
+- Artic treats external sources as reference-principles for strategy and documentation, not as concrete assets to copy into the user's site.
+- Use reference guidance as constructive creative direction: translate patterns into original tokens, hierarchy, components, motion, and information architecture.
 
 Fast path: if user says `@artic init quick`, ask only product, audience, goal, vibe, and references.
 
@@ -142,31 +131,6 @@ Required behavior:
 
 Lifecycle transition rule: `@artic start` is the only transition that may finalize a ready init session. If `.artic/init-session.json` is `collecting`, stop and ask the remaining questions; if it is `ready`, finalize it and then generate docs.
 
-### `@artic show`
-
-Purpose: render the current Artic strategy into a provenance-recorded, asset-first first visual draft bundle. The goal is a stronger strategy-grounded first visual draft by using sourced/generated assets when helpful, while recording where each asset came from and whether it is preview-only.
-
-Executable path for agents/hosts that expose shell-backed commands:
-
-```bash
-python3 <artic-skill>/scripts/artic_show.py --root <project-root>
-```
-
-Required behavior:
-1. Require `DESIGN.md`, `docs/homepage-design-prompt.md`, `.artic/brief.json`, `.artic/references.json`, and `.artic/strategy.json` from a completed `@artic start` flow.
-2. Generate a strategy-grounded first visual draft bundle under `.artic/show/`, not just a minimal static preview.
-3. Prefer asset-first draft quality: use user-provided, sourced, or generated images/models/icons/textures when they improve the first visual draft, and fall back to styled placeholders only when assets are unavailable or inappropriate.
-4. Record provenance for every preview asset in `.artic/show/assets/manifest.json` and summarize asset decisions, gaps, and warnings in `.artic/show/report.json`.
-5. Mark unverified assets as preview-only/provenance-recorded. Do not state or imply production license clearance for unverified sourced/generated assets.
-6. Do not modify app/source files. Downstream files such as `app/page.tsx`, `src/App.tsx`, or `pages/index.tsx` are out of scope for `@artic show`; a future `@artic apply` or separate implementation review would handle production/apply decisions later.
-7. Include the reference-safety policy in the preview so the preview remains reference-informed, not reference-copied.
-8. If selected reference roles include `3d_runtime`, render a runtime-aware preview structure such as a `model-viewer`/Three.js placeholder, central interaction zone, poster/reduced-motion fallback notes, and asset provenance/license reminders instead of a generic landing-page-only preview.
-9. Return JSON with at least `preview_file`, `bundle_dir`, `asset_manifest`, `report_file`, and `modified_app_files` for verification.
-
-### `@artic review` MVP-light
-
-After implementation, compare the current homepage against `.artic/strategy.json`, `docs/artic-strategy.md`, and `DESIGN.md`. Check token consistency, typography hierarchy, spacing rhythm, CTA hierarchy, mobile behavior, accessibility basics, and no-copy reference safety. The MVP review output contract may be chat-first; future hosts may persist `.artic/review.json` and `docs/artic-review.md`, but do not claim those files exist unless the review workflow writes them.
-
 ### `@artic version`
 
 Purpose: report the installed Artic package versions and compare them with the latest GitHub release.
@@ -201,7 +165,7 @@ Artic catalog entries are user-facing design intelligence, not an internal audit
 - Prefer wording such as “Use this for…”, “Apply its…”, “Translate… into project-specific…”, “Pair with…”, and “Keep identity, copy, and layout decisions original by…”.
 - Keep each entry source-specific; do not flatten the catalog into repeated boilerplate.
 
-Use `application_guidance` for this product-facing catalog copy. Do not add `risk_notes` or other defensive/internal field names for new catalog work.
+Use `application_guidance` for this product-facing catalog copy. Keep catalog guidance positive, specific, and application-oriented.
 
 Good pattern:
 ```text
@@ -229,16 +193,16 @@ Synthesis rule:
 - Resolve conflicts based on project goal.
 - Preserve rationale in `docs/artic-brief.md`.
 
-## Reference Safety
+## Reference Principle Policy
 
 Allowed: token structure, color role relationships, typography hierarchy, spacing systems, component behavior, accessibility rules, motion principles.
 
-Forbidden unless user owns rights: logos, trademarks, proprietary illustrations, exact page composition, exact brand palette as identity, copywriting, copyrighted imagery.
+Not part of Artic's output: logos, trademarks, proprietary illustrations, exact page composition, exact brand palette as identity, copywriting, copyrighted imagery.
 
 Required phrase in generated docs:
 
 ```text
-Reference policy: extract reusable principles only; do not copy logos, trademarks, proprietary illustrations, or exact layouts.
+Reference policy: extract reusable principles only; create original project-specific direction.
 ```
 
 ## Output Contract
@@ -280,21 +244,6 @@ docs/design-qa-checklist.md
 docs/homepage-design-prompt.md
 ```
 
-`@artic show` creates a provenance-recorded preview bundle:
-
-```text
-.artic/show/index.html
-.artic/show/styles.css
-.artic/show/tokens.json
-.artic/show/assets/manifest.json
-.artic/show/report.json
-.artic/show/critique.md
-.artic/show/selected.json
-.artic/show/iterations/<NNN>/...
-```
-
-Show bundles are preview-only and do not modify app source files. Unverified sourced/generated assets may be included for first-draft visual quality only when marked preview-only and provenance-recorded; production/apply clearance is out of scope for `@artic show` and belongs to future `@artic apply`/implementation review.
-
 Optional exports: `tailwind.theme.json`, `tokens.json`.
 
 ## Presets
@@ -309,7 +258,7 @@ python3 <artic-skill>/scripts/validate_artic_outputs.py --root <project-root>
 python3 <artic-skill>/scripts/search_reference_catalog.py --query "ai product developer saas premium" --limit 3
 ```
 
-Validation, compilation, and rendering scripts enforce and materialize the contract. They are not a design judgment source; `@artic start` must provide that judgment through `.artic/strategy.json`.
+Validation and compilation scripts enforce and materialize the contract. They are not a design judgment source; `@artic start` must provide that judgment through `.artic/strategy.json`.
 
 ## Common Pitfalls
 
