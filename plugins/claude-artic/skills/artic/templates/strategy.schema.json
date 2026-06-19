@@ -54,6 +54,27 @@
     "forbidden_copy_elements": {
       "type": "array",
       "contains": {"const": "logos"}
+    },
+    "risk_readiness": {
+      "type": "object",
+      "required": ["schema_version", "risk_categories", "quality_critical_requirements", "dynamic_required_fields", "missing_dynamic_required_fields", "readiness", "safe_assumptions", "unsafe_assumptions", "placeholder_boundary", "stop_conditions", "risk_summary", "completion_criteria"],
+      "properties": {
+        "schema_version": {"const": "artic-risk-readiness-v1"},
+        "risk_categories": {"type": "array", "items": {"type": "string"}},
+        "quality_critical_requirements": {"type": "array"},
+        "dynamic_required_fields": {"type": "array", "items": {"type": "string"}},
+        "missing_dynamic_required_fields": {"type": "array", "items": {"type": "string"}},
+        "readiness": {
+          "type": "object",
+          "required": ["strategy", "preview", "implementation", "status"]
+        },
+        "safe_assumptions": {"type": "array", "items": {"type": "string"}},
+        "unsafe_assumptions": {"type": "array", "items": {"type": "string"}},
+        "placeholder_boundary": {"type": "string"},
+        "stop_conditions": {"type": "array", "items": {"type": "string"}},
+        "risk_summary": {"type": "string"},
+        "completion_criteria": {"type": "array", "items": {"type": "string"}}
+      }
     }
   },
   "additionalProperties": true

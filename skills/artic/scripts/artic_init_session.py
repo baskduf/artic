@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from locale_contract import detect_locale_from_text, language_contract
+from risk_readiness import analyze_risk_readiness as analyze_risk_readiness_contract
 
 SESSION_PATH = Path(".artic") / "init-session.json"
 REQUIRED_FIELDS = ["project", "audience", "goal", "vibe"]
@@ -88,20 +89,40 @@ QUESTION_SPECS: dict[str, dict[str, str]] = {
         "en-US": "What brand, legal, tone, color, logo, or copy constraints must the design follow?",
         "ko-KR": "디자인이 따라야 할 브랜드/법무/톤/색상/로고/문구 제약은 무엇인가요?",
     },
+    "brand_assets": {
+        "intent": "Capture brand assets and brand-system constraints.",
+        "en-US": "What logo, color, font, or brand-system assets must the design follow?",
+        "ko-KR": "디자인이 따라야 할 로고, 색상, 폰트, 브랜드 시스템 에셋은 무엇인가요?",
+    },
     "conversion_details": {
         "intent": "Clarify conversion path details.",
         "en-US": "What exact CTA, form fields, destination, or success criteria should the conversion flow use?",
         "ko-KR": "전환 흐름의 정확한 CTA, 폼 필드, 이동 경로, 성공 기준은 무엇인가요?",
+    },
+    "conversion_path": {
+        "intent": "Clarify conversion path details.",
+        "en-US": "What exact CTA, form fields, destination, trust requirements, or success criteria should the conversion flow use?",
+        "ko-KR": "전환 흐름의 정확한 CTA, 폼 필드, 이동 경로, 신뢰 조건, 성공 기준은 무엇인가요?",
     },
     "performance_accessibility": {
         "intent": "Clarify performance and accessibility constraints for risky media or interaction.",
         "en-US": "What performance and accessibility requirements apply (load budget, reduced motion, keyboard support, alt/fallback content)?",
         "ko-KR": "성능/접근성 요구는 무엇인가요? 로딩 예산, reduced motion, 키보드 지원, 대체 콘텐츠를 알려주세요.",
     },
+    "performance_accessibility_plan": {
+        "intent": "Clarify performance and accessibility constraints for risky media or interaction.",
+        "en-US": "What performance and accessibility plan applies (load budget, reduced motion, keyboard support, alt/fallback content)?",
+        "ko-KR": "성능/접근성 계획은 무엇인가요? 로딩 예산, reduced motion, 키보드 지원, 대체 콘텐츠를 알려주세요.",
+    },
     "license_policy": {
         "intent": "Clarify licensing and attribution obligations.",
         "en-US": "What license and attribution policy should Artic follow for any third-party assets or references?",
         "ko-KR": "제3자 에셋/레퍼런스의 라이선스와 출처 표기는 어떤 정책을 따라야 하나요?",
+    },
+    "license_clearance": {
+        "intent": "Clarify licensing and attribution obligations.",
+        "en-US": "What license clearance and attribution policy should Artic follow for any third-party assets or references?",
+        "ko-KR": "제3자 에셋/레퍼런스의 라이선스 확인과 출처 표기는 어떤 정책을 따라야 하나요?",
     },
 }
 
@@ -189,79 +210,16 @@ def _answer_corpus(answers: dict[str, str]) -> str:
 
 
 def analyze_risk_readiness(answers: dict[str, str], missing_core: list[str]) -> dict[str, Any]:
-    """Return a small compatibility-safe readiness contract for dynamic init follow-ups."""
-    corpus = _answer_corpus(answers)
-    signals: list[dict[str, str]] = []
-    dynamic_required: list[str] = []
-
-    def add(field: str, signal: str, reason: str) -> None:
-        if field not in dynamic_required:
-            dynamic_required.append(field)
-        if not any(row.get("signal") == signal for row in signals):
-            signals.append({"signal": signal, "reason": reason})
-
-    has_3d = bool(re.search(r"\b3d\b|three\.js|webgl|model-viewer|glb|gltf|석고상|모델", corpus, re.IGNORECASE))
-    has_interaction = bool(re.search(r"interactive|interaction|interact|drag|rotate|zoom|orbit|touch|keyboard|인터랙티브|상호작용|만질|회전|줌|드래그", corpus, re.IGNORECASE))
-    has_rich_media = bool(re.search(r"video|영상|이미지|asset|assets?|에셋|사진|illustration|3d", corpus, re.IGNORECASE))
-    has_brand_hint = bool(re.search(r"brand|브랜드|logo|로고|legal|법무|tone|톤|color|색상", corpus, re.IGNORECASE))
-    has_conversion_risk = bool(re.search(r"checkout|payment|결제|구매|가입|sign\s?up|form|폼|예약|문의|demo|데모", corpus, re.IGNORECASE))
-
-    if has_3d or has_rich_media:
-        add("asset_source", "asset_source", "Visual/3D/media execution depends on concrete asset availability or placeholders.")
-        add("asset_policy", "asset_policy", "External assets must stay within the reference/license boundary unless explicitly allowed.")
-    if has_3d or has_interaction:
-        add("interaction_model", "interaction_model", "Interactive behavior needs implementation-specific controls, fallbacks, and states.")
-        add("performance_accessibility", "performance_accessibility", "Rich interaction or 3D media requires performance and accessibility safeguards.")
-    if has_brand_hint:
-        add("brand_constraints", "brand_constraints", "Brand/legal constraints can materially change design execution.")
-    if has_conversion_risk and not str(answers.get("goal", "")).strip():
-        add("conversion_details", "conversion_details", "Conversion flows need exact destination, form, or success criteria.")
-
-    # If a user names brand_constraints as a requirement key, keep it dynamic-required until answered.
-    for field in ("brand_constraints", "conversion_details", "performance_accessibility", "license_policy"):
-        if field in answers and not str(answers.get(field, "")).strip() and field not in dynamic_required:
-            dynamic_required.append(field)
-
-    def has_dynamic_answer(field: str) -> bool:
-        direct = str(answers.get(field, "")).strip()
-        if direct:
-            return True
-        if field == "performance_accessibility":
-            interaction_answer = str(answers.get("interaction_model", ""))
-            return bool(re.search(r"reduced motion|keyboard|키보드|대체|fallback|alt|접근성|성능|load|loading", interaction_answer, re.IGNORECASE))
-        if field == "license_policy":
-            policy_answer = str(answers.get("asset_policy", ""))
-            return bool(policy_answer.strip())
-        return False
-
-    missing_dynamic = [field for field in dynamic_required if not has_dynamic_answer(field)]
-    strategy = "blocked" if missing_core else "ready"
-    preview = "blocked" if missing_core else ("ready_with_placeholders" if missing_dynamic else "ready")
+    """Return the canonical Artic risk/readiness contract for dynamic init follow-ups."""
+    payload = analyze_risk_readiness_contract(answers)
     if missing_core:
-        implementation = "blocked"
-    elif missing_dynamic:
-        implementation = "blocked"
-    elif dynamic_required and not str(answers.get("performance_accessibility", answers.get("accessibility", ""))).strip() and (has_3d or has_interaction):
-        implementation = "ready_with_assumptions"
-    else:
-        implementation = "ready"
-    risk_level = "low"
-    if has_3d or (has_interaction and has_rich_media):
-        risk_level = "high"
-    elif dynamic_required:
-        risk_level = "medium"
-    return {
-        "risk_level": risk_level,
-        "signals": signals,
-        "dynamic_required_fields": dynamic_required,
-        "missing_dynamic_required_fields": missing_dynamic,
-        "readiness": {
-            "strategy": strategy,
-            "preview": preview,
-            "implementation": implementation,
-        },
-        "implementation_blocker": bool(not missing_core and implementation == "blocked"),
-    }
+        payload["missing_core_fields"] = list(missing_core)
+        payload["readiness"] = {"strategy": "blocked", "preview": "blocked", "implementation": "blocked", "status": "core_fields_missing"}
+        payload["ready_for_strategy"] = False
+        payload["ready_for_preview"] = False
+        payload["ready_for_implementation"] = False
+        payload["implementation_blocked"] = True
+    return payload
 
 
 def create_or_update_session(root: Path, user_text: str, explicit_locale: str | None = None, answers: dict[str, str] | None = None) -> dict[str, Any]:
@@ -288,8 +246,26 @@ def create_or_update_session(root: Path, user_text: str, explicit_locale: str | 
         bilingual_terms=bool(previous_language.get("bilingual_terms", False)),
     )
     missing = missing_required_fields(merged_answers)
-    risk_readiness = analyze_risk_readiness(merged_answers, missing)
-    missing_dynamic = list(risk_readiness.get("missing_dynamic_required_fields", []))
+    risk_answers = dict(merged_answers)
+    if risk_answers.get("stack") and not risk_answers.get("technical_runtime"):
+        risk_answers["technical_runtime"] = risk_answers["stack"]
+    elif not risk_answers.get("technical_runtime"):
+        vibe_text = str(risk_answers.get("vibe") or "")
+        if re.search(r"runtime|런타임|webgl|model-viewer|3d", vibe_text, re.IGNORECASE):
+            risk_answers["technical_runtime"] = vibe_text
+    if risk_answers.get("asset_policy") and not risk_answers.get("license_clearance"):
+        risk_answers["license_clearance"] = risk_answers["asset_policy"]
+    interaction_answer = str(risk_answers.get("interaction_model") or "")
+    if interaction_answer and not risk_answers.get("performance_accessibility_plan"):
+        if re.search(r"reduced motion|reduced-motion|keyboard|키보드|대체|fallback|alt|접근성|성능|load|loading", interaction_answer, re.IGNORECASE):
+            risk_answers["performance_accessibility_plan"] = interaction_answer
+    risk_readiness = analyze_risk_readiness(risk_answers, missing)
+    canonical_missing_dynamic = [str(field) for field in risk_readiness.get("missing_dynamic_required_fields", [])]
+    missing_dynamic = list(canonical_missing_dynamic)
+    if "license_clearance" in canonical_missing_dynamic and "asset_policy" not in missing_dynamic:
+        missing_dynamic.append("asset_policy")
+    if "asset_source" in canonical_missing_dynamic and not merged_answers.get("asset_policy") and "asset_policy" not in missing_dynamic:
+        missing_dynamic.append("asset_policy")
     last_question_ids = (missing + missing_dynamic)[:6]
     session = {
         "schema_version": 1,
@@ -299,7 +275,7 @@ def create_or_update_session(root: Path, user_text: str, explicit_locale: str | 
         "missing": missing,
         "risk_readiness": risk_readiness,
         "missing_dynamic_required_fields": missing_dynamic,
-        "readiness": risk_readiness["readiness"],
+        "readiness": {key: risk_readiness["readiness"].get(key) for key in ("strategy", "preview", "implementation")},
         "last_question_ids": last_question_ids,
     }
     write_session(root, session)
@@ -382,6 +358,11 @@ def render_ready_summary(session: dict[str, Any]) -> str:
                 f"구현 차단: 전략 문서는 시작할 수 있지만 실제 구현은 추가 확인이 필요합니다: {', '.join(missing_dynamic)}.",
                 "플레이스홀더/원칙 참고 경계는 유지되며, 에셋 사용을 명시적으로 허용하지 않으면 외부 소스는 원칙 참고로만 사용합니다.",
             ])
+        elif readiness.get("implementation") == "blocked":
+            lines.extend([
+                "구현 차단: 핵심 품질 요구가 플레이스홀더나 낮은 품질 대체물에 의존하고 있어 구현 전에 해결해야 합니다.",
+                "플레이스홀더/원칙 참고 경계는 유지되며, 필요한 입력을 검증할 때까지 프로덕션 구현으로 진행하지 않습니다.",
+            ])
         elif readiness.get("implementation") == "ready_with_assumptions":
             lines.append("구현 준비: 진행 가능하지만 성능/접근성 세부값은 보수적 기본값으로 가정합니다.")
         lines.extend([
@@ -407,6 +388,11 @@ def render_ready_summary(session: dict[str, Any]) -> str:
             lines.extend([
                 f"Implementation blocker: strategy docs may proceed, but implementation needs follow-up on: {', '.join(missing_dynamic)}.",
                 "Placeholder/reference boundaries remain active; external assets stay reference-principles only unless explicitly allowed.",
+            ])
+        elif readiness.get("implementation") == "blocked":
+            lines.extend([
+                "Implementation blocker: a quality-critical requirement depends on a placeholder or lower-quality substitute.",
+                "Placeholder/reference boundaries remain active; do not proceed to production implementation until the required input is verified.",
             ])
         elif readiness.get("implementation") == "ready_with_assumptions":
             lines.append("Implementation readiness: ready with conservative performance/accessibility assumptions.")

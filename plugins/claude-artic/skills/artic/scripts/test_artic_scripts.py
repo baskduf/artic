@@ -15,7 +15,7 @@ def write_fixture_strategy(root: Path, source_ids: list[str] | None = None, nort
             selected = references.get("selected_sources", []) if isinstance(references, dict) else []
             source_ids = [str(row["id"]) for row in selected if isinstance(row, dict) and row.get("id")][:3]
         else:
-            source_ids = ["voltagent-awesome-design-md", "shadcn-ui", "material-design"]
+            source_ids = ["google-design-md", "voltagent-awesome-design-md", "material-design"]
     north_star = north_star or "Make the product feel like a calm command center for proof-rich decisions."
     reference_roles = [
         {

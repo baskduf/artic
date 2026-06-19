@@ -90,6 +90,7 @@ def validate(root: Path) -> list[str]:
     errors: list[str] = []
     brief_locale = "en-US"
     declared_risk_readiness = False
+    risk_implementation_blocked = False
     for rel in REQUIRED_FILES:
         if not (root / rel).exists():
             errors.append(f"ERROR: missing required file: {rel}")
@@ -142,8 +143,15 @@ def validate(root: Path) -> list[str]:
             if isinstance(style, dict) and not style.get("design_north_star"):
                 errors.append("ERROR: brief style.design_north_star is required for LLM-first Artic output")
             risk_readiness = brief.get("risk_readiness")
+            risk_implementation_blocked = False
             if isinstance(risk_readiness, dict) and risk_readiness:
                 declared_risk_readiness = True
+                readiness = risk_readiness.get("readiness")
+                risk_implementation_blocked = (
+                    bool(risk_readiness.get("implementation_blocked"))
+                    or risk_readiness.get("ready_for_implementation") is False
+                    or (isinstance(readiness, dict) and str(readiness.get("implementation") or "").lower() == "blocked")
+                )
             elif "risk_readiness" in brief and risk_readiness not in ({}, None):
                 errors.append("ERROR: brief risk_readiness must be an object when provided")
 
@@ -270,12 +278,13 @@ def validate(root: Path) -> list[str]:
             for section in required_risk_sections:
                 if section not in text:
                     errors.append(f"ERROR: {rel} missing risk_readiness section: {section}")
-            blocked_terms = [
-                "implementation is blocked until missing inputs are resolved",
-                "누락된 정보가 해결될 때까지 구현은 차단됩니다",
-            ]
-            if not any(term in text for term in blocked_terms):
-                errors.append(f"ERROR: {rel} missing risk_readiness implementation block notice")
+            if risk_implementation_blocked:
+                blocked_terms = [
+                    "implementation is blocked until missing inputs are resolved",
+                    "누락된 정보가 해결될 때까지 구현은 차단됩니다",
+                ]
+                if not any(term in text for term in blocked_terms):
+                    errors.append(f"ERROR: {rel} missing risk_readiness implementation block notice")
     checklist = root / "docs" / "design-qa-checklist.md"
     if checklist.exists():
         text = checklist.read_text(encoding="utf-8")

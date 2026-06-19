@@ -1966,9 +1966,6 @@ def test_validator_checks_quality_tokens_inside_their_own_sections():
         assert "spacing missing quality token: md" in result.stdout
         assert "spacing missing quality token: lg" in result.stdout
 
-RISK_READINESS_XFAIL = "risk/readiness schema is being integrated on sibling branches; un-xfail after A/B/C/D merge"
-
-
 def _risk_session(user_text: str, *, answers: dict[str, str] | None = None) -> dict:
     session_mod = importlib.import_module("artic_init_session")
     with tempfile.TemporaryDirectory() as tmp:
@@ -1996,7 +1993,6 @@ def _question_text(risk: dict) -> str:
     return json.dumps(risk.get("questions") or risk.get("dynamic_questions") or risk, ensure_ascii=False).lower()
 
 
-@pytest.mark.xfail(reason=RISK_READINESS_XFAIL, strict=False)
 def test_risk_readiness_low_risk_standard_homepage_is_lightweight_and_implementation_ready():
     session = _risk_session(
         "Project: Payroll SaaS homepage. Audience: HR leaders. Goal: demo requests. Vibe: clean trustworthy SaaS. Stack: React Tailwind."
@@ -2011,7 +2007,6 @@ def test_risk_readiness_low_risk_standard_homepage_is_lightweight_and_implementa
     assert _required_field_ids(risk) <= {"project", "audience", "goal", "vibe", "stack", "references", "accessibility"}
 
 
-@pytest.mark.xfail(reason=RISK_READINESS_XFAIL, strict=False)
 def test_risk_readiness_korean_3d_homepage_blocks_implementation_and_asks_dynamic_fields():
     session = _risk_session(
         "한국어로 중앙에 만질 수 있는 3D 석고상이 있고 회전/줌 상호작용을 제공하는 예술가 홈페이지를 만들고 싶어.",
@@ -2031,12 +2026,11 @@ def test_risk_readiness_korean_3d_homepage_blocks_implementation_and_asks_dynami
     assert risk["ready_for_strategy"] is True
     assert risk["ready_for_preview"] in {True, "placeholder"}
     assert risk["ready_for_implementation"] is False
-    assert {"asset_policy", "interactivity", "license", "performance"} <= fields
+    assert {"asset_source", "interaction_model", "license_clearance", "performance_accessibility_plan"} <= fields
     for keyword in ["asset", "interact", "license", "performance"]:
         assert keyword in questions
 
 
-@pytest.mark.xfail(reason=RISK_READINESS_XFAIL, strict=False)
 def test_risk_readiness_product_photo_core_requirement_sets_acceptance_and_preview_placeholder_boundary():
     session = _risk_session(
         "Create an ecommerce homepage where a real product photo is the core requirement before launch.",
@@ -2058,7 +2052,6 @@ def test_risk_readiness_product_photo_core_requirement_sets_acceptance_and_previ
     assert "placeholder" in serialized and "preview" in serialized
 
 
-@pytest.mark.xfail(reason=RISK_READINESS_XFAIL, strict=False)
 def test_risk_readiness_brand_reference_detects_inspiration_without_clone_and_requires_constraints():
     session = _risk_session(
         "Make a Korean fintech homepage like Toss: simple, fast, trustworthy.",
@@ -2079,7 +2072,6 @@ def test_risk_readiness_brand_reference_detects_inspiration_without_clone_and_re
     assert risk["ready_for_implementation"] is False
 
 
-@pytest.mark.xfail(reason=RISK_READINESS_XFAIL, strict=False)
 def test_risk_readiness_payment_conversion_intent_requires_trust_completion_beyond_form_exists():
     session = _risk_session(
         "Build a checkout/payment landing page; completion means users trust payment and complete checkout, not only that a form exists.",
@@ -2099,7 +2091,6 @@ def test_risk_readiness_payment_conversion_intent_requires_trust_completion_beyo
     assert "payment" in serialized or "checkout" in serialized
 
 
-@pytest.mark.xfail(reason=RISK_READINESS_XFAIL, strict=False)
 def test_risk_readiness_motion_media_heavy_mobile_intent_requires_performance_accessibility_followup():
     session = _risk_session(
         "Mobile-first homepage with heavy motion, autoplay media, scroll animations, and video backgrounds.",
@@ -2115,13 +2106,118 @@ def test_risk_readiness_motion_media_heavy_mobile_intent_requires_performance_ac
     fields = _required_field_ids(risk)
     serialized = json.dumps(risk, ensure_ascii=False).lower()
 
-    assert {"performance", "accessibility"} <= fields
+    assert "performance_accessibility_plan" in fields
     assert "reduced motion" in serialized or "reduced-motion" in serialized
     assert "mobile" in serialized
     assert risk["ready_for_implementation"] is False
 
 
-@pytest.mark.xfail(reason=RISK_READINESS_XFAIL, strict=False)
+def test_risk_readiness_quality_critical_placeholder_answer_blocks_implementation():
+    session = _risk_session(
+        "Create an ecommerce homepage where a real product photo is the core requirement before launch.",
+        answers={
+            "project": "Product launch homepage with real product photo hero",
+            "audience": "buyers",
+            "goal": "preorder conversion",
+            "vibe": "premium product photography",
+            "asset_source": "generic gradient placeholder until photos are available",
+        },
+    )
+    risk = _risk_readiness(session)
+    serialized = json.dumps(risk, ensure_ascii=False).lower()
+
+    assert risk["ready_for_implementation"] is False
+    assert "placeholder" in serialized
+    assert "substitute" in serialized
+
+
+def test_artic_init_low_risk_generated_intent_does_not_create_false_positive_blockers():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Payroll SaaS homepage",
+            "--audience",
+            "HR leaders",
+            "--goal",
+            "demo requests",
+            "--vibe",
+            "clean trustworthy SaaS",
+            "--stack",
+            "React Tailwind",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        brief = json.loads((Path(tmp) / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        risk = brief["risk_readiness"]
+
+        assert risk["level"] == "low"
+        assert risk["ready_for_implementation"] is True
+        assert risk["missing_dynamic_required_fields"] == []
+
+
+def test_artic_init_alias_answers_satisfy_canonical_dynamic_fields():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Interactive 3D plaster statue portfolio homepage",
+            "--audience",
+            "curators and collectors",
+            "--goal",
+            "artwork inquiries",
+            "--vibe",
+            "quiet premium 3D WebGL runtime",
+            "--stack",
+            "React model-viewer",
+            "--requirement",
+            "asset_source=owned GLB plaster statue model",
+            "--requirement",
+            "interaction_model=drag rotate, wheel zoom, keyboard rotation, reduced motion poster fallback",
+            "--asset-policy",
+            "owned assets only; external references as principles only",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        brief = json.loads((Path(tmp) / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        risk = brief["risk_readiness"]
+
+        assert "license_clearance" not in risk["missing_dynamic_required_fields"]
+        assert "performance_accessibility_plan" not in risk["missing_dynamic_required_fields"]
+        assert risk["ready_for_implementation"] is True
+
+
+def test_artic_start_missing_strategy_prompt_includes_session_risk_summary():
+    session_mod = importlib.import_module("artic_init_session")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        session_mod.create_or_update_session(
+            root,
+            "한국어로 인터랙티브 3D 석고상 홈페이지를 만들고 싶어.",
+            answers={
+                "project": "중앙에 만질 수 있는 3D 석고상이 있는 예술가 포트폴리오 홈페이지",
+                "audience": "전시 기획자와 컬렉터",
+                "goal": "작품 문의",
+                "vibe": "고급스럽고 조용한 3D WebGL 런타임",
+                "stack": "React model-viewer",
+            },
+        )
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        prompt_path = root / payload["strategy_prompt"]
+        prompt = prompt_path.read_text(encoding="utf-8").lower()
+
+        assert result.returncode == 1
+        assert "risk_readiness" in prompt
+        assert "implementation_blocked" in prompt or "ready_for_implementation" in prompt
+
+
 def test_artic_start_docs_render_risk_summary_and_stop_conditions_when_risk_readiness_exists():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -2166,7 +2262,6 @@ def test_artic_start_docs_render_risk_summary_and_stop_conditions_when_risk_read
         assert "Do not implement production UI with placeholder model" in combined
 
 
-@pytest.mark.xfail(reason=RISK_READINESS_XFAIL, strict=False)
 def test_artic_show_marks_production_ready_false_when_core_placeholder_remains():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -2198,7 +2293,7 @@ def test_artic_show_marks_production_ready_false_when_core_placeholder_remains()
         html = (root / ".artic" / "show" / "index.html").read_text(encoding="utf-8").lower()
 
         assert payload["production_ready"] is False
-        assert any("placeholder" in blocker.lower() for blocker in payload.get("readiness_blockers", []))
+        assert any("placeholder" in blocker.lower() for blocker in payload.get("implementation_blockers", []))
         assert "placeholder" in html and "preview" in html
 
 

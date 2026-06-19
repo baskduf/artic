@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
 from design_intent_mapper import map_design_intent
+from risk_readiness import analyze_risk_readiness
 from search_reference_catalog import load_catalog, search, terms
 
 POLICY_MARKER = "<!-- artic-policy: reference-safety-v1 -->"
@@ -240,6 +242,32 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
     requirements = parse_key_values(getattr(args, "requirement", []))
     constraints = parse_key_values(getattr(args, "constraint", []))
     policy = asset_policy_payload(str(getattr(args, "asset_policy", "")))
+    risk_answers = {
+        "project": args.project,
+        "audience": args.audience,
+        "goal": args.goal,
+        "vibe": args.vibe,
+        "references": args.references,
+        "stack": args.stack,
+        "accessibility": args.accessibility,
+        "asset_policy": str(getattr(args, "asset_policy", "")),
+        **requirements,
+        **constraints,
+    }
+    risk_answers["locale"] = args.locale
+    if risk_answers.get("stack") and not risk_answers.get("technical_runtime"):
+        risk_answers["technical_runtime"] = risk_answers["stack"]
+    elif not risk_answers.get("technical_runtime"):
+        vibe_text = str(risk_answers.get("vibe") or "")
+        if re.search(r"runtime|런타임|webgl|model-viewer|3d", vibe_text, re.IGNORECASE):
+            risk_answers["technical_runtime"] = vibe_text
+    if risk_answers.get("asset_policy") and not risk_answers.get("license_clearance"):
+        risk_answers["license_clearance"] = risk_answers["asset_policy"]
+    interaction_answer = str(risk_answers.get("interaction_model") or "")
+    if interaction_answer and not risk_answers.get("performance_accessibility_plan"):
+        if re.search(r"reduced motion|reduced-motion|keyboard|키보드|대체|fallback|alt|접근성|성능|load|loading", interaction_answer, re.IGNORECASE):
+            risk_answers["performance_accessibility_plan"] = interaction_answer
+    risk_readiness = analyze_risk_readiness(risk_answers, intent)
     source_plan = [
         {
             "source_id": src["id"],
@@ -275,6 +303,7 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
         "constraints": constraints,
         "asset_policy": policy,
         "implementation": {"stack": args.stack or "unspecified", "mobile_first": "mobile" in args.vibe.lower(), "accessibility": args.accessibility},
+        "risk_readiness": risk_readiness,
         "language": lang,
         "copy_policy": "artic-policy: reference-safety-v1",
     }

@@ -136,12 +136,13 @@ def as_markdown(value: Any, *, indent: int = 0) -> str:
 RISK_LABELS = {
     "en": {
         "heading": "Risk / Readiness Summary",
+        "summary_line": "Risk Summary: risk/quality readiness details follow.",
         "core_quality_requirements": "Core quality requirements",
         "known_missing_information": "Known missing information",
         "safe_assumptions": "Safe assumptions",
         "unsafe_assumptions": "Unsafe assumptions",
         "placeholder_fallback_boundary": "Placeholder/fallback boundary",
-        "implementation_stop_conditions": "Implementation stop conditions",
+        "implementation_stop_conditions": "Implementation stop conditions / Stop Conditions",
         "completion_acceptance_criteria": "Completion/acceptance criteria",
         "status_ready": "Strategy/preview can proceed.",
         "status_blocked": "Strategy/preview can proceed, but implementation is blocked until missing inputs are resolved.",
@@ -151,6 +152,7 @@ RISK_LABELS = {
     },
     "ko": {
         "heading": "위험/준비 상태 요약",
+        "summary_line": "위험 요약: 리스크와 품질 기준에 따른 준비 상태를 정리합니다.",
         "core_quality_requirements": "핵심 품질 요구사항",
         "known_missing_information": "알려진 누락 정보",
         "safe_assumptions": "안전한 가정",
@@ -219,7 +221,11 @@ def risk_readiness_block(brief: dict[str, Any], *, checklist: bool = False) -> s
     if not risk:
         return ""
     labels = risk_labels(brief)
-    lines = [f"## {labels['heading']}", "", f"- {labels['status_blocked'] if risk.get('implementation_blocked') else labels['status_ready']}"]
+    implementation_blocked = bool(risk.get("implementation_blocked")) or risk.get("ready_for_implementation") is False
+    readiness = risk.get("readiness")
+    if isinstance(readiness, dict) and str(readiness.get("implementation") or "").lower() == "blocked":
+        implementation_blocked = True
+    lines = [f"## {labels['heading']}", "", f"- {labels['summary_line']}", f"- {labels['status_blocked'] if implementation_blocked else labels['status_ready']}"]
     if "ready_for_strategy" in risk:
         lines.append(f"- ready_for_strategy: {bool(risk.get('ready_for_strategy'))}")
     if "implementation_blocked" in risk:
@@ -585,7 +591,7 @@ def create_start_outputs(root: Path, *, no_validate: bool = False) -> dict[str, 
             raise ValueError("cannot run @artic start before init is ready" + (f": missing {missing}" if missing else "") + (f". Next questions: {questions}" if questions else ""))
         if not strategy_path.exists() and (status == "ready" or not brief_path.exists() or not references_path.exists()):
             answers = session.get("answers") if isinstance(session.get("answers"), dict) else {}
-            prompt_brief = {"answers": answers, "language": session.get("language", {})}
+            prompt_brief = {"answers": answers, "language": session.get("language", {}), "risk_readiness": session.get("risk_readiness", {})}
             prompt_references = {"selected_sources": [], "source_plan": [], "note": "@artic start requires the agent-authored strategy before finalizing init outputs."}
             prompt_path = write_strategy_prompt(root, prompt_brief, prompt_references, None)
             raise ValueError(json.dumps({

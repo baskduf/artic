@@ -20,6 +20,27 @@ REQUIRED_TYPE_TOKENS = ("h1", "h2", "h3", "body-md", "caption")
 REQUIRED_SPACING_TOKENS = ("xs", "sm", "md", "lg", "xl", "section")
 REQUIRED_COMPONENT_TOKENS = ("button-primary", "button-secondary", "card", "form-field", "proof-strip")
 REQUIRED_QA_TERMS = ("Visual hierarchy", "Brand coherence", "Conversion clarity", "Mobile quality", "Accessibility", "Reference safety")
+RISK_SECTIONS_EN = (
+    "Risk / Readiness Summary",
+    "Core quality requirements",
+    "Known missing information",
+    "Safe assumptions",
+    "Unsafe assumptions",
+    "Placeholder/fallback boundary",
+    "Implementation stop conditions",
+    "Completion/acceptance criteria",
+)
+RISK_SECTIONS_KO = (
+    "위험/준비 상태 요약",
+    "핵심 품질 요구사항",
+    "알려진 누락 정보",
+    "안전한 가정",
+    "위험한 가정",
+    "플레이스홀더/대체 경계",
+    "구현 중단 조건",
+    "완료/수용 기준",
+)
+RISK_DOCS = ("DESIGN.md", "docs/artic-strategy.md", "docs/design-rules.md", "docs/design-qa-checklist.md", "docs/homepage-design-prompt.md")
 POLICY_FRAGMENT = "extract reusable principles only"
 POLICY_MARKER = "<!-- artic-policy: reference-safety-v1 -->"
 LANGUAGE_MARKER_PREFIX = "<!-- artic-language:"
@@ -68,6 +89,8 @@ def section_has_token(frontmatter: str, section: str, token: str) -> bool:
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
     brief_locale = "en-US"
+    declared_risk_readiness = False
+    risk_implementation_blocked = False
     for rel in REQUIRED_FILES:
         if not (root / rel).exists():
             errors.append(f"ERROR: missing required file: {rel}")
@@ -119,6 +142,18 @@ def validate(root: Path) -> list[str]:
             style = brief.get("style", {})
             if isinstance(style, dict) and not style.get("design_north_star"):
                 errors.append("ERROR: brief style.design_north_star is required for LLM-first Artic output")
+            risk_readiness = brief.get("risk_readiness")
+            risk_implementation_blocked = False
+            if isinstance(risk_readiness, dict) and risk_readiness:
+                declared_risk_readiness = True
+                readiness = risk_readiness.get("readiness")
+                risk_implementation_blocked = (
+                    bool(risk_readiness.get("implementation_blocked"))
+                    or risk_readiness.get("ready_for_implementation") is False
+                    or (isinstance(readiness, dict) and str(readiness.get("implementation") or "").lower() == "blocked")
+                )
+            elif "risk_readiness" in brief and risk_readiness not in ({}, None):
+                errors.append("ERROR: brief risk_readiness must be an object when provided")
 
     intent_path = root / ".artic" / "intent.json"
     if intent_path.exists():
@@ -233,6 +268,23 @@ def validate(root: Path) -> list[str]:
                 errors.append(f"ERROR: {rel} missing reference safety phrase")
             if brief_locale and brief_locale != "en-US" and f"<!-- artic-language: {brief_locale} -->" not in text:
                 errors.append(f"ERROR: localized outputs missing language marker: {brief_locale} in {rel}")
+    if declared_risk_readiness:
+        required_risk_sections = RISK_SECTIONS_KO if brief_locale.startswith("ko") else RISK_SECTIONS_EN
+        for rel in RISK_DOCS:
+            path = root / rel
+            if not path.exists():
+                continue
+            text = path.read_text(encoding="utf-8")
+            for section in required_risk_sections:
+                if section not in text:
+                    errors.append(f"ERROR: {rel} missing risk_readiness section: {section}")
+            if risk_implementation_blocked:
+                blocked_terms = [
+                    "implementation is blocked until missing inputs are resolved",
+                    "누락된 정보가 해결될 때까지 구현은 차단됩니다",
+                ]
+                if not any(term in text for term in blocked_terms):
+                    errors.append(f"ERROR: {rel} missing risk_readiness implementation block notice")
     checklist = root / "docs" / "design-qa-checklist.md"
     if checklist.exists():
         text = checklist.read_text(encoding="utf-8")
