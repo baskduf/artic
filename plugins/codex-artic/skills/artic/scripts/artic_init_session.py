@@ -11,7 +11,9 @@ from locale_contract import detect_locale_from_text, language_contract
 
 SESSION_PATH = Path(".artic") / "init-session.json"
 REQUIRED_FIELDS = ["project", "audience", "goal", "vibe"]
-OPTIONAL_FIELDS = ["references", "stack", "avoid", "accessibility"]
+OPTIONAL_FIELDS = ["references", "stack", "avoid", "accessibility", "asset_policy"]
+CORE_ANSWER_FIELDS = set(REQUIRED_FIELDS + OPTIONAL_FIELDS)
+CONSTRAINT_FIELD_HINTS = ("constraint", "constraints", "brand", "avoid", "asset_policy")
 
 QUESTION_SPECS: dict[str, dict[str, str]] = {
     "project": {
@@ -53,6 +55,14 @@ QUESTION_SPECS: dict[str, dict[str, str]] = {
         "ja-JP": "実装予定の技術スタックは何ですか？",
         "zh-CN": "目标技术栈是什么？",
         "zh-TW": "目標技術棧是什麼？",
+    },
+    "asset_policy": {
+        "intent": "Clarify whether external assets may be used or only referenced as principles.",
+        "en-US": "May Artic search/use owned or clearly licensed public assets, or should external sources stay as reference principles only?",
+        "ko-KR": "소유한 에셋 또는 라이선스 확인 가능한 공개 에셋을 검색/사용해도 되나요, 아니면 외부 소스는 원칙 참고로만 사용할까요?",
+        "ja-JP": "所有アセットまたはライセンス確認済みの公開アセットを検索/使用してよいですか、それとも外部ソースは原則の参考のみにしますか？",
+        "zh-CN": "是否可以搜索/使用自有资产或可验证授权的公开资产，还是外部来源仅作为原则参考？",
+        "zh-TW": "是否可以搜尋/使用自有資產或可驗證授權的公開資產，或外部來源只作為原則參考？",
     },
 }
 
@@ -152,6 +162,34 @@ def render_questions(session: dict[str, Any], limit: int = 4) -> list[str]:
     return questions
 
 
+def render_optional_questions(session: dict[str, Any]) -> list[str]:
+    raw_language = session.get("language")
+    language: dict[str, Any] = raw_language if isinstance(raw_language, dict) else {}
+    raw_answers = session.get("answers")
+    answers: dict[str, Any] = raw_answers if isinstance(raw_answers, dict) else {}
+    locale = str(language.get("locale") or "en-US")
+    questions: list[str] = []
+    for field in OPTIONAL_FIELDS:
+        if str(answers.get(field, "")).strip():
+            continue
+        spec = QUESTION_SPECS.get(field)
+        if spec:
+            questions.append(spec.get(locale) or spec.get("en-US") or field)
+    return questions
+
+
+def split_custom_answers(answers: dict[str, Any]) -> tuple[dict[str, str], dict[str, str]]:
+    requirements: dict[str, str] = {}
+    constraints: dict[str, str] = {}
+    for key, value in answers.items():
+        text = str(value).strip()
+        if not text or key in CORE_ANSWER_FIELDS:
+            continue
+        target = constraints if any(hint in key.lower() for hint in CONSTRAINT_FIELD_HINTS) else requirements
+        target[str(key)] = text
+    return requirements, constraints
+
+
 def render_ready_summary(session: dict[str, Any]) -> str:
     raw_language = session.get("language")
     language: dict[str, Any] = raw_language if isinstance(raw_language, dict) else {}
@@ -199,6 +237,7 @@ def finalize_session(root: Path, limit: int = 5) -> dict[str, Any]:
     answers: dict[str, Any] = raw_answers if isinstance(raw_answers, dict) else {}
     raw_lang = session.get("language")
     lang: dict[str, Any] = raw_lang if isinstance(raw_lang, dict) else {}
+    requirements, constraints = split_custom_answers(answers)
     args = argparse.Namespace(
         root=str(root),
         project=str(answers["project"]),
@@ -208,6 +247,9 @@ def finalize_session(root: Path, limit: int = 5) -> dict[str, Any]:
         references=str(answers.get("references", "")),
         stack=str(answers.get("stack", "unspecified")),
         accessibility=str(answers.get("accessibility", "WCAG AA")),
+        requirement=[f"{key}={value}" for key, value in requirements.items()],
+        constraint=[f"{key}={value}" for key, value in constraints.items()],
+        asset_policy=str(answers.get("asset_policy", "")),
         locale=str(lang.get("locale", "en-US")),
         tone=str(lang.get("tone", "clear, professional, product-focused")),
         preserve_term=list(lang.get("preserve_terms", [])) if isinstance(lang.get("preserve_terms"), list) else [],
