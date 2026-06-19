@@ -182,7 +182,7 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
     ]
 
     brief = {
-        "artic_version": "0.1.1",
+        "artic_version": "0.2.0",
         "project": {
             "name": args.project,
             "type": "homepage",
@@ -212,7 +212,7 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
         "source_plan": source_plan,
         "synthesis": "Use selected sources as compatible patterns; localize prose according to the brief language contract while preserving source names and protected terms.",
     }
-    state = {"artic_version": "0.1.1", "last_generated_at": now, "status": "initialized", "language": lang, "intent_path": ".artic/intent.json"}
+    state = {"artic_version": "0.2.0", "last_generated_at": now, "status": "initialized", "language": lang, "intent_path": ".artic/intent.json"}
 
     write(root / ".artic" / "intent.json", json.dumps(intent, indent=2, ensure_ascii=False) + "\n")
     write(root / ".artic" / "brief.json", json.dumps(brief, indent=2, ensure_ascii=False) + "\n")

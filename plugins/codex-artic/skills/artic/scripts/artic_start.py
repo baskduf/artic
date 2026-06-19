@@ -335,7 +335,7 @@ def update_state(root: Path, brief: dict[str, Any]) -> None:
             state = {}
     state.update(
         {
-            "artic_version": str(brief.get("artic_version") or state.get("artic_version") or "0.1.1"),
+            "artic_version": str(brief.get("artic_version") or state.get("artic_version") or "0.2.0"),
             "last_generated_at": datetime.now(timezone.utc).isoformat(),
             "status": "generated",
             "language": brief_language(brief),
