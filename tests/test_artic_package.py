@@ -129,7 +129,7 @@ def test_artic_version_network_failure_marks_latest_unavailable(monkeypatch):
 
 def test_artic_update_guidance_without_latest_omits_version_pin():
     payload = {
-        "installed_version": "0.1.1",
+        "installed_version": "0.2.0",
         "latest": None,
         "latest_state": "not_found",
         "status": "latest-not-found",
@@ -1365,9 +1365,17 @@ def test_versions_are_synced_across_manifests():
     ]
     for path in manifest_paths:
         assert json.loads(path.read_text(encoding="utf-8"))["version"] == version, path
-    skill_text = (ROOT / "skills" / "artic" / "SKILL.md").read_text(encoding="utf-8")
-    skill_version = re.search(r"^version: ([^\n]+)", skill_text, re.MULTILINE)
-    assert skill_version and skill_version.group(1).strip() == version
+    skill_paths = [
+        ROOT / "skills" / "artic" / "SKILL.md",
+        ROOT / "plugins" / "claude-artic" / "skills" / "artic" / "SKILL.md",
+        ROOT / "plugins" / "codex-artic" / "skills" / "artic" / "SKILL.md",
+    ]
+    for path in skill_paths:
+        skill_text = path.read_text(encoding="utf-8")
+        skill_version = re.search(r"^version: ([^\n]+)", skill_text, re.MULTILINE)
+        assert skill_version and skill_version.group(1).strip() == version, path
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    assert f"## {version}" in changelog
 
 
 def test_version_command_reports_installed_versions_without_network():
@@ -1382,8 +1390,8 @@ def test_version_command_reports_installed_versions_without_network():
     ], capture_output=True, text=True)
     assert result.returncode == 0, result.stderr or result.stdout
     payload = json.loads(result.stdout)
-    assert payload["installed"]["pyproject"] == "0.1.1"
-    assert payload["installed"]["skill"] == "0.1.1"
+    assert payload["installed"]["pyproject"] == "0.2.0"
+    assert payload["installed"]["skill"] == "0.2.0"
     assert payload["status"] == "latest-unchecked"
     assert payload["version_mismatches"] == []
 
@@ -1419,8 +1427,8 @@ def test_version_command_supports_installed_plugin_roots_without_network():
         ], capture_output=True, text=True)
         assert result.returncode == 0, result.stderr or result.stdout
         payload = json.loads(result.stdout)
-        assert payload["installed"]["skill"] == "0.1.1"
-        assert payload["installed"][expected_key] == "0.1.1"
+        assert payload["installed"]["skill"] == "0.2.0"
+        assert payload["installed"][expected_key] == "0.2.0"
         assert payload["status"] == "latest-unchecked"
         assert payload["version_mismatches"] == []
 
@@ -1435,7 +1443,7 @@ def test_update_command_supports_installed_plugin_roots_without_network():
         "--no-network",
     ], capture_output=True, text=True)
     assert result.returncode == 0, result.stderr or result.stdout
-    assert "Current: 0.1.1" in result.stdout
+    assert "Current: 0.2.0" in result.stdout
     assert "Blocked:" not in result.stdout
     assert "No files were modified" in result.stdout
 
@@ -1526,7 +1534,7 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (payload / "plugins/codex-artic/.codex-plugin/plugin.json").write_text("{}", encoding="utf-8")
         (payload / "skills/artic/scripts/__pycache__/artic_init.cpython-39.pyc").write_bytes(b"bad")
         with tarfile.open(bad_tar, "w:gz") as tf:
-            tf.add(payload, arcname="artic-0.1.1")
+            tf.add(payload, arcname="artic-0.2.0")
         result = subprocess.run([sys.executable, str(checker), "--require-payload", str(bad_tar)], capture_output=True, text=True)
         assert result.returncode != 0
         assert "forbidden bytecode/cache entry" in result.stdout
@@ -1547,14 +1555,14 @@ def test_release_artifact_checker_rejects_bytecode_and_requires_payload():
         (clean_payload / "plugins/codex-artic/.codex-plugin").mkdir(parents=True)
         (clean_payload / "plugins/codex-artic/.codex-plugin/plugin.json").write_text("{}", encoding="utf-8")
         with tarfile.open(missing_command_tar, "w:gz") as tf:
-            tf.add(clean_payload, arcname="artic-0.1.1")
+            tf.add(clean_payload, arcname="artic-0.2.0")
         result = subprocess.run([sys.executable, str(checker), "--require-payload", str(missing_command_tar)], capture_output=True, text=True)
         assert result.returncode != 0
         assert "missing required payload skills/artic/scripts/artic_version.py" in result.stdout
 
         good_zip = root / "metadata.whl"
         with zipfile.ZipFile(good_zip, "w") as zf:
-            zf.writestr("artic-0.1.1.dist-info/METADATA", "Name: artic\nVersion: 0.1.1\n")
+            zf.writestr("artic-0.2.0.dist-info/METADATA", "Name: artic\nVersion: 0.2.0\n")
         result = subprocess.run([sys.executable, str(checker), str(good_zip)], capture_output=True, text=True)
         assert result.returncode == 0, result.stdout
 
@@ -1563,7 +1571,7 @@ def test_skill_archive_builder_excludes_bytecode_from_marketplace_archive():
     builder = ROOT / "scripts" / "build_skill_archive.py"
     checker = ROOT / "scripts" / "check_release_artifacts.py"
     with tempfile.TemporaryDirectory() as tmp:
-        output = Path(tmp) / "artic-skill-v0.1.1.tar.gz"
+        output = Path(tmp) / "artic-skill-v0.2.0.tar.gz"
         subprocess.run([sys.executable, str(builder), "--root", str(ROOT), "--output", str(output)], check=True)
         result = subprocess.run([sys.executable, str(checker), "--require-payload", str(output)], capture_output=True, text=True)
         assert result.returncode == 0, result.stdout
