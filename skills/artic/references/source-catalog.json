@@ -745,5 +745,741 @@
       "highly-illustrated-brand"
     ],
     "risk_notes": "Implementation-friendly; avoid default-template sameness by adding project-specific hierarchy and brand tokens."
+  },
+  {
+    "id": "github-primer",
+    "name": "GitHub Primer",
+    "type": "oss-design-system",
+    "url": "https://primer.style/",
+    "license": "MIT/open-source ecosystem",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/primer/css/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "developer-tool",
+      "github",
+      "documentation",
+      "components",
+      "tokens",
+      "accessibility",
+      "enterprise"
+    ],
+    "strengths": [
+      "developer-product UI",
+      "documentation and code hosting patterns",
+      "high-density but readable component system"
+    ],
+    "use_for": [
+      "developer tool homepages",
+      "docs/product navigation",
+      "repository or workflow products"
+    ],
+    "product_fit": [
+      "developer-tool",
+      "open-source",
+      "documentation",
+      "saas",
+      "workflow-product"
+    ],
+    "visual_traits": [
+      "crisp",
+      "developer-friendly",
+      "structured",
+      "practical",
+      "accessible"
+    ],
+    "page_patterns": [
+      "developer-hero",
+      "docs-navigation",
+      "repository-cards",
+      "workflow-proof",
+      "cta"
+    ],
+    "implementation_fit": [
+      "css",
+      "react",
+      "web",
+      "components",
+      "tokens"
+    ],
+    "extraction_targets": [
+      "developer-clarity",
+      "navigation",
+      "component-density",
+      "docs-patterns",
+      "accessibility"
+    ],
+    "avoid_when": [
+      "luxury-consumer",
+      "playful-brand",
+      "image-led-editorial"
+    ],
+    "risk_notes": "Use for developer/product clarity and component discipline; do not copy GitHub brand, Octicons identity, or exact repository UI composition."
+  },
+  {
+    "id": "radix-ui-primitives",
+    "name": "Radix UI Primitives",
+    "type": "oss-component-primitives",
+    "url": "https://www.radix-ui.com/primitives",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/radix-ui/primitives/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "headless",
+      "components",
+      "react",
+      "primitives",
+      "design-system",
+      "developer-tool"
+    ],
+    "strengths": [
+      "accessible unstyled primitives",
+      "state and interaction behavior",
+      "design-system foundation"
+    ],
+    "use_for": [
+      "component behavior",
+      "accessibility semantics",
+      "custom visual systems"
+    ],
+    "product_fit": [
+      "developer-tool",
+      "saas",
+      "design-system",
+      "web-app",
+      "accessibility-heavy"
+    ],
+    "visual_traits": [
+      "unstyled",
+      "systematic",
+      "interaction-focused",
+      "composable"
+    ],
+    "page_patterns": [
+      "components",
+      "forms",
+      "overlays",
+      "navigation",
+      "interactive-states"
+    ],
+    "implementation_fit": [
+      "react",
+      "headless",
+      "components",
+      "accessibility"
+    ],
+    "extraction_targets": [
+      "component-behavior",
+      "keyboard-interaction",
+      "focus-management",
+      "state-patterns",
+      "accessibility"
+    ],
+    "avoid_when": [
+      "visual-inspiration-only",
+      "static-marketing-only"
+    ],
+    "risk_notes": "Excellent behavior source, weak visual direction source; pair with visual/token references for final DESIGN.md aesthetics."
+  },
+  {
+    "id": "govuk-design-system",
+    "name": "GOV.UK Design System",
+    "type": "oss-government-design-system",
+    "url": "https://design-system.service.gov.uk/",
+    "license": "MIT/Open Government Licence ecosystem",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/alphagov/govuk-frontend/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "government",
+      "forms",
+      "service-design",
+      "trust",
+      "plain-language",
+      "wcag"
+    ],
+    "strengths": [
+      "public-service accessibility",
+      "plain-language guidance",
+      "battle-tested form and service patterns"
+    ],
+    "use_for": [
+      "trust-heavy services",
+      "forms and validation",
+      "accessibility-first products"
+    ],
+    "product_fit": [
+      "government",
+      "public-service",
+      "forms",
+      "trust-heavy",
+      "accessibility-heavy",
+      "regulated"
+    ],
+    "visual_traits": [
+      "plain",
+      "direct",
+      "accessible",
+      "high-contrast",
+      "service-oriented"
+    ],
+    "page_patterns": [
+      "forms",
+      "validation",
+      "step-by-step-service",
+      "content-hierarchy",
+      "trust"
+    ],
+    "implementation_fit": [
+      "html",
+      "css",
+      "javascript",
+      "forms",
+      "accessibility"
+    ],
+    "extraction_targets": [
+      "forms",
+      "validation",
+      "plain-language",
+      "accessibility",
+      "service-flow"
+    ],
+    "avoid_when": [
+      "luxury-brand",
+      "playful-consumer",
+      "highly-visual-marketing"
+    ],
+    "risk_notes": "Use for accessibility and service clarity; do not copy GOV.UK identity, crown/government cues, or exact public-service styling."
+  },
+  {
+    "id": "uswds",
+    "name": "U.S. Web Design System",
+    "type": "oss-government-design-system",
+    "url": "https://designsystem.digital.gov/",
+    "license": "Public domain/MIT-mixed",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/uswds/uswds/develop/README.md",
+        "kind": "markdown",
+        "license": "Public domain/MIT-mixed"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "government",
+      "mobile-friendly",
+      "forms",
+      "content",
+      "trust",
+      "wcag"
+    ],
+    "strengths": [
+      "accessible federal web patterns",
+      "mobile-friendly service guidance",
+      "content and form standards"
+    ],
+    "use_for": [
+      "regulated product homepages",
+      "public-sector services",
+      "mobile accessibility rules"
+    ],
+    "product_fit": [
+      "government",
+      "regulated",
+      "trust-heavy",
+      "forms",
+      "mobile-first",
+      "accessibility-heavy"
+    ],
+    "visual_traits": [
+      "clear",
+      "institutional",
+      "accessible",
+      "structured",
+      "stable"
+    ],
+    "page_patterns": [
+      "forms",
+      "content-pages",
+      "service-navigation",
+      "banners",
+      "alerts",
+      "validation"
+    ],
+    "implementation_fit": [
+      "html",
+      "sass",
+      "javascript",
+      "tokens",
+      "components"
+    ],
+    "extraction_targets": [
+      "accessibility",
+      "mobile-rules",
+      "forms",
+      "alerts",
+      "content-structure"
+    ],
+    "avoid_when": [
+      "consumer-lifestyle",
+      "luxury-minimal",
+      "playful-brand"
+    ],
+    "risk_notes": "Strong accessibility/service source; can make private SaaS feel too institutional unless softened with brand-specific tokens."
+  },
+  {
+    "id": "adobe-spectrum",
+    "name": "Adobe Spectrum / React Spectrum",
+    "type": "oss-design-system",
+    "url": "https://react-spectrum.adobe.com/",
+    "license": "Apache-2.0",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/adobe/react-spectrum/main/README.md",
+        "kind": "markdown",
+        "license": "Apache-2.0"
+      }
+    ],
+    "tags": [
+      "accessibility",
+      "components",
+      "react",
+      "design-system",
+      "creative-tools",
+      "enterprise",
+      "adaptive"
+    ],
+    "strengths": [
+      "accessible React implementations",
+      "adaptive component behavior",
+      "creative/professional product patterns"
+    ],
+    "use_for": [
+      "creative/productivity SaaS",
+      "complex component behavior",
+      "accessible web apps"
+    ],
+    "product_fit": [
+      "creative-tool",
+      "productivity",
+      "enterprise",
+      "saas",
+      "web-app",
+      "accessibility-heavy"
+    ],
+    "visual_traits": [
+      "professional",
+      "adaptive",
+      "cohesive",
+      "accessible",
+      "tool-like"
+    ],
+    "page_patterns": [
+      "workspace-ui",
+      "forms",
+      "panels",
+      "navigation",
+      "settings",
+      "toolbars"
+    ],
+    "implementation_fit": [
+      "react",
+      "components",
+      "accessibility",
+      "internationalization"
+    ],
+    "extraction_targets": [
+      "accessibility",
+      "adaptive-behavior",
+      "components",
+      "internationalization",
+      "tool-ui"
+    ],
+    "avoid_when": [
+      "simple-marketing-only",
+      "playful-consumer",
+      "brand-moodboard"
+    ],
+    "risk_notes": "Use for accessible complex app behavior; avoid copying Adobe product identity, iconography, or creative-suite visual language."
+  },
+  {
+    "id": "chakra-ui",
+    "name": "Chakra UI",
+    "type": "oss-ui-library",
+    "url": "https://chakra-ui.com/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "react",
+      "components",
+      "accessibility",
+      "theme",
+      "saas",
+      "developer-experience"
+    ],
+    "strengths": [
+      "accessible React components",
+      "themeable design tokens",
+      "fast SaaS/product assembly"
+    ],
+    "use_for": [
+      "SaaS component defaults",
+      "theme token structure",
+      "accessible app surfaces"
+    ],
+    "product_fit": [
+      "saas",
+      "web-app",
+      "startup",
+      "developer-tool",
+      "dashboard"
+    ],
+    "visual_traits": [
+      "friendly",
+      "clean",
+      "themeable",
+      "modern",
+      "accessible"
+    ],
+    "page_patterns": [
+      "cards",
+      "forms",
+      "dashboard",
+      "settings",
+      "cta",
+      "components"
+    ],
+    "implementation_fit": [
+      "react",
+      "theme",
+      "components",
+      "tokens"
+    ],
+    "extraction_targets": [
+      "theme-tokens",
+      "components",
+      "accessibility",
+      "layout-primitives",
+      "developer-experience"
+    ],
+    "avoid_when": [
+      "strict-brand-originality",
+      "non-react-stack",
+      "highly-editorial"
+    ],
+    "risk_notes": "Good pragmatic UI source; avoid generic component-library sameness by adding project-specific hierarchy and brand tokens."
+  },
+  {
+    "id": "mantine",
+    "name": "Mantine",
+    "type": "oss-ui-library",
+    "url": "https://mantine.dev/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/mantinedev/mantine/master/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "react",
+      "components",
+      "hooks",
+      "accessibility",
+      "dark-mode",
+      "dashboard",
+      "forms"
+    ],
+    "strengths": [
+      "large React component set",
+      "dark/light theming",
+      "forms and data-heavy product screens"
+    ],
+    "use_for": [
+      "dashboard/product UI",
+      "forms and settings",
+      "dark-mode token planning"
+    ],
+    "product_fit": [
+      "saas",
+      "dashboard",
+      "web-app",
+      "admin",
+      "developer-tool"
+    ],
+    "visual_traits": [
+      "clean",
+      "practical",
+      "component-rich",
+      "themeable",
+      "modern"
+    ],
+    "page_patterns": [
+      "dashboard",
+      "forms",
+      "settings",
+      "cards",
+      "data-entry",
+      "components"
+    ],
+    "implementation_fit": [
+      "react",
+      "components",
+      "hooks",
+      "theme",
+      "forms"
+    ],
+    "extraction_targets": [
+      "component-coverage",
+      "theme-tokens",
+      "forms",
+      "dark-mode",
+      "dashboard-layout"
+    ],
+    "avoid_when": [
+      "marketing-only",
+      "luxury-consumer",
+      "non-react-stack"
+    ],
+    "risk_notes": "Strong implementation reference for product UI; use separate brand/landing references for distinct homepage personality."
+  },
+  {
+    "id": "open-props",
+    "name": "Open Props",
+    "type": "oss-token-library",
+    "url": "https://open-props.style/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/argyleink/open-props/main/readme.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "css",
+      "tokens",
+      "custom-properties",
+      "animation",
+      "color",
+      "typography",
+      "responsive"
+    ],
+    "strengths": [
+      "broad CSS custom property token set",
+      "adaptive design primitives",
+      "motion/easing and size scales"
+    ],
+    "use_for": [
+      "token scale inspiration",
+      "CSS variable architecture",
+      "responsive and motion defaults"
+    ],
+    "product_fit": [
+      "design-system",
+      "web",
+      "prototype",
+      "saas",
+      "creative-tool"
+    ],
+    "visual_traits": [
+      "token-driven",
+      "adaptive",
+      "systematic",
+      "web-native"
+    ],
+    "page_patterns": [
+      "token-spec",
+      "responsive-layout",
+      "motion",
+      "theme"
+    ],
+    "implementation_fit": [
+      "css",
+      "custom-properties",
+      "tokens",
+      "web"
+    ],
+    "extraction_targets": [
+      "tokens",
+      "spacing",
+      "typography-scale",
+      "motion",
+      "responsive-primitives"
+    ],
+    "avoid_when": [
+      "component-behavior-needed",
+      "brand-strategy-only"
+    ],
+    "risk_notes": "Token source, not a complete product design system; combine with component/accessibility references."
+  },
+  {
+    "id": "headless-ui",
+    "name": "Headless UI",
+    "type": "oss-component-primitives",
+    "url": "https://headlessui.com/",
+    "license": "MIT",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/tailwindlabs/headlessui/main/README.md",
+        "kind": "markdown",
+        "license": "MIT"
+      }
+    ],
+    "tags": [
+      "headless",
+      "accessibility",
+      "tailwind",
+      "react",
+      "vue",
+      "components",
+      "unstyled"
+    ],
+    "strengths": [
+      "unstyled accessible components",
+      "Tailwind-friendly composition",
+      "interaction primitives"
+    ],
+    "use_for": [
+      "accessible interaction behavior",
+      "custom branded components",
+      "Tailwind implementation guidance"
+    ],
+    "product_fit": [
+      "developer-tool",
+      "saas",
+      "web-app",
+      "tailwind",
+      "design-system"
+    ],
+    "visual_traits": [
+      "unstyled",
+      "composable",
+      "implementation-focused",
+      "accessible"
+    ],
+    "page_patterns": [
+      "menus",
+      "dialogs",
+      "disclosure",
+      "forms",
+      "interactive-states"
+    ],
+    "implementation_fit": [
+      "react",
+      "vue",
+      "tailwind",
+      "components",
+      "accessibility"
+    ],
+    "extraction_targets": [
+      "keyboard-interaction",
+      "dialogs",
+      "menus",
+      "state-patterns",
+      "tailwind-composition"
+    ],
+    "avoid_when": [
+      "visual-inspiration-only",
+      "non-tailwind-stack"
+    ],
+    "risk_notes": "Behavior/reference source only; pair with visual systems so generated docs do not become implementation-only."
+  },
+  {
+    "id": "elastic-eui",
+    "name": "Elastic UI Framework",
+    "type": "source-available-ui-library",
+    "url": "https://eui.elastic.co/",
+    "license": "Elastic License 2.0 / SSPL-1.0",
+    "live_sources": [
+      {
+        "url": "https://raw.githubusercontent.com/elastic/eui/main/README.md",
+        "kind": "markdown",
+        "license": "Elastic License 2.0 / SSPL-1.0"
+      }
+    ],
+    "tags": [
+      "data",
+      "search",
+      "observability",
+      "dashboard",
+      "react",
+      "enterprise",
+      "components"
+    ],
+    "strengths": [
+      "observability/data-heavy UI patterns",
+      "dense dashboards",
+      "search and filtering workflows"
+    ],
+    "use_for": [
+      "analytics SaaS",
+      "observability products",
+      "data exploration UX"
+    ],
+    "product_fit": [
+      "data",
+      "dashboard",
+      "observability",
+      "enterprise",
+      "admin",
+      "search"
+    ],
+    "visual_traits": [
+      "dense",
+      "data-rich",
+      "technical",
+      "structured",
+      "enterprise"
+    ],
+    "page_patterns": [
+      "dashboard",
+      "tables",
+      "filters",
+      "search",
+      "observability",
+      "data-exploration"
+    ],
+    "implementation_fit": [
+      "react",
+      "components",
+      "dashboard",
+      "data"
+    ],
+    "extraction_targets": [
+      "data-layout",
+      "filters",
+      "tables",
+      "search-patterns",
+      "dashboard-density"
+    ],
+    "avoid_when": [
+      "permissive-license-only",
+      "simple-landing-page",
+      "consumer-brand"
+    ],
+    "risk_notes": "Not permissive OSS; use as high-level data UX reference only after license caution, and do not copy Elastic branding or component code."
   }
 ]
