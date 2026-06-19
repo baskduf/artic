@@ -55,6 +55,72 @@ def test_catalog_search_smoke():
     assert rows[0]["score"] > 0
 
 
+def test_catalog_sources_have_quality_retrieval_metadata():
+    catalog = json.loads((ROOT / "skills/artic/references/source-catalog.json").read_text(encoding="utf-8"))
+    required = {"product_fit", "visual_traits", "page_patterns", "implementation_fit", "extraction_targets", "avoid_when", "risk_notes"}
+    for source in catalog:
+        missing = required - set(source)
+        assert not missing, (source["id"], missing)
+        for key in required - {"risk_notes"}:
+            assert isinstance(source[key], list) and source[key], (source["id"], key)
+        assert isinstance(source["risk_notes"], str) and source["risk_notes"], source["id"]
+
+
+def test_weighted_catalog_search_routes_distinct_design_intents():
+    cases = [
+        ("developer tool ai saas react tailwind", {"voltagent-awesome-design-md", "shadcn-ui", "google-design-md"}),
+        ("enterprise data dashboard forms accessibility", {"ibm-carbon", "ant-design", "microsoft-fluent"}),
+        ("mobile app landing ios motion haptics", {"meliwat-awesome-ios-design-md", "material-design"}),
+        ("commerce trust forms admin", {"shopify-polaris", "material-design"}),
+    ]
+    for query, expected_any in cases:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/search_reference_catalog.py"),
+            "--query",
+            query,
+            "--limit",
+            "3",
+        ], check=True, capture_output=True, text=True)
+        ids = {row["id"] for row in json.loads(result.stdout)}
+        assert ids & expected_any, (query, ids)
+
+
+def test_artic_init_generates_brief_and_reference_search_outputs():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Korean AI Meeting Assistant",
+            "--audience",
+            "startup operators and sales teams",
+            "--goal",
+            "demo requests",
+            "--vibe",
+            "clean trustworthy mobile-first saas",
+            "--references",
+            "Linear clarity, Shopify Polaris trust, Material token discipline",
+            "--stack",
+            "React Tailwind",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        assert payload["selected_count"] >= 3
+        assert payload["query"]
+        brief = json.loads((Path(tmp) / ".artic" / "brief.json").read_text(encoding="utf-8"))
+        references = json.loads((Path(tmp) / ".artic" / "references.json").read_text(encoding="utf-8"))
+        state = json.loads((Path(tmp) / ".artic" / "state.json").read_text(encoding="utf-8"))
+        assert brief["style"]["search_facets"]
+        assert len(references["selected_sources"]) >= 3
+        assert all({"id", "name", "score", "reason", "extraction_targets"} <= set(row) for row in references["selected_sources"])
+        assert state["status"] == "initialized"
+        assert "Reference candidates" in (Path(tmp) / "docs" / "artic-brief.md").read_text(encoding="utf-8")
+
+
 def test_artic_init_persists_llm_native_language_contract():
     with tempfile.TemporaryDirectory() as tmp:
         result = subprocess.run([
@@ -194,6 +260,9 @@ def test_reference_synthesis_smoke_uses_local_fixture_corpus():
         assert "## Extracted Common Patterns" in synthesis
         assert "Reference policy: extract reusable principles only" in synthesis
         assert "VoltAgent awesome-design-md" in synthesis
+        for heading in ["### Color Roles", "### Typography", "### Layout Rhythm", "### CTA Behavior", "### Accessibility", "## Pattern Attribution", "## Forbidden Copy Elements"]:
+            assert heading in synthesis
+        assert set(payload["pattern_categories"]) >= {"color_roles", "typography", "layout_rhythm", "cta_behavior", "accessibility"}
 
 
 
@@ -215,6 +284,20 @@ def test_validator_requires_policy_in_each_generated_doc():
         result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
         assert result.returncode != 0
         assert "docs/design-qa-checklist.md missing reference safety phrase" in result.stdout
+
+
+def test_validator_rejects_low_quality_design_docs():
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        design = Path(tmp) / "DESIGN.md"
+        text = design.read_text(encoding="utf-8")
+        text = text.replace("  h2:\n    fontFamily: Inter\n    fontSize: 2.5rem\n    fontWeight: 720\n    lineHeight: 1.12\n", "")
+        text = text.replace("## Responsive Behavior\n\nMobile-first: stack sections, keep one primary CTA visible, and preserve readable line lengths.\n\n", "")
+        design.write_text(text, encoding="utf-8")
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+        assert result.returncode != 0
+        assert "typography missing quality token: h2" in result.stdout
+        assert "DESIGN.md missing section: ## Responsive Behavior" in result.stdout
 
 
 def test_reference_synthesis_rejects_invalid_limit():
@@ -315,6 +398,22 @@ def test_design_templates_reference_all_declared_color_tokens():
             assert f"colors.{token}" in text, (rel, token)
 
 
+def test_design_templates_include_quality_guardrails_and_review_scoring():
+    for rel in [
+        "skills/artic/templates/DESIGN.template.md",
+        "plugins/claude-artic/skills/artic/templates/DESIGN.template.md",
+        "plugins/codex-artic/skills/artic/templates/DESIGN.template.md",
+    ]:
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        for snippet in ["## Page Composition", "## Visual Hierarchy", "## Responsive Behavior", "## Motion", "## Anti-Patterns"]:
+            assert snippet in text, (rel, snippet)
+        for token in ["  h3:", "  caption:", "  section:", "  form-field:", "  proof-strip:"]:
+            assert token in text, (rel, token)
+    checklist = (ROOT / "skills/artic/templates/design-qa-checklist.template.md").read_text(encoding="utf-8")
+    for snippet in ["Visual hierarchy", "Brand coherence", "Conversion clarity", "Mobile quality", "Reference safety"]:
+        assert snippet in checklist
+
+
 def test_rendered_design_template_passes_artic_validator():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
@@ -333,6 +432,7 @@ def test_marketplace_plugin_layout_smoke():
         "references/source-catalog.json",
         "references/fixtures/voltagent-saas.design.md",
         "scripts/search_reference_catalog.py",
+        "scripts/artic_init.py",
         "scripts/synthesize_reference_notes.py",
         "scripts/scaffold_artic_files.py",
         "scripts/validate_artic_outputs.py",
