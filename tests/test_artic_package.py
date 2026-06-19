@@ -1338,6 +1338,56 @@ def test_artic_show_generates_static_preview_without_modifying_app_files():
         assert "DESIGN.md" in html
 
 
+def test_artic_show_high_risk_3d_placeholder_reports_not_production_ready():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "docs").mkdir(parents=True)
+        (root / ".artic").mkdir(parents=True)
+        (root / "DESIGN.md").write_text(
+            """---\nname: \"한국어 3D 쇼룸\"\ndescription: \"3D 런타임 중심 프리뷰\"\ncolors:\n  primary: \"#1F4FD8\"\n  accent: \"#7C3AED\"\n---\n\n## Overview\n3D 제품 경험을 검증합니다.\n\n## Design North Star\n런타임 상호작용이 핵심인 쇼룸.\n\n## Page Composition\n히어로, 3D 런타임, 전환.\n""",
+            encoding="utf-8",
+        )
+        (root / "docs" / "homepage-design-prompt.md").write_text("# Prompt\n", encoding="utf-8")
+        (root / ".artic" / "strategy.json").write_text("{}\n", encoding="utf-8")
+        (root / ".artic" / "brief.json").write_text(json.dumps({
+            "project": {
+                "name": "한국어 3D 쇼룸",
+                "target_users": ["큐레이터"],
+                "primary_goal": "상담 요청",
+            },
+            "language": {"locale": "ko-KR"},
+            "risk_readiness": {
+                "implementation_blocked": True,
+                "placeholder_fallback_boundary": ["실제 GLB 에셋 미확보", "3D 조작 QA 미완료"],
+                "implementation_stop_conditions": ["라이선스 확인 가능한 모델 에셋 필요"],
+                "core_quality_requirements": [{"requirement": "모바일 포스터 폴백", "status": "missing"}],
+            },
+        }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        (root / ".artic" / "references.json").write_text(json.dumps({
+            "selected_sources": [{"id": "model-viewer", "name": "model-viewer"}],
+            "role_assignments": [{"role": "3d_runtime", "source_ids": ["model-viewer"]}],
+        }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_show.py"),
+            "--root",
+            tmp,
+        ], check=True, capture_output=True, text=True)
+
+        payload = json.loads(result.stdout)
+        assert payload["production_ready"] is False
+        assert payload["preview_status"] == "placeholder_preview"
+        assert payload["modified_app_files"] == []
+        assert "실제 GLB 에셋 미확보" in payload["placeholder_boundaries"]
+        assert "라이선스 확인 가능한 모델 에셋 필요" in payload["implementation_blockers"]
+        html = (root / ".artic" / "show" / "index.html").read_text(encoding="utf-8")
+        assert "프로덕션 준비 완료가 아닙니다" in html
+        assert "플레이스홀더 경계" in html
+        assert "실제 GLB 에셋 미확보" in html
+        assert "model-viewer · GLB" in html
+
+
 def test_artic_show_sanitizes_design_token_values_before_css_output():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
