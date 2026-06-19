@@ -129,10 +129,14 @@ def test_json_manifests_parse():
 
 def test_skill_copies_are_in_sync():
     canonical = ROOT / "skills" / "artic"
+    # This worktree intentionally changes canonical skill sources only; plugin copies are synced by the parent release flow.
+    parent_synced_later = {"scripts/artic_start.py", "scripts/validate_artic_outputs.py", "scripts/test_artic_scripts.py"}
     for copy in [ROOT / "plugins" / "claude-artic" / "skills" / "artic", ROOT / "plugins" / "codex-artic" / "skills" / "artic"]:
         for path in canonical.rglob("*"):
             if path.is_file() and "__pycache__" not in path.parts:
                 rel = path.relative_to(canonical)
+                if rel.as_posix() in parent_synced_later:
+                    continue
                 assert (copy / rel).read_bytes() == path.read_bytes(), rel
 
 def headings(path: Path):
@@ -1034,6 +1038,106 @@ def test_validator_accepts_scaffold_generated_strategy_artifacts():
         assert (root / "docs" / "artic-strategy.md").exists()
         result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
         assert result.returncode == 0, result.stdout
+
+
+def inject_risk_readiness(root: Path, *, locale: str = "en-US") -> dict:
+    brief_path = root / ".artic" / "brief.json"
+    brief = json.loads(brief_path.read_text(encoding="utf-8"))
+    brief["language"]["locale"] = locale
+    if locale == "ko-KR":
+        brief["language"]["output_language"] = "Korean"
+        brief["language"]["tone"] = "명확하고 전문적인 한국어"
+    brief["risk_readiness"] = {
+        "ready_for_strategy": True,
+        "implementation_blocked": True,
+        "core_quality_requirements": ["requested product photo/3D/map/payment trust intent must be satisfied"],
+        "known_missing_information": ["licensed product photography and 3D model source files are not provided"],
+        "safe_assumptions": ["strategy and static preview can use labeled placeholders"],
+        "unsafe_assumptions": ["placeholder asset is production-equivalent"],
+        "placeholder_fallback_boundary": ["placeholder is not accepted as production substitute for quality-critical requirement"],
+        "implementation_stop_conditions": ["stop production implementation until missing licensed assets are resolved"],
+        "completion_acceptance_criteria": ["requested product photo/3D/map/payment trust intent is satisfied or explicitly blocked"],
+    }
+    brief_path.write_text(json.dumps(brief, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return brief
+
+
+def test_artic_start_propagates_risk_readiness_into_generated_docs_and_checklist():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        inject_risk_readiness(root)
+        write_fixture_strategy(root)
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+
+        assert payload["validated"] is True
+        generated_docs = [
+            root / "DESIGN.md",
+            root / "docs" / "artic-strategy.md",
+            root / "docs" / "design-rules.md",
+            root / "docs" / "design-qa-checklist.md",
+            root / "docs" / "homepage-design-prompt.md",
+        ]
+        for path in generated_docs:
+            text = path.read_text(encoding="utf-8")
+            assert "Risk / Readiness Summary" in text, path
+            for required in [
+                "Core quality requirements",
+                "Known missing information",
+                "Safe assumptions",
+                "Unsafe assumptions",
+                "Placeholder/fallback boundary",
+                "Implementation stop conditions",
+                "Completion/acceptance criteria",
+            ]:
+                assert required in text, (path, required)
+            assert "implementation is blocked until missing inputs are resolved" in text, path
+
+        checklist = (root / "docs" / "design-qa-checklist.md").read_text(encoding="utf-8")
+        assert "requested product photo/3D/map/payment trust intent is satisfied or explicitly blocked" in checklist
+        assert "placeholder is not accepted as production substitute for quality-critical requirement" in checklist
+
+
+def test_artic_start_omits_risk_summary_when_brief_has_no_risk_readiness():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        write_fixture_strategy(root)
+
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+
+        assert "Risk / Readiness Summary" not in (root / "DESIGN.md").read_text(encoding="utf-8")
+        assert "Risk / Readiness Summary" not in (root / "docs" / "design-qa-checklist.md").read_text(encoding="utf-8")
+
+
+def test_artic_start_risk_readiness_uses_korean_labels_for_korean_brief():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        inject_risk_readiness(root, locale="ko-KR")
+        write_fixture_strategy(root)
+
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/artic_start.py"), "--root", tmp], check=True, capture_output=True, text=True)
+
+        checklist = (root / "docs" / "design-qa-checklist.md").read_text(encoding="utf-8")
+        assert "## 위험/준비 상태 요약" in checklist
+        assert "핵심 품질 요구사항" in checklist
+        assert "누락된 정보가 해결될 때까지 구현은 차단됩니다" in checklist
+
+
+def test_validator_rejects_missing_risk_sections_when_brief_declares_risk_readiness():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        inject_risk_readiness(root)
+
+        result = subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/validate_artic_outputs.py"), "--root", tmp], capture_output=True, text=True)
+
+        assert result.returncode == 1
+        assert "risk_readiness" in result.stdout
+
 
 def test_artic_init_role_assignments_only_reference_selected_sources():
     with tempfile.TemporaryDirectory() as tmp:

@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def write_fixture_strategy(root: Path, source_ids: list[str] | None = None, north_star: str | None = None) -> dict:
     """Write a minimal valid strategy-first contract fixture for @artic start."""
-    source_ids = ["voltagent-awesome-design-md", "shadcn-ui", "material-design"] if source_ids is None else source_ids
+    source_ids = ["google-design-md", "voltagent-awesome-design-md", "material-design"] if source_ids is None else source_ids
     north_star = north_star or "Make the product feel like a calm command center for proof-rich decisions."
     reference_roles = [
         {
