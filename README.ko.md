@@ -1,5 +1,5 @@
 <div align="center">
-<img width="220" alt="Artic logo" src="assets/artic-logo.png" />
+<img width="110" alt="Artic logo" src="assets/artic-logo.png" />
 
   <h1>Artic</h1>
 

@@ -133,7 +133,7 @@ def headings(path: Path):
 
 
 def test_readme_hero_image_is_synced():
-    image_re = re.compile(r'<img width="220" alt="Artic logo" src="assets/artic-logo\.png" />')
+    image_re = re.compile(r'<img width="110" alt="Artic logo" src="assets/artic-logo\.png" />')
     expected = image_re.search((ROOT / "README.md").read_text(encoding="utf-8"))
     assert expected, "README.md missing synced hero image"
     for rel in README_FILES[1:]:
