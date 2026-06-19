@@ -1104,6 +1104,179 @@ def test_artic_start_no_validate_skips_validator_but_writes_outputs():
         assert (Path(tmp) / "DESIGN.md").exists()
 
 
+
+def run_artic_show(root: Path, *extra_args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+    return subprocess.run([
+        sys.executable,
+        str(ROOT / "skills/artic/scripts/artic_show.py"),
+        "--root",
+        str(root),
+        *extra_args,
+    ], check=check, capture_output=True, text=True)
+
+
+def read_json_file(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def parse_json_stdout(result: subprocess.CompletedProcess[str]) -> dict:
+    assert result.stdout.strip(), result.stderr
+    return json.loads(result.stdout)
+
+
+def assert_show_bundle_contract(root: Path, payload: dict) -> None:
+    show = root / ".artic" / "show"
+    final_files = [
+        "index.html",
+        "styles.css",
+        "tokens.json",
+        "report.json",
+        "critique.md",
+        "selected.json",
+        "assets/manifest.json",
+    ]
+    for rel in final_files:
+        assert (show / rel).is_file(), rel
+
+    iteration_files = [
+        "index.html",
+        "styles.css",
+        "tokens.json",
+        "report.json",
+        "assets/manifest.json",
+    ]
+    for rel in iteration_files:
+        assert (show / "iterations" / "001" / rel).is_file(), rel
+
+    selected = read_json_file(show / "selected.json")
+    report = read_json_file(show / "report.json")
+    assert selected["selected_iteration"] == report["selected_iteration"] == "001"
+    assert selected["candidate"] == report["candidate"]
+    assert payload["preview_bundle"] == str(show)
+    assert payload["entrypoint"] == str(show / "index.html")
+    assert payload.get("preview_file") in (None, str(show / "index.html"))
+    assert str(show / "report.json") == payload["report_file"]
+    assert str(show / "critique.md") == payload["critique_file"]
+    assert str(show / "index.html") in payload["generated_preview_files"]
+    assert str(show / "styles.css") in payload["generated_preview_files"]
+    assert str(show / "tokens.json") in payload["generated_preview_files"]
+    assert str(show / "assets" / "manifest.json") in payload["asset_files"]
+    assert payload["modified_app_files"] == []
+    assert report["modified_app_files"] == []
+
+    manifest = read_json_file(show / "assets" / "manifest.json")
+    assert manifest["schema_version"]
+    assert manifest["mode"] == "asset-first-preview"
+    assert isinstance(manifest["assets"], list) and manifest["assets"]
+    allowed_statuses = {"generated", "catalog-reference", "unverified-preview-only"}
+    assert {asset["status"] for asset in manifest["assets"]} <= allowed_statuses
+
+
+def test_artic_show_writes_asset_first_preview_bundle_and_payload_contract():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        app_file = root / "src" / "App.tsx"
+        app_file.parent.mkdir(parents=True)
+        original_app = "export default function App() { return <main>Existing app</main>; }\n"
+        app_file.write_text(original_app, encoding="utf-8")
+
+        result = run_artic_show(root)
+
+        payload = parse_json_stdout(result)
+        assert_show_bundle_contract(root, payload)
+        assert app_file.read_text(encoding="utf-8") == original_app
+        html = (root / ".artic" / "show" / "index.html").read_text(encoding="utf-8")
+        css = (root / ".artic" / "show" / "styles.css").read_text(encoding="utf-8")
+        tokens = read_json_file(root / ".artic" / "show" / "tokens.json")
+        assert "<!doctype html>" in html
+        assert "Artic Preview" in html
+        assert "Reference policy" in html
+        assert "DESIGN.md" in html
+        assert "--primary" in css
+        assert tokens["colors"]["primary"]
+
+
+def test_artic_show_max_iterations_one_writes_only_iteration_001_and_selects_it():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+
+        result = run_artic_show(root, "--max-iterations", "1", check=False)
+
+        assert result.returncode == 0, result.stderr or result.stdout
+        payload = parse_json_stdout(result)
+        assert_show_bundle_contract(root, payload)
+        iterations = sorted(path.name for path in (root / ".artic" / "show" / "iterations").iterdir() if path.is_dir())
+        assert iterations == ["001"]
+        assert read_json_file(root / ".artic" / "show" / "selected.json")["selected_iteration"] == "001"
+
+
+def test_artic_show_invalid_max_iterations_returns_json_error():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+
+        result = run_artic_show(root, "--max-iterations", "0", check=False)
+
+        assert result.returncode != 0
+        payload = parse_json_stdout(result)
+        assert "max-iterations" in payload["error"]
+        assert not (root / ".artic" / "show" / "iterations" / "001").exists()
+
+
+def test_artic_show_strict_min_score_above_possible_fails_below_threshold_report():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+
+        result = run_artic_show(root, "--strict", "--min-score", "101", check=False)
+
+        assert result.returncode != 0
+        payload = parse_json_stdout(result)
+        assert "quality" in payload["error"].lower() or "threshold" in payload["error"].lower()
+        report_path = root / ".artic" / "show" / "report.json"
+        assert report_path.is_file()
+        report = read_json_file(report_path)
+        assert report["status"] == "below-threshold"
+        assert report["modified_app_files"] == []
+
+
+def test_artic_show_3d_runtime_bundle_records_asset_provenance_and_runtime_markers():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        subprocess.run([sys.executable, str(ROOT / "skills/artic/scripts/scaffold_artic_files.py"), "--root", tmp], check=True)
+        brief_path = root / ".artic" / "brief.json"
+        brief = read_json_file(brief_path)
+        brief.setdefault("style", {})["search_facets"] = ["3d-webgl", "model-viewer", "interactive-hero"]
+        brief.setdefault("requirements", {})["must_have_feature"] = "interactive 3D WebGL model-viewer hero"
+        brief_path.write_text(json.dumps(brief, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+        references_path = root / ".artic" / "references.json"
+        references = read_json_file(references_path)
+        references.setdefault("role_assignments", []).append({
+            "role": "3d_runtime",
+            "source_ids": ["model-viewer", "threejs-examples"],
+            "selected_source_ids": ["model-viewer"],
+            "selection_reason": "Exercise asset-first preview provenance for 3D runtime fixtures.",
+        })
+        references_path.write_text(json.dumps(references, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+        result = run_artic_show(root)
+
+        payload = parse_json_stdout(result)
+        assert_show_bundle_contract(root, payload)
+        show = root / ".artic" / "show"
+        assert (show / "assets" / "model-poster.svg").exists() or (show / "assets" / "scene-fallback.svg").exists()
+        manifest = read_json_file(show / "assets" / "manifest.json")
+        serialized_manifest = json.dumps(manifest, ensure_ascii=False).lower()
+        assert "3d" in serialized_manifest or "model-viewer" in serialized_manifest or "webgl" in serialized_manifest
+        assert "provenance" in serialized_manifest
+        html = (show / "index.html").read_text(encoding="utf-8")
+        assert "runtime-3d" in html or "model-viewer" in html
+        assert "interaction-zone" in html or "3D" in html
+
+
 def test_artic_show_blocks_missing_design_inputs_without_creating_preview():
     with tempfile.TemporaryDirectory() as tmp:
         result = subprocess.run([
