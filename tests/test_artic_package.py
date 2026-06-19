@@ -54,6 +54,7 @@ def test_readmes_have_language_nav():
 
 def test_readmes_document_version_and_update_commands():
     required_phrases = [
+        "codex plugin add codex-artic@artic",
         "@artic version",
         "@artic update",
         "python3 skills/artic/scripts/artic_version.py --root .",

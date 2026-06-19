@@ -81,6 +81,12 @@ codex plugin marketplace add baskduf/artic@<tag>
 /plugins
 ```
 
+또는 플러그인을 직접 설치:
+
+```bash
+codex plugin add codex-artic@artic
+```
+
 Codex에 요청:
 
 ```text

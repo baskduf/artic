@@ -81,6 +81,12 @@ Then open the plugin browser and install `codex-artic`:
 /plugins
 ```
 
+またはプラグインを直接インストールします:
+
+```bash
+codex plugin add codex-artic@artic
+```
+
 Then ask Codex:
 
 ```text
