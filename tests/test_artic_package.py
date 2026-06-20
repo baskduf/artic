@@ -473,6 +473,70 @@ def test_artic_init_does_not_route_plain_2d_canvas_to_3d_sources():
     assert not selected_ids & {"model-viewer", "threejs-examples", "react-three-fiber-examples"}, selected_ids
 
 
+def test_artic_init_does_not_inject_app_component_sources_into_editorial_homepage():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Personal essay portfolio",
+            "--audience",
+            "readers",
+            "--goal",
+            "read essays",
+            "--vibe",
+            "editorial literary quiet no app no SaaS",
+            "--stack",
+            "static HTML CSS",
+            "--limit",
+            "6",
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        references = json.loads((Path(tmp) / ".artic" / "references.json").read_text(encoding="utf-8"))
+        role_selected_ids = {
+            source_id
+            for role in references["role_assignments"]
+            for source_id in role.get("selected_source_ids", [])
+        }
+
+    assert not role_selected_ids & {"shopify-polaris", "shadcn-ui", "tailwind-css"}, references["role_assignments"]
+
+
+def test_artic_init_role_selection_rejects_low_score_default_component_sources():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Korean local community mobile app",
+            "--audience",
+            "neighbors",
+            "--goal",
+            "signup",
+            "--vibe",
+            "friendly Korean mobile app",
+            "--stack",
+            "React Native",
+            "--limit",
+            "6",
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        references = json.loads((Path(tmp) / ".artic" / "references.json").read_text(encoding="utf-8"))
+        selected_by_id = {row["id"]: row for row in payload["selected_sources"]}
+        role_selected_ids = {
+            source_id
+            for role in references["role_assignments"]
+            for source_id in role.get("selected_source_ids", [])
+        }
+
+    assert "daangn-seed-design" in selected_by_id, selected_by_id
+    assert not role_selected_ids & {"shadcn-ui", "tailwind-css", "github-primer"}, references["role_assignments"]
+
+
 def test_artic_init_generates_brief_and_reference_search_outputs():
     with tempfile.TemporaryDirectory() as tmp:
         result = subprocess.run([

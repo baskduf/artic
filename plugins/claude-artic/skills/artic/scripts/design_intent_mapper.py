@@ -115,9 +115,29 @@ def normalize_text(value: str) -> str:
     return value.strip().lower()
 
 
-def contains_any(text: str, needles: tuple[str, ...]) -> bool:
+def is_negated_match(text: str, start: int, end: int) -> bool:
+    before = text[max(0, start - 18):start]
+    after = text[end:end + 12]
+    return bool(
+        re.search(r"(?:\bno\b|\bnot\b|\bwithout\b|\bavoid\b|피하|하지\s*말|말기)\W*$", before)
+        or re.match(r"\W*(?:느낌\s*)?(?:피하|하지\s*말|말기)", after)
+    )
+
+
+def contains_any(text: str, needles: tuple[str, ...], *, respect_negation: bool = True) -> bool:
     lowered = normalize_text(text)
-    return any(needle.lower() in lowered for needle in needles)
+    for needle in needles:
+        needle_lower = needle.lower()
+        start = 0
+        while True:
+            match_at = lowered.find(needle_lower, start)
+            if match_at == -1:
+                break
+            end = match_at + len(needle_lower)
+            if not respect_negation or not is_negated_match(lowered, match_at, end):
+                return True
+            start = end
+    return False
 
 
 def add_unique(target: list[str], values: list[str] | tuple[str, ...]) -> None:
@@ -163,6 +183,10 @@ def design_north_star(project: str, audience: str, goal: str, facets: list[str])
 def reference_roles(facets: list[str], stack: str) -> list[dict[str, Any]]:
     roles: list[dict[str, Any]] = []
     stack_lower = stack.lower()
+    web_stack = contains_any(stack_lower, ("react", "next", "vue", "svelte", "tailwind", "css", "web")) and "native" not in stack_lower
+    conversion_context = any(facet in facets for facet in ("b2b-saas", "premium-saas", "trust", "korean-fintech"))
+    component_context = web_stack or any(facet in facets for facet in ("developer-tool", "b2b-saas", "ai-product"))
+    token_context = web_stack or "tailwind" in stack_lower or any(facet in facets for facet in ("developer-tool", "b2b-saas", "premium-saas", "minimal"))
     if "3d-webgl" in facets or contains_any(stack_lower, ("three", "r3f", "webgl", "model-viewer", "gltf", "glb")):
         roles.extend([
             {
@@ -176,23 +200,24 @@ def reference_roles(facets: list[str], stack: str) -> list[dict[str, Any]]:
                 "selection_reason": "Require reduced motion, static posters, lazy loading, validation, and mobile WebGL performance guardrails.",
             },
         ])
-    roles.extend([
-        {
+    if conversion_context:
+        roles.append({
             "role": "trust_and_conversion",
             "source_ids": ["shopify-polaris", "wcag-quickref", "w3c-wai-designing-accessibility"],
             "selection_reason": "Use trust cues, validation behavior, and accessibility guardrails around conversion moments.",
-        },
-        {
+        })
+    if component_context:
+        roles.append({
             "role": "component_restraint",
             "source_ids": ["shadcn-ui", "radix-ui-primitives", "base-ui", "react-aria"],
             "selection_reason": "Use quiet, composable primitives instead of decorative one-off UI.",
-        },
-        {
+        })
+    if token_context:
+        roles.append({
             "role": "token_discipline",
             "source_ids": ["tailwind-css", "open-props", "dtcg-design-tokens", "style-dictionary"],
             "selection_reason": "Translate design intent into reusable color, spacing, radius, and typography tokens.",
-        },
-    ])
+        })
     if "mobile-first" in facets:
         roles.append({
             "role": "mobile_confidence",
@@ -205,7 +230,7 @@ def reference_roles(facets: list[str], stack: str) -> list[dict[str, Any]]:
             "source_ids": ["krds-korea-design-system", "line-design-system", "daangn-seed-design", "pretendard-typeface", "kwcag-22-korean-web-accessibility"],
             "selection_reason": "Map Korean market language into mobile-native typography, local trust cues, social-login clarity, and accessibility without copying protected brand assets.",
         })
-    if "developer-tool" in facets or "react" in stack.lower() or "tailwind" in stack.lower():
+    if "developer-tool" in facets or "tailwind" in stack.lower() or (web_stack and "react" in stack.lower()):
         roles.append({
             "role": "implementation_clarity",
             "source_ids": ["github-primer", "atlassian-design-system", "shadcn-ui", "tailwind-css"],
