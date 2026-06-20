@@ -605,6 +605,172 @@ def test_artic_init_role_selection_rejects_low_score_default_component_sources()
     assert not role_selected_ids & {"shadcn-ui", "tailwind-css", "github-primer"}, references["role_assignments"]
 
 
+def test_artic_init_role_selection_rejects_role_ineligible_metadata_sources():
+    artic_init = importlib.import_module("artic_init")
+    with tempfile.TemporaryDirectory() as tmp:
+        catalog_path = Path(tmp) / "catalog.json"
+        shared = {
+            "type": "fixture",
+            "url": "https://example.test/source",
+            "license": "MIT",
+            "tags": ["homepage", "react", "components", "tokens", "trust"],
+            "product_fit": ["saas", "developer-tool", "web-app"],
+            "visual_traits": ["modern", "clear"],
+            "page_patterns": ["landing-page"],
+            "implementation_fit": ["react", "components", "tokens"],
+            "strengths": ["fixture source"],
+            "avoid_when": [],
+        }
+        catalog = [
+            {
+                **shared,
+                "id": "asset-kit",
+                "name": "Asset Kit",
+                "source_role": "asset_source",
+                "default_visual_reference": True,
+                "requires_explicit_context": True,
+                "extraction_targets": ["icons", "illustrations"],
+                "use_for": ["licensed decorative assets"],
+                "application_guidance": "Use only when explicit asset sourcing is requested.",
+            },
+            {
+                **shared,
+                "id": "component-kit",
+                "name": "Component Kit",
+                "source_role": "implementation_reference",
+                "default_visual_reference": False,
+                "requires_explicit_context": True,
+                "extraction_targets": ["component behavior", "tokens"],
+                "use_for": ["component restraint"],
+                "application_guidance": "Use for component behavior and implementation guidance.",
+            },
+        ]
+        catalog_path.write_text(json.dumps(catalog, indent=2), encoding="utf-8")
+        intent = {
+            "catalog_query": "homepage react components tokens trust",
+            "avoid_facets": [],
+            "reference_roles": [
+                {
+                    "role": "component_restraint",
+                    "source_ids": ["asset-kit", "component-kit"],
+                    "selection_reason": "Regression fixture: role eligibility must use catalog metadata, not only score/order.",
+                }
+            ],
+        }
+
+        selected, role_assignments = artic_init.select_role_grounded_sources(intent, catalog_path, 2)
+
+    selected_ids = [row["id"] for row in selected]
+    assert "component-kit" in selected_ids
+    assert "asset-kit" not in selected_ids
+    assert role_assignments[0]["selected_source_ids"] == ["component-kit"]
+
+
+def test_artic_init_fallback_skips_sources_without_explicit_context():
+    artic_init = importlib.import_module("artic_init")
+    with tempfile.TemporaryDirectory() as tmp:
+        catalog_path = Path(tmp) / "catalog.json"
+        shared = {
+            "type": "fixture",
+            "url": "https://example.test/source",
+            "license": "MIT",
+            "tags": ["homepage", "react", "components", "tokens", "trust"],
+            "product_fit": ["saas", "developer-tool", "web-app"],
+            "visual_traits": ["modern", "clear"],
+            "page_patterns": ["landing-page"],
+            "implementation_fit": ["react", "components", "tokens"],
+            "extraction_targets": ["patterns"],
+            "strengths": ["fixture source"],
+            "use_for": ["fixture"],
+            "avoid_when": [],
+            "application_guidance": "Use this fixture for deterministic metadata-boundary tests.",
+        }
+        catalog = [
+            {
+                **shared,
+                "id": "component-kit",
+                "name": "Component Kit",
+                "source_role": "implementation_reference",
+                "default_visual_reference": False,
+                "requires_explicit_context": True,
+            },
+            {
+                **shared,
+                "id": "asset-kit",
+                "name": "Asset Kit",
+                "source_role": "asset_source",
+                "default_visual_reference": True,
+                "requires_explicit_context": True,
+            },
+            {
+                **shared,
+                "id": "general-guide",
+                "name": "General Guide",
+                "source_role": "behavior_reference",
+                "default_visual_reference": False,
+                "requires_explicit_context": False,
+            },
+        ]
+        catalog_path.write_text(json.dumps(catalog, indent=2), encoding="utf-8")
+        intent = {
+            "catalog_query": "homepage react components tokens trust",
+            "avoid_facets": [],
+            "reference_roles": [
+                {
+                    "role": "component_restraint",
+                    "source_ids": ["component-kit"],
+                    "selection_reason": "Regression fixture: fallback must not promote explicit-only asset sources.",
+                }
+            ],
+        }
+
+        selected, _ = artic_init.select_role_grounded_sources(intent, catalog_path, 2)
+
+    selected_ids = [row["id"] for row in selected]
+    assert "component-kit" in selected_ids
+    assert "general-guide" in selected_ids
+    assert "asset-kit" not in selected_ids
+
+
+def test_artic_init_preserves_source_role_metadata_in_selected_sources_and_source_plan():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = subprocess.run([
+            sys.executable,
+            str(ROOT / "skills/artic/scripts/artic_init.py"),
+            "--root",
+            tmp,
+            "--project",
+            "Korean AI Meeting Assistant",
+            "--audience",
+            "startup operators and sales teams",
+            "--goal",
+            "demo requests",
+            "--vibe",
+            "clean trustworthy mobile-first saas",
+            "--references",
+            "Linear clarity, Shopify Polaris trust, Material token discipline",
+            "--stack",
+            "React Tailwind",
+            "--limit",
+            "4",
+        ], check=True, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        references = json.loads((Path(tmp) / ".artic" / "references.json").read_text(encoding="utf-8"))
+
+    metadata_keys = {"source_role", "default_visual_reference", "requires_explicit_context"}
+    assert references["selected_sources"]
+    assert references["source_plan"]
+    assert all(metadata_keys <= set(row) for row in payload["selected_sources"])
+    assert all(metadata_keys <= set(row) for row in references["selected_sources"])
+    assert all(metadata_keys <= set(row) for row in references["source_plan"])
+
+    selected_by_id = {row["id"]: row for row in references["selected_sources"]}
+    for plan in references["source_plan"]:
+        source = selected_by_id[plan["source_id"]]
+        for key in metadata_keys:
+            assert plan[key] == source[key]
+
+
 def test_artic_init_generates_brief_and_reference_search_outputs():
     with tempfile.TemporaryDirectory() as tmp:
         result = subprocess.run([
