@@ -379,6 +379,74 @@ def test_catalog_sources_have_quality_retrieval_metadata():
         assert any(verb in guidance for verb in ["Use ", "Apply ", "Translate ", "Pair ", "Ground ", "Keep ", "Connect ", "Adapt "]), (source["id"], guidance)
 
 
+def test_catalog_sources_have_role_boundary_metadata():
+    catalog = json.loads((ROOT / "skills/artic/references/source-catalog.json").read_text(encoding="utf-8"))
+    allowed_roles = {
+        "visual_reference",
+        "system_reference",
+        "behavior_reference",
+        "qa_reference",
+        "asset_source",
+        "legal_reference",
+        "copy_reference",
+        "implementation_reference",
+    }
+    for source in catalog:
+        assert source.get("source_role") in allowed_roles, (source["id"], source.get("source_role"))
+        assert isinstance(source.get("default_visual_reference"), bool), source["id"]
+        assert isinstance(source.get("requires_explicit_context"), bool), source["id"]
+
+
+def test_catalog_source_metadata_preserves_visual_and_context_boundaries():
+    catalog = json.loads((ROOT / "skills/artic/references/source-catalog.json").read_text(encoding="utf-8"))
+    by_id = {source["id"]: source for source in catalog}
+    visual_allowed_roles = {"visual_reference", "asset_source", "system_reference"}
+    never_default_visual_roles = {"implementation_reference", "qa_reference", "legal_reference", "copy_reference"}
+    for source in catalog:
+        if source["default_visual_reference"]:
+            assert source["source_role"] in visual_allowed_roles, (source["id"], source["source_role"])
+            for key in ("visual_traits", "page_patterns", "extraction_targets"):
+                assert isinstance(source.get(key), list) and source[key], (source["id"], key)
+        if source["source_role"] in never_default_visual_roles:
+            assert source["default_visual_reference"] is False, source["id"]
+        if source["source_role"] in {"asset_source", "legal_reference"}:
+            assert source["requires_explicit_context"] is True, source["id"]
+
+    expected = {
+        "google-design-md": ("system_reference", False, False),
+        "shadcn-ui": ("implementation_reference", False, True),
+        "tailwind-css": ("implementation_reference", False, True),
+        "chakra-ui": ("implementation_reference", False, True),
+        "mantine": ("implementation_reference", False, True),
+        "shopify-polaris": ("system_reference", False, True),
+        "wcag-quickref": ("qa_reference", False, False),
+        "w3c-wai-designing-accessibility": ("qa_reference", False, False),
+        "3dicons": ("asset_source", True, True),
+        "ambientcg": ("asset_source", False, True),
+        "poly-haven": ("asset_source", False, True),
+        "kenney-assets": ("asset_source", True, True),
+        "codrops-threejs-demos": ("behavior_reference", False, True),
+    }
+    for source_id, metadata in expected.items():
+        source = by_id[source_id]
+        assert (source["source_role"], source["default_visual_reference"], source["requires_explicit_context"]) == metadata
+
+
+def test_catalog_search_preserves_source_role_metadata():
+    result = subprocess.run([
+        sys.executable,
+        str(ROOT / "skills/artic/scripts/search_reference_catalog.py"),
+        "--query",
+        "ai product developer saas",
+        "--limit",
+        "3",
+    ], check=True, capture_output=True, text=True)
+    rows = json.loads(result.stdout)
+    assert rows
+    for row in rows:
+        assert {"source_role", "default_visual_reference", "requires_explicit_context"} <= set(row), row["id"]
+
+
 def test_weighted_catalog_search_routes_distinct_design_intents():
     cases = [
         ("developer tool ai saas react tailwind", {"voltagent-awesome-design-md", "shadcn-ui", "google-design-md"}),

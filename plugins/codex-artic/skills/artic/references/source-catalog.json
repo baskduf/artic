@@ -5,6 +5,9 @@
     "type": "official-spec",
     "url": "https://github.com/google-labs-code/design.md",
     "license": "Apache-2.0",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/google-labs-code/design.md/main/README.md",
@@ -73,6 +76,9 @@
     "type": "design-md-corpus",
     "url": "https://github.com/VoltAgent/awesome-design-md",
     "license": "MIT",
+    "source_role": "visual_reference",
+    "default_visual_reference": true,
+    "requires_explicit_context": false,
     "fixture": "references/fixtures/voltagent-saas.design.md",
     "live_sources": [
       {
@@ -141,6 +147,9 @@
     "type": "skill-registry",
     "url": "https://github.com/bergside/awesome-design-skills",
     "license": "MIT",
+    "source_role": "behavior_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "tags": [
       "skill",
       "design-md",
@@ -197,6 +206,9 @@
     "type": "design-md-corpus",
     "url": "https://github.com/VoltAgent/awesome-claude-design",
     "license": "MIT",
+    "source_role": "behavior_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "tags": [
       "claude-design",
       "design-md",
@@ -252,6 +264,9 @@
     "type": "design-md-corpus",
     "url": "https://github.com/ndroussi/design-md-for-ai",
     "license": "MIT",
+    "source_role": "visual_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "tags": [
       "brand-inspired",
       "design-md",
@@ -308,6 +323,9 @@
     "type": "mobile-design-md-corpus",
     "url": "https://github.com/meliwat/awesome-ios-design-md",
     "license": "MIT",
+    "source_role": "visual_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "tags": [
       "mobile",
       "ios",
@@ -369,6 +387,9 @@
     "type": "professional-design-system",
     "url": "https://m3.material.io/",
     "license": "Mixed/docs-public",
+    "source_role": "system_reference",
+    "default_visual_reference": true,
+    "requires_explicit_context": false,
     "tags": [
       "tokens",
       "accessibility",
@@ -430,6 +451,9 @@
     "type": "professional-design-system",
     "url": "https://polaris.shopify.com/",
     "license": "Open-source ecosystem",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "fixture": "references/fixtures/shopify-polaris-trust.design.md",
     "live_sources": [
       {
@@ -501,6 +525,9 @@
     "type": "professional-design-system",
     "url": "https://carbondesignsystem.com/",
     "license": "Apache-2.0 components",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "tags": [
       "enterprise",
       "data",
@@ -562,6 +589,9 @@
     "type": "professional-design-system",
     "url": "https://fluent2.microsoft.design/",
     "license": "Open-source ecosystem",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "tags": [
       "productivity",
       "enterprise",
@@ -620,6 +650,9 @@
     "type": "professional-design-system",
     "url": "https://ant.design/",
     "license": "MIT",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "tags": [
       "enterprise",
       "dashboard",
@@ -682,6 +715,9 @@
     "type": "ui-implementation-ecosystem",
     "url": "https://ui.shadcn.com/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "fixture": "references/fixtures/shadcn-developer.design.md",
     "live_sources": [
       {
@@ -752,6 +788,9 @@
     "type": "oss-design-system",
     "url": "https://primer.style/",
     "license": "MIT/open-source ecosystem",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/primer/css/main/README.md",
@@ -826,6 +865,9 @@
     "type": "oss-component-primitives",
     "url": "https://www.radix-ui.com/primitives",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/radix-ui/primitives/main/README.md",
@@ -897,6 +939,9 @@
     "type": "oss-government-design-system",
     "url": "https://design-system.service.gov.uk/",
     "license": "MIT/Open Government Licence ecosystem",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/alphagov/govuk-frontend/main/README.md",
@@ -972,6 +1017,9 @@
     "type": "oss-government-design-system",
     "url": "https://designsystem.digital.gov/",
     "license": "Public domain/MIT-mixed",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/uswds/uswds/develop/README.md",
@@ -1048,6 +1096,9 @@
     "type": "oss-design-system",
     "url": "https://react-spectrum.adobe.com/",
     "license": "Apache-2.0",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/adobe/react-spectrum/main/README.md",
@@ -1123,6 +1174,9 @@
     "type": "oss-ui-library",
     "url": "https://chakra-ui.com/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/README.md",
@@ -1196,6 +1250,9 @@
     "type": "oss-ui-library",
     "url": "https://mantine.dev/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/mantinedev/mantine/master/README.md",
@@ -1271,6 +1328,9 @@
     "type": "oss-token-library",
     "url": "https://open-props.style/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/argyleink/open-props/main/readme.md",
@@ -1341,6 +1401,9 @@
     "type": "oss-component-primitives",
     "url": "https://headlessui.com/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/tailwindlabs/headlessui/main/README.md",
@@ -1413,6 +1476,9 @@
     "type": "source-available-ui-library",
     "url": "https://eui.elastic.co/",
     "license": "Elastic License 2.0 / SSPL-1.0",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/elastic/eui/main/README.md",
@@ -1488,6 +1554,9 @@
     "type": "accessibility-spec-patterns",
     "url": "https://www.w3.org/WAI/ARIA/apg/",
     "license": "W3C Document License / W3C Software License",
+    "source_role": "qa_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/w3c/aria-practices/main/README.md",
@@ -1562,6 +1631,9 @@
     "type": "accessibility-standard-reference",
     "url": "https://www.w3.org/WAI/WCAG22/quickref/",
     "license": "W3C Document License",
+    "source_role": "qa_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "live_sources": [
       {
         "url": "https://www.w3.org/WAI/WCAG22/quickref/",
@@ -1636,6 +1708,9 @@
     "type": "accessibility-pattern-library",
     "url": "https://inclusive-components.design/",
     "license": "public web content / copyright retained",
+    "source_role": "behavior_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "live_sources": [
       {
         "url": "https://inclusive-components.design/",
@@ -1710,6 +1785,9 @@
     "type": "accessibility-community-reference",
     "url": "https://www.a11yproject.com/",
     "license": "open-source project / site content terms vary",
+    "source_role": "qa_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "live_sources": [
       {
         "url": "https://www.a11yproject.com/",
@@ -1781,6 +1859,9 @@
     "type": "token-standard",
     "url": "https://www.designtokens.org/",
     "license": "W3C Community Group / spec terms",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/design-tokens/community-group/main/README.md",
@@ -1852,6 +1933,9 @@
     "type": "oss-token-build-system",
     "url": "https://styledictionary.com/",
     "license": "Apache-2.0",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/style-dictionary/style-dictionary/main/README.md",
@@ -1924,6 +2008,9 @@
     "type": "oss-css-framework",
     "url": "https://tailwindcss.com/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/tailwindlabs/tailwindcss/main/README.md",
@@ -1997,6 +2084,9 @@
     "type": "oss-styling-system",
     "url": "https://panda-css.com/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/chakra-ui/panda/main/README.md",
@@ -2069,6 +2159,9 @@
     "type": "oss-ui-kit",
     "url": "https://park-ui.com/",
     "license": "MIT/open-source ecosystem",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/chakra-ui/park-ui/main/README.md",
@@ -2144,6 +2237,9 @@
     "type": "professional-design-system",
     "url": "https://www.lightningdesignsystem.com/",
     "license": "BSD-3-Clause source / CC-BY assets mixed",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/salesforce-ux/design-system/main/README.md",
@@ -2220,6 +2316,9 @@
     "type": "professional-design-system",
     "url": "https://atlassian.design/",
     "license": "Atlassian limited design-system license",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://atlassian.design/",
@@ -2296,6 +2395,9 @@
     "type": "platform-design-guidelines",
     "url": "https://developer.apple.com/design/human-interface-guidelines",
     "license": "Apple documentation terms",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://developer.apple.com/design/human-interface-guidelines",
@@ -2372,6 +2474,9 @@
     "type": "oss-motion-library",
     "url": "https://motion.dev/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/motiondivision/motion/main/README.md",
@@ -2446,6 +2551,9 @@
     "type": "oss-fintech-design-system",
     "url": "https://blade.razorpay.com/",
     "license": "MIT",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/razorpay/blade/master/README.md",
@@ -2526,6 +2634,9 @@
     "type": "oss-enterprise-design-system",
     "url": "https://semi.design/en-US/start/introduction",
     "license": "MIT",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/DouyinFE/semi-design/main/README.md",
@@ -2606,6 +2717,9 @@
     "type": "oss-mobile-commerce-ui-library",
     "url": "https://vant-ui.github.io/vant/#/en-US",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/youzan/vant/main/README.md",
@@ -2685,6 +2799,9 @@
     "type": "oss-government-design-system",
     "url": "https://www.designsystem.tech.gov.sg/",
     "license": "MIT/open-source ecosystem",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/GovTechSG/sgds/master/README.md",
@@ -2763,6 +2880,9 @@
     "type": "oss-accessible-component-primitives",
     "url": "https://base-ui.com/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/mui/base-ui/master/README.md",
@@ -2839,6 +2959,9 @@
     "type": "oss-accessibility-primitives",
     "url": "https://react-spectrum.adobe.com/react-aria/",
     "license": "Apache-2.0",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/adobe/react-spectrum/main/README.md",
@@ -2918,6 +3041,9 @@
     "type": "oss-web-components-design-system",
     "url": "https://www.webawesome.com/",
     "license": "MIT core / Pro assets separate",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/shoelace-style/webawesome/main/README.md",
@@ -2993,6 +3119,9 @@
     "type": "responsive-design-methodology",
     "url": "https://utopia.fyi/",
     "license": "public web tool / terms vary",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "live_sources": [
       {
         "url": "https://utopia.fyi/",
@@ -3069,6 +3198,9 @@
     "type": "accessibility-design-guidance",
     "url": "https://www.w3.org/WAI/tips/designing/",
     "license": "W3C Document License",
+    "source_role": "qa_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "live_sources": [
       {
         "url": "https://www.w3.org/WAI/tips/designing/",
@@ -3148,6 +3280,9 @@
     "type": "oss-data-visualization-grammar",
     "url": "https://observablehq.com/plot/",
     "license": "ISC",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/observablehq/plot/main/README.md",
@@ -3224,6 +3359,9 @@
     "type": "oss-declarative-visualization-grammar",
     "url": "https://vega.github.io/vega-lite/",
     "license": "BSD-3-Clause",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/vega/vega-lite/main/README.md",
@@ -3300,6 +3438,9 @@
     "type": "oss-design-token-workflow",
     "url": "https://docs.tokens.studio/",
     "license": "MIT plugin repository",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://raw.githubusercontent.com/tokens-studio/figma-plugin/main/README.md",
@@ -3378,6 +3519,9 @@
     "type": "conversion-ux-case-study",
     "url": "https://growth.design/case-studies/landing-page-ux-psychology",
     "license": "Public web content; principle extraction only",
+    "source_role": "behavior_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "live_sources": [
       {
         "url": "https://growth.design/case-studies/landing-page-ux-psychology",
@@ -3452,6 +3596,9 @@
     "type": "conversion-copywriting-guide",
     "url": "https://marketingexamples.com/landing-page/guide",
     "license": "Public web content; principle extraction only",
+    "source_role": "copy_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "fixture": "references/fixtures/marketing-examples-landing-page.design.md",
     "live_sources": [
       {
@@ -3527,6 +3674,9 @@
     "type": "ai-product-ux-guidebook",
     "url": "https://pair.withgoogle.com/guidebook/",
     "license": "Public Google guidebook; principle extraction only",
+    "source_role": "behavior_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://pair.withgoogle.com/guidebook/",
@@ -3601,6 +3751,9 @@
     "type": "ai-ux-guidelines",
     "url": "https://www.microsoft.com/en-us/haxtoolkit/ai-guidelines/",
     "license": "Public Microsoft research guidance; principle extraction only",
+    "source_role": "behavior_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://www.microsoft.com/en-us/haxtoolkit/ai-guidelines/",
@@ -3675,6 +3828,9 @@
     "type": "developer-documentation-framework",
     "url": "https://diataxis.fr/",
     "license": "Creative Commons Attribution-ShareAlike 4.0 International",
+    "source_role": "behavior_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://diataxis.fr/",
@@ -3749,6 +3905,9 @@
     "type": "pricing-ux-guide",
     "url": "https://www.figma.com/resource-library/pricing-page-best-practices/",
     "license": "Public Figma resource; principle extraction only",
+    "source_role": "copy_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://www.figma.com/resource-library/pricing-page-best-practices/",
@@ -3823,6 +3982,9 @@
     "type": "oss-enterprise-cloud-design-system",
     "url": "https://cloudscape.design/",
     "license": "Apache-2.0 components",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://cloudscape.design/",
@@ -3902,6 +4064,9 @@
     "type": "asia-mobile-design-system",
     "url": "https://designsystem.line.me/",
     "license": "Public design-system docs; brand assets governed by LINE terms",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://designsystem.line.me/",
@@ -3976,6 +4141,9 @@
     "type": "public-service-design-system",
     "url": "https://www.krds.go.kr/",
     "license": "Korean public design-system docs; verify asset-specific terms",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://www.krds.go.kr/",
@@ -4050,6 +4218,9 @@
     "type": "oss-asia-enterprise-design-system",
     "url": "https://tdesign.tencent.com/index-en",
     "license": "MIT components",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://tdesign.tencent.com/index-en",
@@ -4129,6 +4300,9 @@
     "type": "oss-enterprise-design-system",
     "url": "https://www.patternfly.org/",
     "license": "MIT",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://www.patternfly.org/",
@@ -4208,6 +4382,9 @@
     "type": "oss-accessible-component-primitives",
     "url": "https://ark-ui.com/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://ark-ui.com/",
@@ -4287,6 +4464,9 @@
     "type": "oss-korean-mobile-design-system",
     "url": "https://seed-design.io/",
     "license": "Apache-2.0 repository",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://seed-design.io/",
@@ -4374,6 +4554,9 @@
     "type": "korean-design-md-catalog",
     "url": "https://github.com/CaesiumY/ko-design-md",
     "license": "MIT code; CC BY 4.0 catalog content; original brand assets remain with owners",
+    "source_role": "visual_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://github.com/CaesiumY/ko-design-md",
@@ -4454,6 +4637,9 @@
     "type": "oss-korean-ui-typeface",
     "url": "https://github.com/orioncactus/pretendard",
     "license": "SIL Open Font License 1.1",
+    "source_role": "asset_source",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://github.com/orioncactus/pretendard",
@@ -4533,6 +4719,9 @@
     "type": "mobile-os-design-guidelines",
     "url": "https://developer.samsung.com/one-ui",
     "license": "Public Samsung developer guidance; brand assets governed by Samsung terms",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://developer.samsung.com/one-ui",
@@ -4612,6 +4801,9 @@
     "type": "oss-korean-react-native-ui-library",
     "url": "https://github.com/crossplatformkorea/cpk-ui",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://github.com/crossplatformkorea/cpk-ui",
@@ -4695,6 +4887,9 @@
     "type": "korean-social-login-brand-guideline",
     "url": "https://developers.kakao.com/docs/en/kakaologin/design-guide",
     "license": "Kakao Developers terms; official assets for Kakao Login use only",
+    "source_role": "legal_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://developers.kakao.com/docs/en/kakaologin/design-guide",
@@ -4772,6 +4967,9 @@
     "type": "korean-social-signup-brand-guideline",
     "url": "https://developers.kakao.com/docs/en/kakaosync/design-guide",
     "license": "Kakao Developers terms; official assets for Kakao Sync use only",
+    "source_role": "legal_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://developers.kakao.com/docs/en/kakaosync/design-guide",
@@ -4849,6 +5047,9 @@
     "type": "korean-social-login-brand-guideline",
     "url": "https://developers.naver.com/docs/login/bi/bi.md",
     "license": "NAVER Developers terms; official assets for NAVER Login use only",
+    "source_role": "legal_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://developers.naver.com/docs/login/bi/bi.md",
@@ -4926,6 +5127,9 @@
     "type": "korean-accessibility-standard",
     "url": "https://a11ykr.github.io/kwcag22/",
     "license": "Public standard mirror; verify official standard terms for redistribution",
+    "source_role": "qa_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://a11ykr.github.io/kwcag22/",
@@ -5006,6 +5210,9 @@
     "type": "korean-privacy-consent-guideline",
     "url": "https://www.privacy.go.kr/front/bbs/bbsView.do?bbsNo=BBSMSTR_000000000049&bbscttNo=13156",
     "license": "Korean public privacy guidance; verify portal reuse terms",
+    "source_role": "legal_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://www.privacy.go.kr/front/bbs/bbsView.do?bbsNo=BBSMSTR_000000000049&bbscttNo=13156",
@@ -5084,6 +5291,9 @@
     "type": "korean-privacy-policy-guideline",
     "url": "https://www.privacy.go.kr/front/bbs/bbsView.do?bbsNo=BBSMSTR_000000000049&bbscttNo=20806",
     "license": "Korean public privacy guidance; verify portal reuse terms",
+    "source_role": "legal_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://www.privacy.go.kr/front/bbs/bbsView.do?bbsNo=BBSMSTR_000000000049&bbscttNo=20806",
@@ -5162,6 +5372,9 @@
     "type": "asia-payment-ux-guideline",
     "url": "https://docs.alipayplus.com/alipayplus/alipayplus/uxg_mpp",
     "license": "Public Alipay+ partner docs; brand assets governed by Alipay+ terms",
+    "source_role": "legal_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://docs.alipayplus.com/alipayplus/alipayplus/uxg_mpp",
@@ -5240,6 +5453,9 @@
     "type": "3d-webgl-example-catalog",
     "url": "https://threejs.org/examples/",
     "license": "MIT for three.js project and examples; verify third-party assets used inside individual examples",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://threejs.org/examples/",
@@ -5328,6 +5544,9 @@
     "type": "react-3d-example-catalog",
     "url": "https://r3f.docs.pmnd.rs/getting-started/examples",
     "license": "React Three Fiber is MIT; verify individual demo assets and linked sandboxes separately",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://r3f.docs.pmnd.rs/getting-started/examples",
@@ -5415,6 +5634,9 @@
     "type": "react-3d-component-library",
     "url": "https://drei.docs.pmnd.rs/",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://drei.docs.pmnd.rs/",
@@ -5501,6 +5723,9 @@
     "type": "3d-web-component-standard",
     "url": "https://modelviewer.dev/docs/",
     "license": "Apache-2.0 for model-viewer; sample models use mixed licenses and require per-asset review",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://modelviewer.dev/docs/",
@@ -5596,6 +5821,9 @@
     "type": "3d-format-standard",
     "url": "https://www.khronos.org/gltf/",
     "license": "Royalty-free Khronos specification; individual sample assets have separate licenses",
+    "source_role": "system_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://www.khronos.org/gltf/",
@@ -5679,6 +5907,9 @@
     "type": "3d-asset-quality-gate",
     "url": "https://github.khronos.org/glTF-Validator/",
     "license": "Official Khronos validator; verify repository license for redistributed tooling",
+    "source_role": "qa_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://github.khronos.org/glTF-Validator/",
@@ -5760,6 +5991,9 @@
     "type": "3d-asset-optimization-tool",
     "url": "https://gltf-transform.dev/cli",
     "license": "MIT",
+    "source_role": "implementation_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://gltf-transform.dev/cli",
@@ -5849,6 +6083,9 @@
     "type": "cc0-3d-asset-library",
     "url": "https://polyhaven.com/",
     "license": "CC0 for assets; website content, metadata, thumbnails, logos, and API terms are separate",
+    "source_role": "asset_source",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://polyhaven.com/license",
@@ -5933,6 +6170,9 @@
     "type": "cc0-game-and-3d-asset-library",
     "url": "https://kenney.nl/assets",
     "license": "Kenney game assets are commonly CC0; verify the license shown on each asset page before reuse",
+    "source_role": "asset_source",
+    "default_visual_reference": true,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://kenney.nl/assets",
@@ -6015,6 +6255,9 @@
     "type": "cc0-3d-icon-library",
     "url": "https://3dicons.co/",
     "license": "CC0 for the current open 3dicons version; Pro or premium collections may use separate terms",
+    "source_role": "asset_source",
+    "default_visual_reference": true,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://3dicons.co/",
@@ -6102,6 +6345,9 @@
     "type": "cc0-pbr-material-library",
     "url": "https://ambientcg.com/",
     "license": "CC0 1.0 for downloadable asset files and material preview renders",
+    "source_role": "asset_source",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://ambientcg.com/license",
@@ -6183,6 +6429,9 @@
     "type": "webgl-interaction-tutorial-catalog",
     "url": "https://tympanus.net/codrops/tag/three-js/",
     "license": "Codrops demo code is commonly MIT unless otherwise stated; article media and demo assets require separate checks",
+    "source_role": "behavior_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://tympanus.net/codrops/tag/three-js/",
@@ -6270,6 +6519,9 @@
     "type": "3d-loading-accessibility-pattern",
     "url": "https://modelviewer.dev/examples/loading/",
     "license": "Apache-2.0 for model-viewer examples; displayed sample models require per-asset license checks",
+    "source_role": "behavior_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://modelviewer.dev/examples/loading/",
@@ -6355,6 +6607,9 @@
     "type": "webgl-performance-accessibility-reference",
     "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices",
     "license": "MDN content license applies; attribute MDN when reusing text",
+    "source_role": "qa_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": true,
     "live_sources": [
       {
         "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices",
@@ -6438,6 +6693,9 @@
     "type": "motion-accessibility-reference",
     "url": "https://web.dev/learn/accessibility/motion",
     "license": "Google Developers/web.dev content license applies; verify page footer before reusing text",
+    "source_role": "qa_reference",
+    "default_visual_reference": false,
+    "requires_explicit_context": false,
     "live_sources": [
       {
         "url": "https://web.dev/learn/accessibility/motion",
