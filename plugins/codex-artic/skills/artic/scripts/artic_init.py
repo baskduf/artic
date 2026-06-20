@@ -27,6 +27,7 @@ SUPPORTED_LANGUAGES = {
     "zh-TW": "Traditional Chinese (Taiwan)",
 }
 DEFAULT_PRESERVE_TERMS = ["DESIGN.md", "AI-native", "Artic"]
+ROLE_SELECTION_MIN_SCORE = 20
 
 
 def write(path: Path, content: str) -> None:
@@ -158,7 +159,8 @@ def query_from_intent(intent: dict) -> str:
 
 def select_role_grounded_sources(intent: dict, catalog_path: Path, limit: int) -> tuple[list[dict], list[dict]]:
     query = query_from_intent(intent)
-    scored = search(query, catalog_path, max(limit, len(load_catalog(catalog_path))))
+    avoid_terms = terms(" ".join(str(item) for item in intent.get("avoid_facets", []) if item))
+    scored = search(query, catalog_path, max(limit, len(load_catalog(catalog_path))), avoid_terms=avoid_terms)
     by_id = {row["id"]: row for row in scored}
     selected: list[dict] = []
     seen: set[str] = set()
@@ -170,7 +172,7 @@ def select_role_grounded_sources(intent: dict, catalog_path: Path, limit: int) -
         picked: list[str] = []
         for source_id in role.get("source_ids", []):
             row = by_id.get(source_id)
-            if row and row["id"] not in seen:
+            if row and row["score"] >= ROLE_SELECTION_MIN_SCORE and row["id"] not in seen:
                 selected.append(row)
                 seen.add(row["id"])
                 picked.append(row["id"])
