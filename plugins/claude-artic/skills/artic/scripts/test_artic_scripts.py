@@ -82,6 +82,23 @@ class ArticScriptTests(unittest.TestCase):
         self.assertGreaterEqual(len(catalog), 8)
         self.assertTrue(any(item["id"] == "voltagent-awesome-design-md" for item in catalog))
 
+    def test_source_catalog_has_role_boundary_metadata(self):
+        catalog = json.loads((ROOT / "references" / "source-catalog.json").read_text(encoding="utf-8"))
+        allowed_roles = {
+            "visual_reference",
+            "system_reference",
+            "behavior_reference",
+            "qa_reference",
+            "asset_source",
+            "legal_reference",
+            "copy_reference",
+            "implementation_reference",
+        }
+        for source in catalog:
+            self.assertIn(source.get("source_role"), allowed_roles, source["id"])
+            self.assertIsInstance(source.get("default_visual_reference"), bool, source["id"])
+            self.assertIsInstance(source.get("requires_explicit_context"), bool, source["id"])
+
     def test_search_catalog_returns_results(self):
         result = subprocess.run(
             [sys.executable, str(ROOT / "scripts" / "search_reference_catalog.py"), "--query", "ai product developer saas", "--limit", "3"],
