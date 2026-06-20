@@ -28,6 +28,16 @@ SUPPORTED_LANGUAGES = {
 }
 DEFAULT_PRESERVE_TERMS = ["DESIGN.md", "AI-native", "Artic"]
 ROLE_SELECTION_MIN_SCORE = 20
+ROLE_ALLOWED_SOURCE_ROLES = {
+    "3d_runtime": {"implementation_reference", "behavior_reference"},
+    "3d_safety_and_performance": {"qa_reference", "behavior_reference", "implementation_reference", "system_reference"},
+    "trust_and_conversion": {"system_reference", "qa_reference", "behavior_reference", "copy_reference"},
+    "component_restraint": {"implementation_reference", "system_reference", "behavior_reference"},
+    "token_discipline": {"implementation_reference", "system_reference"},
+    "mobile_confidence": {"system_reference", "visual_reference", "implementation_reference", "behavior_reference"},
+    "korean_market_fit": {"system_reference", "qa_reference", "asset_source", "implementation_reference"},
+    "implementation_clarity": {"implementation_reference", "system_reference", "behavior_reference"},
+}
 
 
 def write(path: Path, content: str) -> None:
@@ -157,22 +167,58 @@ def query_from_intent(intent: dict) -> str:
     return " ".join(part for part in parts if part).strip()
 
 
+def explicit_role_source_ids(intent: dict) -> set[str]:
+    explicit: set[str] = set()
+    for role in intent.get("reference_roles", []):
+        if isinstance(role, dict):
+            explicit.update(str(source_id) for source_id in role.get("source_ids", []) if source_id)
+    return explicit
+
+
+def source_allowed_for_role(row: dict, role_name: str) -> bool:
+    source_role = row.get("source_role")
+    allowed = ROLE_ALLOWED_SOURCE_ROLES.get(role_name)
+    if allowed is None:
+        return source_role not in {"asset_source", "legal_reference"}
+    return source_role in allowed
+
+
+def source_eligible_for_selection(row: dict, *, role_name: str | None, explicit_ids: set[str], fallback: bool) -> bool:
+    source_id = str(row.get("id") or "")
+    if row.get("requires_explicit_context") is True and source_id not in explicit_ids:
+        return False
+    if role_name is not None and not source_allowed_for_role(row, role_name):
+        return False
+    return True
+
+
 def select_role_grounded_sources(intent: dict, catalog_path: Path, limit: int) -> tuple[list[dict], list[dict]]:
     query = query_from_intent(intent)
     avoid_terms = terms(" ".join(str(item) for item in intent.get("avoid_facets", []) if item))
     scored = search(query, catalog_path, max(limit, len(load_catalog(catalog_path))), avoid_terms=avoid_terms)
     by_id = {row["id"]: row for row in scored}
+    explicit_ids = explicit_role_source_ids(intent)
     selected: list[dict] = []
     seen: set[str] = set()
+    role_rejected_ids: set[str] = set()
     role_assignments: list[dict] = []
 
     for role in intent.get("reference_roles", []):
         if not isinstance(role, dict):
             continue
         picked: list[str] = []
+        role_name = str(role.get("role") or "")
         for source_id in role.get("source_ids", []):
             row = by_id.get(source_id)
-            if row and row["score"] >= ROLE_SELECTION_MIN_SCORE and row["id"] not in seen:
+            if row and not source_allowed_for_role(row, role_name):
+                role_rejected_ids.add(row["id"])
+                continue
+            if (
+                row
+                and row["score"] >= ROLE_SELECTION_MIN_SCORE
+                and row["id"] not in seen
+                and source_eligible_for_selection(row, role_name=role_name, explicit_ids=explicit_ids, fallback=False)
+            ):
                 selected.append(row)
                 seen.add(row["id"])
                 picked.append(row["id"])
@@ -183,9 +229,14 @@ def select_role_grounded_sources(intent: dict, catalog_path: Path, limit: int) -
     for row in scored:
         if len(selected) >= limit:
             break
-        if row["id"] not in seen:
-            selected.append(row)
-            seen.add(row["id"])
+        if row["id"] in seen:
+            continue
+        if row["id"] in role_rejected_ids:
+            continue
+        if not source_eligible_for_selection(row, role_name=None, explicit_ids=explicit_ids, fallback=True):
+            continue
+        selected.append(row)
+        seen.add(row["id"])
 
     selected = selected[:limit]
     selected_ids = {row["id"] for row in selected}
@@ -216,6 +267,9 @@ def selected_source_payload(row: dict) -> dict:
         "score": row["score"],
         "reason": "; ".join(reason_parts) or row.get("type", "reference source"),
         "extraction_targets": row.get("extraction_targets", row.get("use_for", [])),
+        "source_role": row.get("source_role", "visual_reference"),
+        "default_visual_reference": bool(row.get("default_visual_reference", False)),
+        "requires_explicit_context": bool(row.get("requires_explicit_context", False)),
         "url": row.get("url"),
         "license": row.get("license", "unknown"),
     }
@@ -247,6 +301,9 @@ def create_init_outputs(root: Path, args: argparse.Namespace) -> dict:
         {
             "source_id": src["id"],
             "role": role_for_source(src["id"], role_assignments),
+            "source_role": src.get("source_role", "visual_reference"),
+            "default_visual_reference": bool(src.get("default_visual_reference", False)),
+            "requires_explicit_context": bool(src.get("requires_explicit_context", False)),
             "extract": src.get("extraction_targets", []),
             "transform": f"Translate {src['name']} into project-specific rules for {args.project}; keep the final layout, copy, and visual identity original.",
             "avoid": src.get("avoid_when", []) or ["exact layouts", "brand identity", "source copywriting"],
