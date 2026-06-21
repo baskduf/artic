@@ -215,7 +215,7 @@ def test_readmes_document_version_and_update_commands():
 
 
 def test_active_files_do_not_keep_previous_release_version_literals():
-    previous_literals = ("0.4.1", "v0.4.1")
+    previous_literals = ("0.5.0", "v0.5.0")
     checked_roots = [
         ROOT / "README.md",
         ROOT / "README.ko.md",
