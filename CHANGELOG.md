@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0 - 2026-06-20
+
+### Added
+- Added source-role metadata across the Artic catalog so references declare whether they are visual, system, implementation, behavior, QA, asset, legal, or copy guidance.
+- Preserved source-role metadata in init reference outputs and source plans for downstream agent strategy authoring.
+
+### Changed
+- Gated role-grounded source selection with source-role eligibility and explicit-context metadata so implementation, asset, legal, and system references do not leak into unrelated visual guidance.
+- Reduced default source over-selection so Polaris, shadcn/ui, Tailwind, and similar implementation sources are selected only when the project context supports their role.
+
 ## 0.5.0 - 2026-06-20
 
 ### Removed

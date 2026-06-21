@@ -1,7 +1,7 @@
 ---
 name: artic
 description: "Use when creating or improving a homepage/website and design rules are missing or weak. Artic is an agent design-direction protocol: @artic init interviews the user, @artic start authors strategy artifacts, then the compiler produces AI-native DESIGN.md docs from reusable reference principles."
-version: 0.5.0
+version: 0.6.0
 author: Hermes Agent
 license: MIT
 metadata:
